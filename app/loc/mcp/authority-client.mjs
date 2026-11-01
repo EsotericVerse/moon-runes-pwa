@@ -1,0 +1,92 @@
+// One server for independent Scopes. The Group Authority verifies the Clerk
+// OAuth token and permissions on EVERY call; credentials never reach MCP replies.
+const DEFAULT_AUTHORITY='https://loc-authority-control.sopa2306.workers.dev';
+const ORIGIN='https://loc.lo3rwang.cc';
+const ID=/^[a-z][a-z0-9]{0,14}$/;
+const UID=/^[A-Za-z0-9]{8}$/;
+function bad(message){return Object.assign(new Error(message),{code:'INVALID_ARGUMENT'});}
+function id(value){if(!ID.test(String(value||'')))throw bad('Invalid Scope or Group ID');return value;}
+function target(value,env){
+  const url=new URL(String(env.LOC_MCP_AUTHORITY_URL||DEFAULT_AUTHORITY));
+  if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||
+    !['','/'].includes(url.pathname))throw Error('Invalid LOC Authority origin');
+  return new URL('/v1/mcp/'+value,url.origin);
+}
+export async function authorityAction(name,args,token,env={},fetchImpl=globalThis.fetch){
+  if(typeof token!=='string'||!token.startsWith('eyJ'))
+    throw bad('Authenticated Clerk OAuth required');
+  const a=args||{};
+  let path='',method='GET',body=null,query=null;
+  switch(name){
+    case 'scope_storage':
+      path='scope/'+id(a.scopeid);
+      if(a.endpoint!==undefined){
+        method='PUT';
+        // Database credentials are accepted only by the secure Clerk UI ->
+        // Authority HTTPS endpoint, never as ChatGPT/MCP tool arguments.
+        body={endpoint:a.endpoint,schema:a.schema||'public',table:a.table};
+        if(!body.table||!body.endpoint)throw bad('Database endpoint and existing table are required');
+      }
+      break;
+    case 'check_conversation':
+      path='checkpoint/'+id(a.scopeid)+'/'+encodeURIComponent(String(a.conversation_id||''));
+      if(!a.conversation_id)throw bad('conversation_id required');
+      query={updated_at:a.updated_at};break;
+    case 'sync_conversation':
+      path='sync/'+id(a.scopeid);method='POST';
+      if(!a.conversation_id||!a.updated_at||typeof a.content!=='string'||!a.content.trim())
+        throw bad('conversation_id, updated_at and content required');
+      body={conversation_id:a.conversation_id,updated_at:a.updated_at,
+        created_at:a.created_at,title:a.title||'',content:a.content};break;
+    case 'search_scope':
+      path='search/'+id(a.scopeid);method='POST';
+      if(!a.query)throw bad('query required');
+      body={query:a.query,limit:a.limit||10};break;
+    case 'read_scope':
+      if(!UID.test(String(a.uid||'')))throw bad('Invalid case-sensitive UID');
+      path='read/'+id(a.scopeid)+'/'+a.uid;
+      query={offset:a.offset||0,max_chars:a.max_chars||20000,
+        ...(a.groupid?{groupid:id(a.groupid)}:{})};break;
+    case 'search_group':
+      path='group-search/'+id(a.groupid);method='POST';
+      if(!a.query)throw bad('query required');
+      body={query:a.query,limit:a.limit||10};break;
+    case 'join_scope_group':
+      path='group/'+id(a.groupid)+'/scope/'+id(a.scopeid);method='PUT';
+      body={};break;
+    case 'grant_scope_access':
+      path='group/'+id(a.groupid)+'/grant';method='PUT';
+      if(!/^user_[A-Za-z0-9]+$/.test(String(a.subject||'')))throw bad('Valid Clerk user subject required');
+      if(!Array.isArray(a.actions)||a.actions.length===0||
+        a.actions.some(x=>!['read','write','manage','configure'].includes(x)))
+        throw bad('Invalid Authority actions');
+      const days=Number(a.days||30);
+      if(!Number.isInteger(days)||days<1||days>365)throw bad('Grant days must be 1–365');
+      body={subject:a.subject,scope:id(a.scopeid),actions:a.actions,
+        expires_at:Date.now()+days*86400000};break;
+    case 'revoke_scope_access':
+      path='group/'+id(a.groupid)+'/revoke';method='POST';
+      if(!/^user_[A-Za-z0-9]+$/.test(String(a.subject||'')))throw bad('Valid Clerk user subject required');
+      body={scope:id(a.scopeid),subject:a.subject};break;
+    default:throw bad('Unknown LOC MCP action');
+  }
+  const url=target(path,env);
+  for(const [key,val] of Object.entries(query||{})){
+    if(val!==undefined)url.searchParams.set(key,String(val));
+  }
+  const res=await fetchImpl(url.toString(),{
+    method,headers:{authorization:'Bearer '+token,origin:ORIGIN,
+      accept:'application/json',...(body?{'content-type':'application/json'}:{})},
+    ...(body?{body:JSON.stringify(body)}:{}),
+    cache:'no-store',redirect:'manual',signal:AbortSignal.timeout(16000)
+  });
+  if(!res.ok){
+    let message='LOC Authority denied or unavailable (HTTP '+res.status+')';
+    if(res.status>=400&&res.status<500){
+      const data=await res.json().catch(()=>null);
+      if(typeof data?.error==='string')message=data.error.slice(0,180);
+    }
+    throw Object.assign(new Error(message),{code:'AUTHORITY_ERROR',httpStatus:res.status});
+  }
+  return res.json();
+}

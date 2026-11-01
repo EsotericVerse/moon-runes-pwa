@@ -40,7 +40,7 @@ async function clerkPublicKey(issuer,kid){
   const cached=jwksCache.get(key);
   if(cached&&cached.expires>Date.now())return cached.key;
   const response=await fetch((String(issuer).endsWith('/')?String(issuer).slice(0,-1):String(issuer))+'/.well-known/jwks.json',{
-    // Cloudflare Workers does not implement Fetch redirect:'error'; it throws
+    // Cloudflare Workers does not implement Fetch redirect:'manual'; it throws
     // a TypeError before issuing the JWKS request. Default follow is supported.
     method:'GET',redirect:'follow',signal:AbortSignal.timeout(6000),
     headers:{accept:'application/json'}
@@ -188,6 +188,91 @@ async function decryptProfile(value,secret){
   const bytes=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64bytes(parts[0])},await encryptionKey(secret),b64bytes(parts[1]));
   return JSON.parse(new TextDecoder().decode(bytes));
 }
+
+// MCP OAuth uses an audience-bound access token, not a Clerk session JWT.
+// Data access is separately authorized by this Group Authority's grants.
+const MCP_RESOURCE='https://loc.lo3rwang.cc/mcp';
+const SCOPE_ID=/^[a-z][a-z0-9]{0,14}$/;
+const TABLE_ID=/^[a-z][a-z0-9_]{0,62}$/;
+const UID=/^[A-Za-z0-9]{8}$/;
+function validScope(value){if(!SCOPE_ID.test(String(value||'')))throw fail('Invalid Scope',400);return value;}
+function validTimestamp(value){
+  const stamp=Date.parse(String(value||''));
+  if(!Number.isFinite(stamp)||!/^\d{4}-\d\d-\d\dT/.test(String(value)))throw fail('Invalid source update time',400);
+  return new Date(stamp).toISOString();
+}
+function safePostgrestUrl(value){
+  const u=new URL(String(value||''));
+  if(u.protocol!=='https:'||u.username||u.password||u.search||u.hash||
+    u.pathname.replace(/\/+$/,'')!=='/rest/v1'||u.hostname==='localhost'||
+    /(?:^|\.)(?:localhost|local|internal|test)$/.test(u.hostname)||
+    /^(?:\d{1,3}\.){3}\d{1,3}$/.test(u.hostname)||u.hostname.includes(':'))
+    throw fail('Database must expose a public HTTPS PostgREST Data API',400);
+  return u.origin+'/rest/v1';
+}
+function validateScopeTarget(input,scopeid){
+  validScope(scopeid);
+  if(!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid Scope database',400);
+  const endpoint=safePostgrestUrl(input.endpoint);
+  const schema=String(input.schema||'public').trim();
+  const table=String(input.table||'').trim();
+  const apiKey=String(input.api_key||'');
+  if(!TABLE_ID.test(schema)||!TABLE_ID.test(table)||apiKey.length>4096||
+    /[\r\n]/.test(apiKey))throw fail('Invalid Scope table or API credential',400);
+  return {scopeid,endpoint,schema,table,api_key:apiKey};
+}
+async function verifyMcpOAuth(request,env){
+  const match=/^Bearer ([A-Za-z0-9_.-]{40,8192})$/.exec(request.headers.get('authorization')||'');
+  if(!match)throw fail('MCP OAuth token required',401);
+  const bits=match[1].split('.');
+  if(bits.length!==3)throw fail('Invalid MCP token',401);
+  let header,claims;
+  try{header=JSON.parse(new TextDecoder().decode(b64bytes(bits[0])));
+    claims=JSON.parse(new TextDecoder().decode(b64bytes(bits[1])));}
+  catch{throw fail('Invalid MCP token',401)}
+  if(header?.alg!=='RS256'||!header.kid||claims?.iss!==env.LOC_CLERK_ISSUER||
+    !/^user_[A-Za-z0-9]+$/.test(String(claims.sub||''))||
+    !(Array.isArray(claims.aud)?claims.aud.includes(MCP_RESOURCE):claims.aud===MCP_RESOURCE))
+    throw fail('MCP token issuer or audience mismatch',401);
+  const now=Math.floor(Date.now()/1000);
+  if(!Number.isFinite(claims.exp)||claims.exp<=now||
+    (claims.nbf!=null&&claims.nbf>now+60)||
+    (claims.iat!=null&&claims.iat>now+60))throw fail('MCP token expired',401);
+  const key=await clerkPublicKey(env.LOC_CLERK_ISSUER,header.kid);
+  const valid=await crypto.subtle.verify('RSASSA-PKCS1-v1_5',key,b64bytes(bits[2]),
+    new TextEncoder().encode(bits[0]+'.'+bits[1]));
+  if(!valid)throw fail('MCP token signature invalid',401);
+  return {provider:'clerk',subject:claims.sub};
+}
+async function mcpJsonBody(request,limit=160000){
+  const raw=await request.text();
+  if(raw.length>limit)throw fail('MCP payload too large',413);
+  try{return JSON.parse(raw)}catch{throw fail('Invalid MCP JSON',400)}
+}
+const BASE62='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function newUid(){const bytes=crypto.getRandomValues(new Uint8Array(8));return [...bytes].map(b=>BASE62[b%62]).join('');}
+function likePattern(value){
+  if(typeof value!=='string'||value.trim().length<2||value.length>100||
+    /[\u0000-\u001f\u007f]/.test(value))throw fail('Query must contain 2–100 characters',400);
+  return '"*'+value.trim().replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/[%_*]/g,'\\$&')+'*"';
+}
+async function postgrest(profile,options){
+  const url=new URL(profile.endpoint+'/'+profile.table);
+  const params=options.params||{};
+  for(const [k,v] of Object.entries(params))url.searchParams.set(k,String(v));
+  const headers={accept:'application/json','accept-profile':profile.schema,
+    'content-profile':profile.schema,
+    apikey:profile.api_key,authorization:'Bearer '+profile.api_key};
+  if(options.body){headers['content-type']='application/json';
+    headers.prefer='resolution=merge-duplicates,return=minimal';}
+  const res=await fetch(url.href,{method:options.body?'POST':'GET',headers,
+    ...(options.body?{body:JSON.stringify(options.body)}:{}),
+    redirect:'manual',signal:AbortSignal.timeout(9500)});
+  if(!res.ok)throw fail('Scope database rejected operation (HTTP '+res.status+')',502);
+  return options.body?null:res.json();
+}
+function escapeScopeValue(value){return 'eq.'+value;}
+
 export class LocAuthorityState extends DurableObject {
   constructor(ctx,env){super(ctx,env);}
   async listState(){
@@ -264,6 +349,174 @@ export class LocAuthorityState extends DurableObject {
     const grant=await this.ctx.storage.get(key);
     return Boolean(grant&&grant.expires_at>Date.now()&&grant.actions.includes(action));
   }
+
+  // Secrets are stored only in this pre-existing encrypted Durable Object.
+  async putMcpScope(scopeid,input){
+    const next=validateScopeTarget(input,scopeid);
+    const previous=await this.ctx.storage.get('mcp-scope:'+scopeid);
+    if(!next.api_key&&previous)next.api_key=(await decryptProfile(previous.encrypted,this.env.LOC_CONTROL_ENCRYPTION_KEY)).api_key;
+    if(!next.api_key)throw fail('Database API credential is required',400);
+    const {api_key,...publicFields}=next;
+    await this.ctx.storage.put('mcp-scope:'+scopeid,{
+      public:publicFields,encrypted:await encryptProfile(next,this.env.LOC_CONTROL_ENCRYPTION_KEY)});
+    return {...publicFields,configured:true};
+  }
+  async getMcpScope(scopeid){validScope(scopeid);
+    const item=await this.ctx.storage.get('mcp-scope:'+scopeid);
+    return item?{...item.public,configured:true}:{scopeid,configured:false};}
+  async mcpPrivateProfile(scopeid){
+    const item=await this.ctx.storage.get('mcp-scope:'+scopeid);
+    return item?decryptProfile(item.encrypted,this.env.LOC_CONTROL_ENCRYPTION_KEY):null;
+  }
+  async mcpCheckpoint(scopeid,conversationId,updatedAt){
+    validScope(scopeid);
+    if(typeof conversationId!=='string'||conversationId.length<3||conversationId.length>150||
+      /[\u0000-\u001f]/.test(conversationId))throw fail('Invalid conversation ID',400);
+    const item=await this.ctx.storage.get('mcp-sync:'+scopeid+':'+conversationId)||null;
+    return {scopeid,conversation_id:conversationId,
+      updated_at:item?.updated_at||null,saved_at:item?.saved_at||null,uid:item?.uid||null,
+      needs_save:updatedAt?!item?.saved_at||Date.parse(validTimestamp(updatedAt))>Date.parse(item.updated_at):null};
+  }
+  async mcpSave(scopeid,input){
+    validScope(scopeid);
+    if(!input||typeof input.conversation_id!=='string')throw fail('Conversation ID required',400);
+    // Serialize saves for one conversation within the existing Durable Object.
+    const key=scopeid+':'+input.conversation_id;
+    this.mcpInflight??=new Map();
+    const previous=this.mcpInflight.get(key)||Promise.resolve();
+    const next=previous.catch(()=>{}).then(()=>this.mcpSaveUnlocked(scopeid,input));
+    this.mcpInflight.set(key,next);
+    try{return await next;}
+    finally{if(this.mcpInflight.get(key)===next)this.mcpInflight.delete(key);}
+  }
+  async mcpSaveUnlocked(scopeid,input){
+    validScope(scopeid);
+    if(!input||typeof input!=='object'||Array.isArray(input))throw fail('Invalid conversation',400);
+    const conversation_id=String(input.conversation_id||'');
+    const requestedTime=validTimestamp(input.updated_at);
+    const status=await this.mcpCheckpoint(scopeid,conversation_id,requestedTime);
+    if(!status.needs_save)return {...status,saved:false,reason:'unchanged'};
+    const profile=await this.mcpPrivateProfile(scopeid);
+    if(!profile)throw fail('Scope database is not configured',409);
+    if(typeof input.content!=='string'||!input.content.trim()||input.content.length>125000||
+      typeof input.title!=='string'||input.title.length>350)
+      throw fail('Invalid conversation content or title',400);
+    const uid=status.uid||newUid();
+    const checkpointKey='mcp-sync:'+scopeid+':'+conversation_id;
+    // Persist the stable UID before the HTTP write so a timeout or failed ack
+    // never creates a second article on the next attempt.
+    if(!status.uid)await this.ctx.storage.put(checkpointKey,
+      {uid,updated_at:status.updated_at,saved_at:status.saved_at});
+    // Idempotent upsert by the existing case-sensitive UID; no table scans.
+    await postgrest(profile,{body:{uid,title:input.title,content:input.content,
+      site:'ChatGPT',site_id:conversation_id,searchable:false,statistics_able:false,
+      date:requestedTime.slice(0,10),createtime:validTimestamp(input.created_at||requestedTime),
+      UpdateTime:requestedTime},params:{on_conflict:'uid'}});
+    const saved_at=new Date().toISOString();
+    this.mcpSearchCache?.clear();
+    await this.ctx.storage.put(checkpointKey,{updated_at:requestedTime,saved_at,uid});
+    return {scopeid,conversation_id,updated_at:requestedTime,saved_at,uid,saved:true};
+  }
+  async mcpSearch(scopeid,query,limit=10){
+    validScope(scopeid);
+    if(!Number.isInteger(limit)||limit<1||limit>20)throw fail('Invalid search limit',400);
+    const pattern=likePattern(query);
+    const key=scopeid+':'+limit+':'+pattern;
+    this.mcpSearchCache??=new Map();
+    const cached=this.mcpSearchCache.get(key);
+    if(cached&&cached.expires>Date.now())return cached.value;
+    const task=(async()=>{
+      const profile=await this.mcpPrivateProfile(scopeid);
+      if(!profile)throw fail('Scope database is not configured',409);
+      const rows=await postgrest(profile,{params:{select:'uid,title,date,createtime',
+        or:'(title.ilike.'+pattern+',content.ilike.'+pattern+')',
+        order:'date.desc.nullslast',limit}});
+      if(!Array.isArray(rows))throw fail('Invalid database search results',502);
+      return {scopeid,results:rows.map(r=>({scopeid,uid:r.uid,title:r.title,date:r.date,createtime:r.createtime}))};
+    })();
+    this.mcpSearchCache.set(key,{value:task,expires:Date.now()+20000});
+    if(this.mcpSearchCache.size>100)this.mcpSearchCache.delete(this.mcpSearchCache.keys().next().value);
+    try{return await task;}
+    catch(error){this.mcpSearchCache.delete(key);throw error;}
+  }
+  async mcpRead(scopeid,uid,offset=0,max_chars=20000){
+    validScope(scopeid);
+    if(!UID.test(uid)||!Number.isInteger(offset)||offset<0||offset>1000000||
+      !Number.isInteger(max_chars)||max_chars<1||max_chars>40000)
+      throw fail('Invalid article read parameters',400);
+    const profile=await this.mcpPrivateProfile(scopeid);
+    let rows;
+    if(profile){
+      rows=await postgrest(profile,{params:{select:'uid,title,content,date,createtime,site,url',
+        uid:'eq.'+uid,limit:1}});
+    }else if(['lo3rwang','lrunes'].includes(scopeid)){
+      // Reuse existing anonymous RLS only; never infer private access.
+      const url=new URL('https://loc-sql-gateway.sopa2306.workers.dev/rest/v1/'+scopeid+'_galaxy');
+      for(const [key,value] of Object.entries({select:'uid,title,content,date,createtime,site,url',
+        uid:'eq.'+uid,searchable:'eq.true',limit:1}))url.searchParams.set(key,String(value));
+      const res=await fetch(url.href,{headers:{origin:'https://loc.lo3rwang.cc',
+        'accept-profile':'silver'},signal:AbortSignal.timeout(8500),redirect:'manual'});
+      if(!res.ok)throw fail('Public article read unavailable',502);
+      rows=await res.json();
+    }else throw fail('Scope database is not configured',409);
+    if(!Array.isArray(rows))throw fail('Invalid database response',502);
+    if(!rows.length)return {found:false,scopeid,uid};
+    const row=rows[0],content=String(row.content||'');
+    return {found:true,scopeid,uid:row.uid,title:row.title,date:row.date,
+      createtime:row.createtime,site:row.site,url:row.url,
+      content:content.slice(offset,offset+max_chars),offset,total_chars:content.length,
+      next_offset:offset+max_chars<content.length?offset+max_chars:null};
+  }
+  async addGroupScope(groupid,scopeid){
+    validScope(groupid);validScope(scopeid);
+    if(groupid===scopeid)throw fail('Scope cannot be its own group',400);
+    await this.ctx.storage.put('mcp-group:'+groupid+':'+scopeid,true);
+    this.mcpGroupCache?.clear();
+    return {groupid,scopeid,linked:true};
+  }
+  async mcpGroupMembers(groupid){
+    validScope(groupid);
+    const saved=await this.ctx.storage.list({prefix:'mcp-group:'+groupid+':'});
+    const set=new Set(groupid==='loc'?['lo3rwang','lrunes']:[]);
+    for(const k of saved.keys())set.add(k.split(':').pop());
+    return [...set].sort().slice(0,25);
+  }
+  async mcpGroupSearch(groupid,query,limit=10){
+    validScope(groupid);
+    const members=await this.mcpGroupMembers(groupid);
+    if(!Number.isInteger(limit)||limit<1||limit>20)throw fail('Invalid search limit',400);
+    const cacheKey=groupid+':'+limit+':'+likePattern(query);
+    this.mcpGroupCache??=new Map();
+    const cached=this.mcpGroupCache.get(cacheKey);
+    if(cached&&cached.expires>Date.now())return cached.value;
+    const task=this.mcpGroupSearchUncached(groupid,query,limit,members);
+    this.mcpGroupCache.set(cacheKey,{value:task,expires:Date.now()+15000});
+    if(this.mcpGroupCache.size>80)this.mcpGroupCache.delete(this.mcpGroupCache.keys().next().value);
+    try{return await task;}catch(error){this.mcpGroupCache.delete(cacheKey);throw error;}
+  }
+  async mcpGroupSearchUncached(groupid,query,limit,members){
+    const results=await Promise.allSettled(members.map(async scopeid=>{
+      const scopeStub=this.env.LOC_AUTHORITY_STATE.get(
+        this.env.LOC_AUTHORITY_STATE.idFromName('mcp-scope:'+scopeid));
+      const profile=await scopeStub.getMcpScope(scopeid);
+      if(profile.configured)return (await scopeStub.mcpSearch(scopeid,query,limit)).results;
+      // Unconfigured built-in Scope: use the established public SQL Gateway + RLS.
+      if(!['lo3rwang','lrunes'].includes(scopeid))return [];
+      const url=new URL('https://loc-sql-gateway.sopa2306.workers.dev/rest/v1/'+scopeid+'_galaxy');
+      for(const [key,val] of Object.entries({select:'uid,title,date,createtime',
+        searchable:'eq.true',or:'(title.ilike.'+likePattern(query)+',content.ilike.'+likePattern(query)+')',
+        order:'date.desc.nullslast',limit}))url.searchParams.set(key,String(val));
+      const res=await fetch(url.href,{headers:{origin:'https://loc.lo3rwang.cc',
+        'accept-profile':'silver'},signal:AbortSignal.timeout(8500),redirect:'manual'});
+      if(!res.ok)throw fail('Public Scope search unavailable',502);
+      return (await res.json()).map(row=>({...row,scopeid}));
+    }));
+    const errors=results.map((r,i)=>r.status==='rejected'?members[i]:null).filter(Boolean);
+    const combined=results.filter(r=>r.status==='fulfilled').flatMap(r=>r.value)
+      .sort((a,b)=>String(b.date||b.createtime||'').localeCompare(String(a.date||a.createtime||''))).slice(0,limit);
+    return {groupid,members,results:combined,partial:errors.length>0,failed_scopes:errors};
+  }
+
   async getPrimaryProfileForGateway(){
     const id=await this.ctx.storage.get('primary_id');
     if(!id)return null;
@@ -276,6 +529,96 @@ export class LocAuthorityState extends DurableObject {
     return stored?decryptProfile(stored.encrypted,this.env.LOC_CONTROL_ENCRYPTION_KEY):null;
   }
 }
+
+async function handleMcpAuthority(request,env,url,origin){
+  // Browser Scope settings use Clerk session JWT; MCP tools use audience-bound
+  // OAuth JWT. Both paths independently verify Clerk signatures.
+  let principal;
+  try{principal=await verifyMcpOAuth(request,env);}
+  catch(error){
+    if(error.status!==401)throw error;
+    principal=await verifyIdentityToken(request,env);
+  }
+  const roots=String(env.LOC_RECOVERY_ROOT_CLERK_IDS||'').split(/[\s,;]+/).filter(Boolean);
+  const isRoot=roots.includes(principal.subject);
+  const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
+  const scoped=scope=>env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('mcp-scope:'+scope));
+  const allowed=async(scope,action)=>isRoot||await stub.mayAccess({...principal,scope,action});
+  const parts=url.pathname.split('/').filter(Boolean).slice(2);
+  if(parts[0]==='scope'&&parts.length===2){
+    const scopeid=validScope(parts[1]);
+    if(request.method==='GET'){
+      if(!await allowed(scopeid,'read')&&!await allowed(scopeid,'write')&&!await allowed(scopeid,'configure'))throw fail('Scope access denied',403);
+      return json(await scoped(scopeid).getMcpScope(scopeid),200,origin);
+    }
+    if(request.method==='PUT'){
+      if(!await allowed(scopeid,'configure'))throw fail('Scope configuration denied',403);
+      return json(await scoped(scopeid).putMcpScope(scopeid,await mcpJsonBody(request,9000)),200,origin);
+    }
+  }
+  if(parts[0]==='checkpoint'&&parts.length===3&&request.method==='GET'){
+    const scopeid=validScope(parts[1]);
+    if(!await allowed(scopeid,'write'))throw fail('Scope sync denied',403);
+    return json(await scoped(scopeid).mcpCheckpoint(scopeid,decodeURIComponent(parts[2]),
+      url.searchParams.get('updated_at')||undefined),200,origin);
+  }
+  if(parts[0]==='sync'&&parts.length===2&&request.method==='POST'){
+    const scopeid=validScope(parts[1]);
+    if(!await allowed(scopeid,'write'))throw fail('Scope sync denied',403);
+    return json(await scoped(scopeid).mcpSave(scopeid,await mcpJsonBody(request)),200,origin);
+  }
+  if(parts[0]==='search'&&parts.length===2&&request.method==='POST'){
+    const scopeid=validScope(parts[1]);
+    if(!await allowed(scopeid,'read'))throw fail('Scope read denied',403);
+    const args=await mcpJsonBody(request,1600);
+    return json(await scoped(scopeid).mcpSearch(scopeid,args.query,args.limit||10),200,origin);
+  }
+  if(parts[0]==='read'&&parts.length===3&&request.method==='GET'){
+    const scopeid=validScope(parts[1]);
+    const groupid=url.searchParams.get('groupid')||'';
+    let permitted=await allowed(scopeid,'read');
+    if(!permitted&&groupid&&await allowed(validScope(groupid),'read')){
+      permitted=(await stub.mcpGroupMembers(groupid)).includes(scopeid);
+    }
+    if(!permitted)throw fail('Scope article read denied',403);
+    const offset=Number(url.searchParams.get('offset')||'0');
+    const max_chars=Number(url.searchParams.get('max_chars')||'20000');
+    return json(await scoped(scopeid).mcpRead(scopeid,parts[2],offset,max_chars),200,origin);
+  }
+  if(parts[0]==='group-search'&&parts.length===2&&request.method==='POST'){
+    const groupid=validScope(parts[1]);
+    if(!await allowed(groupid,'read'))throw fail('Group search denied',403);
+    const args=await mcpJsonBody(request,1600);
+    return json(await stub.mcpGroupSearch(groupid,args.query,args.limit||10),200,origin);
+  }
+  if(parts[0]==='group'&&parts.length===3&&parts[2]==='grant'&&request.method==='PUT'){
+    const groupid=validScope(parts[1]);
+    if(!await allowed(groupid,'manage'))throw fail('Group grants denied',403);
+    const input=await mcpJsonBody(request,2000);
+    const scopeid=validScope(input?.scope);
+    if(scopeid!==groupid&&!(await stub.mcpGroupMembers(groupid)).includes(scopeid))
+      throw fail('Requested Scope is not a Group member',403);
+    return json(await stub.putGrant({provider:'clerk',subject:input?.subject,
+      scope:scopeid,actions:input?.actions,expires_at:input?.expires_at}),200,origin);
+  }
+  if(parts[0]==='group'&&parts.length===4&&parts[2]==='scope'&&request.method==='PUT'){
+    const groupid=validScope(parts[1]),scopeid=validScope(parts[3]);
+    if(!await allowed(groupid,'manage')||!await allowed(scopeid,'configure'))
+      throw fail('Group and Scope consent required',403);
+    return json(await stub.addGroupScope(groupid,scopeid),200,origin);
+  }
+  if(parts[0]==='group'&&parts.length===3&&parts[2]==='revoke'&&request.method==='POST'){
+    const groupid=validScope(parts[1]);
+    if(!await allowed(groupid,'manage'))throw fail('Group management denied',403);
+    const input=await mcpJsonBody(request,1000),scopeid=validScope(input?.scope);
+    if(scopeid!==groupid&&!(await stub.mcpGroupMembers(groupid)).includes(scopeid))
+      throw fail('Scope is not a Group member',403);
+    if(!/^user_[A-Za-z0-9]+$/.test(String(input?.subject||'')))throw fail('Invalid Clerk subject',400);
+    return json(await stub.revokeGrant('clerk:'+input.subject+':'+scopeid),200,origin);
+  }
+  throw fail('MCP operation not found',404);
+}
+
 export default {
   async fetch(request,env){
     let origin='';
@@ -292,8 +635,9 @@ export default {
       }
       if(!origin&&request.headers.get('sec-fetch-site')==='cross-site')throw fail('Cross-origin request rejected',403);
       if(!['GET','PUT','POST'].includes(request.method))throw fail('Method not allowed',405);
-      const principal=await verifyIdentityToken(request,env);
       const url=new URL(request.url);
+      if(url.pathname.startsWith('/v1/mcp/'))return handleMcpAuthority(request,env,url,origin);
+      const principal=await verifyIdentityToken(request,env);
       if(!url.pathname.startsWith('/v1/'))throw fail('Not found',404);
       // Identity endpoint is only a verified principal lookup. It grants no
       // data access or management capabilities; the gateway must call mayAccess.
