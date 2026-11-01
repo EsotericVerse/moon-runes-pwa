@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {resolveScopeRelations} from '../app/loc/scope-table-routing.mjs';
+import {resolveScopeRelations,scopeConfigRelation} from '../app/loc/scope-table-routing.mjs';
 
 test('legacy settings preserve existing database relations',()=>{
   assert.deepEqual(resolveScopeRelations('lo3rwang',{galaxy:'galaxy',time:'time'}),{
@@ -32,4 +32,10 @@ test('existing Scope registry calls the one shared resolver',()=>{
   const source=readFileSync(new URL('../app/loc/scope-data.js',import.meta.url),'utf8');
   assert.match(source,/import \{resolveScopeRelations\} from '\.\/scope-table-routing\.mjs'/);
   assert.match(source,/const tables=resolveScopeRelations\(id,row\)/);
+});
+
+test('consolidated Scope settings read from Group loc',()=>{
+ assert.equal(scopeConfigRelation('lo3rwang'),'silver.loc');
+ assert.equal(scopeConfigRelation('loc'),'silver.loc');
+ assert.equal(scopeConfigRelation('lrunes'),'silver.lrunes');
 });
