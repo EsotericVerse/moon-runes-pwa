@@ -1,6 +1,7 @@
 'use client';
 
 import {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
+import {coalescePendingPublicRead} from './inflight-public-read.mjs';
 export {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 
 import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
@@ -175,13 +176,18 @@ export function applyOrders(query,orders=[]){
 export async function selectCount(table,{idColumn,filters=[],orFilter='',source='auto'}={}){
   if(!/^[a-z][a-z0-9_]*$/i.test(String(idColumn||'')))throw new Error('DB COUNT requires an explicit ID column');
   // HEAD returns a SQL count without loading rows, including tables without uid.
-  const {count}=await executePublicRead(table,relation=>{
-    let query=relation.select(idColumn,{count:'exact',head:true});
-    query=applyFilters(query,filters);
-    if(orFilter)query=query.or(orFilter);
-    return query;
-  },{source});
-  return Number(count)||0;
+  const request=async()=>{
+    const {count}=await executePublicRead(table,relation=>{
+      let query=relation.select(idColumn,{count:'exact',head:true});
+      query=applyFilters(query,filters);
+      if(orFilter)query=query.or(orFilter);
+      return query;
+    },{source});
+    return Number(count)||0;
+  };
+  // Only anonymous requests without cancellation can share a pending result.
+  if(/^silver\.local(?:_[a-z0-9_]+)?$/.test(table))return request();
+  return coalescePendingPublicRead(JSON.stringify(['count',table,idColumn,filters,orFilter,source]),request);
 }
 
 export async function selectRows(table,{
@@ -202,14 +208,22 @@ export async function selectRows(table,{
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
   warnOversizedFilters(table,filters);
-  const {data,count:total,__dataSource}=await executePublicRead(table,relation=>{
-    let query=relation.select(columns,count?{count}:undefined);
-    query=applyFilters(query,filters);
-    if(orFilter)query=query.or(orFilter);
-    query=applyOrders(query,orders);
-    return query.range(safeOffset,safeOffset+safeLimit-1);
-  },{source,authenticated,signal});
-  return {rows:data||[],count:total,dataSource:__dataSource};
+  const request=async()=>{
+    const {data,count:total,__dataSource}=await executePublicRead(table,relation=>{
+      let query=relation.select(columns,count?{count}:undefined);
+      query=applyFilters(query,filters);
+      if(orFilter)query=query.or(orFilter);
+      query=applyOrders(query,orders);
+      return query.range(safeOffset,safeOffset+safeLimit-1);
+    },{source,authenticated,signal});
+    return {rows:data||[],count:total,dataSource:__dataSource};
+  };
+  // Never combine signed-in, cancellable or local-device reads. Successful
+  // public results are not cached: an editor's next query sees new data.
+  if(authenticated||signal||/^silver\.local(?:_[a-z0-9_]+)?$/.test(table))return request();
+  return coalescePendingPublicRead(JSON.stringify([
+    'rows',table,columns,filters,orFilter,orders,safeLimit,safeOffset,count,source
+  ]),request);
 }
 
 export async function selectAllRows(table,{
