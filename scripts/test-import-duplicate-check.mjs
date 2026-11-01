@@ -202,3 +202,25 @@ test('1200 same-second archived posts retain one-to-one identities and changed n
     assert.equal(result.get('I'+String(index).padStart(7,'0'))?.uid,
       'S'+String(index).padStart(7,'0'));
 });
+
+test('conflicting duplicated check-ins do not mix place metadata or visit times',()=>{
+  const a={...original,location:'Place A',__importPlaceName:'Place A',
+    __importCoordinates:{latitude:25,longitude:121},__importVisitTimes:['2026-10-27T07:00:00Z']};
+  const b={...original,uid:'NEW00001',location:'Place B',__importPlaceName:'Place B',
+    __importCoordinates:{latitude:24,longitude:120},__importCheckin:true,
+    __importVisitTimes:['2026-10-27T08:00:00Z']};
+  const {unique}=dedupeIncomingImport([a,b]);
+  assert.equal(unique.length,1);
+  assert.equal(unique[0].location,'Place A');
+  assert.deepEqual(unique[0].__importCoordinates,{latitude:25,longitude:121});
+  assert.deepEqual(unique[0].__importVisitTimes,['2026-10-27T07:00:00Z']);
+  assert.equal(unique[0].__importCheckin,undefined);
+});
+test('same-place duplicate enriches missing coordinate',()=>{
+  const {unique}=dedupeIncomingImport([
+    {...original,location:'Same place'},
+    {...original,uid:'NEW00001',location:'Same place',
+      __importCoordinates:{latitude:25,longitude:121}}
+  ]);
+  assert.deepEqual(unique[0].__importCoordinates,{latitude:25,longitude:121});
+});
