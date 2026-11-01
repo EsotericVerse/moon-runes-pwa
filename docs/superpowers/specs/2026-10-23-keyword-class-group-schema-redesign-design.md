@@ -1,5 +1,7 @@
 # 關鍵詞 Class / Group / Keyword 三層架構改版 — 設計規格
 
+> **歷史規格，已被 2026-11-02 現行定義取代。** 本文描述 2026-10-23 的三層方案與待確認項目，**不是**現在可直接實作的 Schema 規格；不得依此建立舊 `class_id/group_id` 或擴充關鍵詞欄位。LOC 1.1R 已定義單一 `type`（關鍵詞為 `category/class/group/item`），「關鍵詞組」使用 `label`、關聯列表使用 `links`、結構化資料使用 `attrs`。請以 [`LOC 1.1R 統一 Anchor 規格`](../../loc-1.1r-unified-anchor-contract.md) 為準。保留本文作設計史，不重寫過去的討論。
+
 - Status: 待使用者確認（spec review）
 - Scope: `silver.{scope}_keywords`（例如 `silver.lo3rwang_keywords`）、`silver.{scope}`（scope config，例如 `silver.lo3rwang`）、`silver.{scope}_galaxy` 的 `group_lists` 格式、`app/loc/model/rune66-keyword-engine.mjs`、`app/loc/keyword-analysis.js`、`app/loc/db-contract.mjs`、`app/loc/KeywordLibraryPanel.jsx`
 - 本規格完全來自使用者口述內容的整理，非我方新增的需求或臆測；兩處我方無法從口述內容確定的部分，列在「待確認」一節，不視為已核准。

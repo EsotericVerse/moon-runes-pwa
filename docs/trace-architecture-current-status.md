@@ -1,5 +1,7 @@
 # LOC 痕跡：架構現況與 TODO LIST
 
+> **2026-11-02 最新命名與 Schema 對應：**本文件保存 2026-10-25 的痕跡設計／操作排查紀錄，文中 `anchor`、`map`、`source_place`、`anchor_list` 等名稱屬當時歷史語境，**不可視為最新統一 Anchor 欄位或 `type`**。現行空間類型為 `point`、`path`、`trace`，Trace 舊 `address` 對應統一 `label`；正式規格見 [`LOC 1.1R 統一 Anchor 規格`](loc-1.1r-unified-anchor-contract.md)。本註記不表示現行功能已通過驗收。
+
 > **狀態：未驗收的工作盤點，不是功能完成聲明，也不是已核准的最終規格。**  
 > 盤點日期：2026-10-25（Asia/Taipei）  
 > 依據：GitHub `main` 上的 `AGENTS.md`、痕跡相關 React/資料讀寫程式，以及使用者實際操作回報。  

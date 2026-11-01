@@ -1,5 +1,7 @@
 # LOC｜空間點線面、立體文字密度與《語文爭霸》設計（2026-10-27）
 
+> **後續規格更新（2026-11-02）**：這是 2026-10-27 的歷史設計記錄，當時使用的 `space_anchor`、`space_period`、`space_trace`、`time_anchor`、`time_period`、`time_trace` 和 `address` 不是 LOC 1.1R 統一 Anchor 的新型別與欄位。現行 `type`：空間 `point/path/trace`、時間 `date/period/era`；Trace 原 `address` → `label`。最新契約以 [`docs/loc-1.1r-unified-anchor-contract.md`](../docs/loc-1.1r-unified-anchor-contract.md) 為準；歷史產品概念不因此被抹除。
+
 - **日期／來源**：2026-10-27（Asia/Taipei）；產品架構、玩法與決策由使用者提出，工程整理為 ChatGPT。
 - **性質**：已明確提出的架構與延伸設計，不代表全部已實作、部署或通過驗收。
 - **優先順序**：先完成空間定錨、路線圖、痕跡圖的正確資料整理與畫面，再利用既有「我的最愛」的多維篩選呈現 3D 文字密度；《語文爭霸》為後續可延伸玩法，不搶空間基礎的交付工作。
