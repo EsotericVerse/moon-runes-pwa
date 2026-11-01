@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS local_time (
   description TEXT,
   address TEXT,
   anchor_ids TEXT,
+  range TEXT NOT NULL DEFAULT '{}',
   status TEXT
 );
 CREATE TABLE IF NOT EXISTS local_keywords (
@@ -227,18 +228,44 @@ function localMediaMigrationStatements(mediaRows,articles,exifRows){
   const oldId=row=>String(row.media_id||row.uid);
   const links=new Map(mediaRows.map(row=>[oldId(row),legacyMediaUid(oldId(row))]));
   if(new Set(links.values()).size!==links.size)throw new Error('Local media UID collision');
+  const runeRefContent=row=>{
+    const value=row.rune_references;
+    if(value==null)return '';
+    const content=String(value).trim();
+    return content==='{}'||content==='[]'||content==='null'?'':content;
+  };
+  const occupied=new Set(links.values()),runeUidBySource=new Map();
+  for(const row of mediaRows){
+    if(!runeRefContent(row)||['rune','runes'].includes(String(row.type||row.media_type||'').toLowerCase()))continue;
+    const old=oldId(row);
+    for(let salt=0;salt<1000;salt++){
+      let hash=2166136261;
+      for(const c of 'rune:'+old+':'+salt)hash=Math.imul(hash^c.codePointAt(0),16777619);
+      const uid=(hash>>>0).toString(36).toUpperCase().padStart(8,'0');
+      if(!occupied.has(uid)){occupied.add(uid);runeUidBySource.set(old,uid);break;}
+    }
+    if(!runeUidBySource.has(old))throw Error('Local Rune UID collision');
+  }
   const byArticle=new Map();
   for(const row of mediaRows){
     if(!row.galaxy_link)continue;
     const articleUid=String(row.galaxy_link);
     if(!byArticle.has(articleUid))byArticle.set(articleUid,[]);
     byArticle.get(articleUid).push(links.get(oldId(row)));
+    if(runeUidBySource.has(oldId(row)))byArticle.get(articleUid).push(runeUidBySource.get(oldId(row)));
   }
   const steps=[
     {sql:'ALTER TABLE local_galaxy_media RENAME TO local_galaxy_media_legacy_backup',values:[]},
     {sql:LOCAL_MEDIA_TABLE_CREATE,values:[]},
     ...mediaRows.map(row=>({sql:'INSERT INTO local_galaxy_media ('+LOCAL_MEDIA_COLUMNS.join(',')+') VALUES ('+LOCAL_MEDIA_COLUMNS.map(()=>'?').join(',')+')',
-      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(oldId(row)):c==='type'?(row.type||row.media_type):row[c]))}))
+      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(oldId(row)):c==='type'?
+        (['runes','rune'].includes(row.type||row.media_type)?'rune':(row.type||row.media_type)):row[c]))})),
+    ...mediaRows.filter(row=>runeUidBySource.has(oldId(row))).map(row=>({
+      sql:'INSERT INTO local_galaxy_media ('+LOCAL_MEDIA_COLUMNS.join(',')+') VALUES ('+LOCAL_MEDIA_COLUMNS.map(()=>'?').join(',')+')',
+      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(({uid:runeUidBySource.get(oldId(row)),
+        type:'rune',title:'抽牌結果',url:null,meta_tags:runeRefContent(row),createtime:row.createtime,
+        location:row.location})[c]))
+    }))
   ];
   for(const row of articles){
     let ids=[];
@@ -250,7 +277,7 @@ function localMediaMigrationStatements(mediaRows,articles,exifRows){
       if(!links.has(String(id)))throw new Error('Unresolved legacy local media link');
       return links.get(String(id));
     });
-    const next=[...new Set([...forward,...(byArticle.get(String(row.uid))||[])])];
+    const next=[...new Set([...forward,...ids.map(id=>runeUidBySource.get(String(id))).filter(Boolean),...(byArticle.get(String(row.uid))||[])])];
     if(next.length||row.media_link)steps.push({sql:'UPDATE local_galaxy SET media_link=? WHERE uid=?',
       values:[JSON.stringify(next),row.uid]});
   }
@@ -273,7 +300,7 @@ function upgradeWebLocalMedia(db){
   db.run('BEGIN');
   try{
     for(const step of steps)db.run(step.sql,step.values);
-    if(Number(rowsOf(db,'SELECT count(*) n FROM local_galaxy_media')[0]?.n)!==rows.length)
+    if(Number(rowsOf(db,'SELECT count(*) n FROM local_galaxy_media')[0]?.n)<rows.length)
       throw new Error('Local media migration count mismatch');
     db.run('COMMIT');
   }catch(error){db.run('ROLLBACK');throw error;}
@@ -291,7 +318,7 @@ async function upgradeNativeLocalMedia(conn){
       if(step.values.length)await conn.run(step.sql,step.values,false);
       else await conn.execute(step.sql+';');
     }
-    if(Number((await conn.query('SELECT count(*) n FROM local_galaxy_media')).values?.[0]?.n)!==rows.length)
+    if(Number((await conn.query('SELECT count(*) n FROM local_galaxy_media')).values?.[0]?.n)<rows.length)
       throw new Error('Native local media migration count mismatch');
     await conn.commitTransaction();
   }catch(error){await conn.rollbackTransaction();throw error;}
@@ -534,6 +561,7 @@ async function webDatabase(){
     upgradeWebLocalGalaxyNames(db);
     upgradeWebLocalGalaxySiteId(db);
     upgradeWebLocalTime(db);
+    if(!rowsOf(db,'PRAGMA table_info(local_time)').some(row=>row.name==='range'))db.run("ALTER TABLE local_time ADD COLUMN range TEXT NOT NULL DEFAULT '{}'");
     upgradeWebLocalArchiveExif(db);
     upgradeWebLocalMedia(db);
     upgradeWebKeywordSchema(db);
@@ -557,6 +585,8 @@ async function nativeDatabase(){
     await upgradeNativeLocalGalaxyNames(conn);
     await upgradeNativeLocalGalaxySiteId(conn);
     await upgradeNativeLocalTime(conn);
+    if(!(await conn.query('PRAGMA table_info(local_time)')).values?.some(row=>row.name==='range'))
+      await conn.execute("ALTER TABLE local_time ADD COLUMN range TEXT NOT NULL DEFAULT '{}'");
     await upgradeNativeLocalArchiveExif(conn);
     await upgradeNativeLocalMedia(conn);
     await upgradeNativeKeywordSchema(conn);
@@ -768,7 +798,7 @@ function queryBuilder(table){
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
 const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
-  'target_id','media_link','anchor_ids','lists','uid_lists','runeslist']);
+  'target_id','media_link','anchor_ids','range','lists','uid_lists','runeslist']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
 function decodeRow(row){
