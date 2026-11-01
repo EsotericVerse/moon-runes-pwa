@@ -1,8 +1,8 @@
 'use client';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {usePassiveSessionAccount} from './use-account';
-import {getSetting,putSetting} from './user-storage';
-import {FEATURE_DEFAULTS,FEATURE_PREFERENCES_EVENT,FEATURE_PREFERENCES_KEY,
+import {dbAuthRelation} from './db-client.mjs';
+import {FEATURE_DEFAULTS,FEATURE_PREFERENCES_EVENT,
   normalizeFeaturePreferences} from './feature-preferences.mjs';
 
 // A session's settings are read once per mounted page. A single serialized
@@ -25,7 +25,10 @@ export default function useFeaturePreferences(){
     setError('');
     if(account.loading)return()=>{active=false;};
     if(!identity){setReady(true);return()=>{active=false;};}
-    getSetting(FEATURE_PREFERENCES_KEY).then(raw=>{
+    dbAuthRelation('api.loc_user').select('*').limit(1).then(({data,error})=>{
+      if(error)throw error;
+      return data?.[0]||null;
+    }).then(raw=>{
       if(!active||edited.current)return;
       const next=normalizeFeaturePreferences(raw);
       latest.current=next;setValues(next);setReady(true);
@@ -52,7 +55,9 @@ export default function useFeaturePreferences(){
     window.dispatchEvent(new CustomEvent(FEATURE_PREFERENCES_EVENT,
       {detail:{identity,values:next}}));
     pending.current=pending.current.catch(()=>{}).then(async()=>{
-      await putSetting(FEATURE_PREFERENCES_KEY,JSON.stringify(next));
+      const {error:saveError}=await dbAuthRelation('api.loc_user')
+        .upsert([{...next,updated_at:new Date().toISOString()}],{onConflict:'owner_id'});
+      if(saveError)throw saveError;
     }).catch(reason=>{setError('設定儲存失敗：'+String(reason?.message||reason));});
   },[identity]);
   return {values,update,ready,error,identity,authenticated:Boolean(identity)};
