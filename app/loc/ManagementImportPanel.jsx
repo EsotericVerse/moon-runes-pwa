@@ -29,7 +29,7 @@ import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
 import {reconcileExistingImportAnchors} from './reconcile-import-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
-import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
+import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl,auditArchiveUrlAttributes} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes,estimateImportStageMinutes} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
@@ -522,6 +522,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Archive filename/structure picks an adapter; record content is authoritative.
         const imported=[],issuedArticleUids=new Set(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
         const collector=createArchiveEvidenceCollector();
+        const urlAudit={total:0,article:0,media:0,place:0,other:0,truncated:0};
         let ignored=0,privateSkipped=0;
         const summary=await inspectPrivateArchive(file,{skipPrivateEntries:!nativeLocal,onGeoPlace:place=>{
           // Separate Facebook visit records remain review candidates, not Galaxy articles.
@@ -551,6 +552,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
           }
+          const nestedUrls=auditArchiveUrlAttributes(record.raw);
+          for(const key of ['total','article','media','place','other'])
+            urlAudit[key]+=nestedUrls[key];
+          if(nestedUrls.truncated)urlAudit.truncated++;
           const linked=archiveGalaxyRows(record);
           if(!linked.length){
             collector.onRecord(record,null);ignored++;return;
@@ -582,7 +587,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const mediaPlan=prepareArchiveMedia(mediaEvidence,issuedArticleUids);
         setArchiveEvidence(mediaEvidence);
         setGeoPlaceCandidates(geoPlaces);
-        setArchiveSummary({...summary,exifSamples,
+        setArchiveSummary({...summary,exifSamples,urlAudit,
           mediaEvidenceCount:mediaEvidence.length,
           mediaImportable:mediaPlan.media.length,
           mediaWithUrl:mediaPlan.media.filter(item=>Boolean(item.url)).length,
@@ -1171,6 +1176,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       {archiveDetection?.fileInventory&&archiveDetection.fileInventory.jsonFiles!==archiveSummary.jsonFilesSeen?' ZIP 清點與解析掃描的 JSON 總數不一致，請先核對來源檔案。':''}
       {archiveSummary.jsonFilesSeen!==archiveSummary.jsonFilesParsed+archiveSummary.jsonFilesPrivate+archiveSummary.jsonFilesUnrecognized+archiveSummary.jsonFilesOversize+archiveSummary.jsonFilesUnsupported?' JSON 數量尚未完全對帳，請勿視為完整匯入。':''}
       原始紀錄 {archiveSummary.totalRows.toLocaleString()} 筆，解析接受 {archiveSummary.acceptedRows.toLocaleString()} 筆，解析拒絕 {archiveSummary.rejectedRows.toLocaleString()} 筆；解析接受不等於最終寫入成功。
+    </p>:null}
+    {archiveSummary?.urlAudit?<p className="scope-status" role="status">
+      原始 JSON 巢狀 url 屬性核對：總計 {archiveSummary.urlAudit.total.toLocaleString()} 個；
+      文章候選 {archiveSummary.urlAudit.article.toLocaleString()}、媒體／附件 {archiveSummary.urlAudit.media.toLocaleString()}、
+      地點 {archiveSummary.urlAudit.place.toLocaleString()}、其他 {archiveSummary.urlAudit.other.toLocaleString()}。
+      這是來源欄位出現次數，不等於已保存的公開 URL。
+      {archiveSummary.urlAudit.truncated?' 有 '+archiveSummary.urlAudit.truncated.toLocaleString()+' 筆超過掃描上限；數量為下限。':''}
     </p>:null}
     {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
     {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
