@@ -198,7 +198,7 @@ test('check-in times are merged into the anchor times array: sorted, no duplicat
   await assert.rejects(()=>recordImportPlaceVisits([{uid:'AB12',time:'2025-01-01T00:00:00Z'}],{
     relation:()=>({update:()=>({eq:()=>({eq:async()=>({error:{message:'denied'}})})})}),
     table:'silver.lo3rwang_trace',timesByUid
-  }),/寫入定錨打卡時間失敗/);
+  }),/補齊打卡時間中斷.*denied/);
 });
 
 test('the panel records existing and imported check-in times without double-adding old articles',async()=>{
@@ -221,4 +221,75 @@ test('import progress touches the edit Session, so a long read-only comparison p
   const progressTouch=panel.indexOf('touchEditorSession(window.sessionStorage)',progressStart);
   assert.ok(progressTouch>progressStart);
   assert.ok(progressTouch<panel.indexOf('setProgress({stage,completed,total,',progressStart));
+});
+
+test('reconciliation keeps current main Galaxy title for meaningful Time-anchor summaries',async()=>{
+  const {readFileSync}=await import('node:fs');
+  const reconcile=readFileSync(new URL('../app/loc/reconcile-import-anchors.mjs',import.meta.url),'utf8');
+  assert.match(reconcile,/\.select\('uid,title,location,place_id,date,createtime'\)/);
+});
+
+test('visit repairs use at most six concurrent writes and show final-stage progress',async()=>{
+  const visits=Array.from({length:25},(_,i)=>({
+    uid:(i+1).toString(16).toUpperCase().padStart(4,'0'),
+    time:'2026-11-01T04:30:00Z'
+  }));
+  const timesByUid=new Map(visits.map(item=>[item.uid,[]]));
+  const updates=[],progress=[];
+  let active=0,maxActive=0;
+  const relation=()=>({
+    update:values=>({
+      eq:(column,uid)=>({
+        eq:async()=>{
+          active++;maxActive=Math.max(maxActive,active);
+          await new Promise(resolve=>setTimeout(resolve,2));
+          updates.push({uid,values});active--;
+          return {error:null};
+        }
+      })
+    })
+  });
+  const first=await recordImportPlaceVisits(visits,{
+    relation,table:'silver.lo3rwang_trace',timesByUid,onProgress:value=>progress.push(value)
+  });
+  assert.deepEqual(first,{updated:25,added:25});
+  assert.equal(updates.length,25);
+  assert.equal(maxActive,6);
+  assert.deepEqual(progress[0],{phase:'補齊定錨打卡時間',completed:0,total:25});
+  assert.deepEqual(progress.at(-1),{phase:'補齊定錨打卡時間',completed:25,total:25});
+  assert.ok(progress.every((item,i)=>i===0||item.completed>=progress[i-1].completed));
+  const again=await recordImportPlaceVisits(visits,{
+    relation,table:'silver.lo3rwang_trace',timesByUid
+  });
+  assert.deepEqual(again,{updated:0,added:0});
+  assert.equal(updates.length,25);
+});
+
+test('partial visit-write failures report completed anchors and allow a deduped retry',async()=>{
+  const visits=['0001','0002','0003','0004'].map(uid=>({
+    uid,time:'2026-11-01T04:30:00Z'
+  }));
+  const timesByUid=new Map(visits.map(item=>[item.uid,[]]));
+  let failedOnce=false;
+  const write=fail=>()=>({
+    update:values=>({
+      eq:(column,uid)=>({
+        eq:async()=>{
+          if(fail&&uid==='0003'&&!failedOnce){
+            failedOnce=true;
+            return {error:{message:'simulated interruption'}};
+          }
+          return {error:null};
+        }
+      })
+    })
+  });
+  await assert.rejects(()=>recordImportPlaceVisits(visits,{
+    relation:write(true),table:'silver.lo3rwang_trace',timesByUid
+  }),/補齊打卡時間中斷.*simulated interruption/);
+  const restarted=await recordImportPlaceVisits(visits,{
+    relation:write(false),table:'silver.lo3rwang_trace',timesByUid
+  });
+  assert.ok(restarted.added>0);
+  assert.ok(restarted.added<4,'previously persisted visit timestamps are not duplicated');
 });
