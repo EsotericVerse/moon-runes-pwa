@@ -137,7 +137,6 @@ const TOOLS=[
       actions:{type:'array',items:{type:'string',enum:['read','write','manage','configure']}},
       days:{type:'integer',minimum:1,maximum:365}},
       required:['groupid','scopeid','subject','actions'],additionalProperties:false}},
-,
   {name:'revoke_scope_access',description:'Scope Group manager immediately revokes one member’s Clerk access to a Group or member Scope.',
     inputSchema:{type:'object',properties:{groupid:{type:'string'},scopeid:{type:'string'},
       subject:{type:'string',description:'Clerk user_... identifier'}},
