@@ -6,6 +6,7 @@ import {selectManagedScope} from '../loc/scope-data';
 import {selectRows,DB_QUERY_BATCH_SIZE} from '../loc/db-query.mjs';
 import {insertRows} from '../loc/db-client.mjs';
 import {allocateTimeUid} from '../loc/time-anchor-ranges.mjs';
+import {editorSessionStatus,clearEditorSession,touchEditorSession} from '../loc/edit-session-ttl.mjs';
 
 const validDay=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
 
@@ -67,6 +68,13 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
       const verified=await account.refresh({forceVerify:true});
       if(!verified?.authorizer?.canManageScopeSync(scopeId))
         throw new Error('請先透過 Clerk 登入具有此 Scope 編輯權限的帳號。');
+      // Explicit Clerk verification can renew a previously expired editor
+      // session, without requiring a separate management-page visit.
+      if(editorSessionStatus(window.sessionStorage).expired){
+        clearEditorSession(window.sessionStorage);
+        if(!touchEditorSession(window.sessionStorage))
+          throw new Error('無法重新建立編輯 Session。');
+      }
       const target=await selectManagedScope(scopeId);
       if(!target?.time)throw new Error('無法取得此 Scope 的時間資料表。');
       const existing=await findDateAnchor(target.time,date);
@@ -94,6 +102,16 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
       const details=description.trim();
       if(!details)throw new Error('請先填寫時間定錨的敘述。');
       if(!validDay(date)||!table)throw new Error('定錨日期或資料表無效。');
+      // The dialog may have remained open beyond the idle/session TTL.
+      // Never bypass it: re-verify Clerk permission before renewing it.
+      if(editorSessionStatus(window.sessionStorage).expired){
+        const verified=await account.refresh({forceVerify:true});
+        if(!verified?.authorizer?.canManageScopeSync(scopeId))
+          throw new Error('編輯 Session 已過期，請重新驗證此 Scope 的編輯權限。');
+        clearEditorSession(window.sessionStorage);
+        if(!touchEditorSession(window.sessionStorage))
+          throw new Error('無法重新建立編輯 Session。');
+      }
       const existing=await findDateAnchor(table,date);
       if(existing){
         onCreated?.(existing);
