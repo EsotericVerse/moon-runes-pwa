@@ -6,10 +6,12 @@ import {loadOrCreateLocUser,saveLocUserField} from './loc-user-store.mjs';
 
 // Shared per-OAuth SWR resource. No guest request; OAuth/session verification
 // precedes first READ/INSERT. Every later feature view reuses the same row.
-export default function useLocUser(){
+export default function useLocUser({verifiedSubject=''}={}){
   const account=usePassiveSessionAccount();
-  const subject=String(account.user?.id||'');
-  const enabled=!account.loading&&Boolean(subject);
+  // Settings can already have a server-verified OAuth identity even before
+  // the passive SDK event hydrates the session navigation cache.
+  const subject=String(verifiedSubject||account.user?.id||'');
+  const enabled=Boolean(subject)&&(!account.loading||Boolean(verifiedSubject));
   const key=enabled?['loc-user',subject]:null;
   const query=useAsyncResource({
     queryKey:key,enabled,queryFn:loadOrCreateLocUser,
