@@ -500,7 +500,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const {detectZipArchiveSource,inspectPrivateArchive,zipEntryCount}=await import('./private-archive-universal.mjs');
         const totalEntries=isZip?await zipEntryCount(file):1;
         const result=isZip
-          ?await detectZipArchiveSource(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setStatus('正在辨識 ZIP：已檢查 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案…')})
+          ?await detectZipArchiveSource(file,{skipPrivateEntries:!nativeLocal,onProgress:p=>setProgress({stage:'正在辨識 ZIP 檔案',completed:Number(p.filesSeen||0),total:0,percent:null})})
           :{kind:isFacebookGeoJson?'facebook':'threads',
             sources:[isFacebookGeoJson?'facebook':'threads'],confidence:1,
             evidence:[{source:isFacebookGeoJson?'facebook':'threads',path:file.name,verified:false}],
@@ -531,7 +531,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             throw Error('Facebook 不同地點候選超過 100,000 組，未開始匯入；請分批處理。');
           geoKeys.set(key,geoPlaces.length);
           geoPlaces.push({...place,__importVisitTimes:time?[time]:[]});
-        },onProgress:p=>setStatus('正在解析 ZIP：'+(totalEntries!=null?'ZIP 共 '+totalEntries.toLocaleString()+' 個項目，':'')+'已掃描 '+Number(p.filesSeen||0).toLocaleString()+' 個檔案；其中 JSON '+Number(p.jsonFilesSeen||0).toLocaleString()+' 個，完成解析 '+Number(p.jsonFilesParsed||0).toLocaleString()+' 個；取得 '+Number(p.acceptedRows||0).toLocaleString()+' 筆紀錄…'),onRecord:record=>{
+        },onProgress:p=>setProgress({stage:'正在解析 ZIP 文章與媒體',
+          completed:Number(p.filesSeen||0),total:0,percent:null,
+          detail:'JSON '+Number(p.jsonFilesParsed||0).toLocaleString()+
+            '／'+Number(p.jsonFilesSeen||0).toLocaleString()+
+            '；文章 '+Number(p.acceptedRows||0).toLocaleString()
+        }),onRecord:record=>{
           if(!nativeLocal&&!isPublicArchiveRecord(record)){
             ignored++;privateSkipped++;return;
           }
@@ -609,7 +614,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         ?'第 '+(index+1)+' 檔已阻止匯入：'+String(error?.message||error)+'；本次未寫入資料庫。'
         :t('uiExtra.importUI.parseFileFailed',{index:index+1,error:error?.message||error}));
     }finally{
-      setBusy(false);
+      setBusy(false);setProgress(null);
     }
   }
   async function chooseFile(event){
@@ -1076,19 +1081,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
     {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
-    {progress?<div role="status" aria-live="polite" className="scope-import-progress">
+    {progress?<div role="status" aria-live="polite" aria-atomic="true" className="scope-import-progress">
       {busy?<p className="scope-status"><strong>{t('uiExtra.importUI.importProcessingWait')}</strong></p>:null}
       <p><strong>{progress.stage}</strong></p>
       {progress.percent===null?<progress max="100" aria-label={progress.stage+'，處理中'}/>:
         <progress value={progress.percent} max="100" aria-label={progress.stage+'，已完成 '+progress.percent+'%'}/>}
       {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
-        <p className="scope-status">正在處理此階段，尚無可計算的完成比例。</p>}
+        <p className="scope-status">已處理 {Number(progress.completed||0).toLocaleString()} 項{progress.detail?'；'+progress.detail:'；總量仍在確認'}。</p>}
     </div>:null}
     {/* Rendered right under the import button/progress area, not after every
         intermediate ZIP/archive detail section below — the user is watching
         here, and a result (success, "no changes", or an error like the
         ambiguous-duplicate abort) buried past a long ZIP summary goes unseen. */}
-    {status&&(!busy||!progress)?<p className="scope-status" role="status">{status}</p>:null}
+    {status&&(!busy||!progress)?<p className="scope-status scope-import-live-status" role="status">{status}</p>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
         <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
