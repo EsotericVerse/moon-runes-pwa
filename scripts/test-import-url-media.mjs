@@ -189,3 +189,28 @@ test('nested attribute audit reports when capped rather than pretending complete
   assert.equal(result.truncated,true);
   assert.ok(result.total<12);
 });
+
+
+test('Meta candidate CDN URL is recovered and paired with its original filename',()=>{
+  const url='https://cdn.example.test/asset?token=valid';
+  const refs=archiveAttachmentReferences({media:[{
+    uri:'photos/holiday.jpg',
+    image_versions2:{candidates:[{url,width:1080,height:1080}]}
+  }]});
+  assert.deepEqual(refs,[{uri:'photos/holiday.jpg',mediaType:'image',url}]);
+  const collector=createArchiveEvidenceCollector();
+  collector.onRecord({platform:'instagram',sourcePath:'posts.json',attachments:refs},'ARTICLE1');
+  const evidence=collector.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:123});
+  const plan=prepareArchiveMedia(evidence,new Set(['ARTICLE1']));
+  assert.equal(plan.media.length,1);
+  assert.equal(plan.media[0].url,url);
+  assert.match(plan.media[0].title,/holiday\.jpg$/);
+  assert.equal(plan.media[0].__article_uid,'ARTICLE1');
+});
+
+test('Meta candidate URL without a ZIP-local path is still a real media URL',()=>{
+  const url='https://cdn.example.test/v?media=abc123';
+  assert.deepEqual(archiveAttachmentReferences({
+    media:[{image_versions2:{candidates:[{url}]}}]
+  }),[{uri:url,mediaType:'image',url}]);
+});
