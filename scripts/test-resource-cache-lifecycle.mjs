@@ -41,8 +41,10 @@ async function resourceHarness(){
     const cache=new Map(),calls=[];
     const mutate=async(key,value)=>{
       calls.push(key);
-      if(typeof key==='string'&&!key.startsWith('$inf$')&&value!==undefined){
-        cache.set(JSON.stringify(key),{data:typeof value==='function'?value():value});
+      if(Array.isArray(key)&&value!==undefined){
+        const next=typeof value==='function'?value():value;
+        cache.set(JSON.stringify(key),{data:next});
+        return next;
       }
       return value;
     };
