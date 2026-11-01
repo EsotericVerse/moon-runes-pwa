@@ -27,7 +27,7 @@ test('new Time anchor uses article date, checks duplicates, saves description, a
   assert.match(action,/filters:\[\{column:'type',operator:'eq',value:'anchor'\},\{column:'address',operator:'eq',value:date\}\]/);
   assert.match(action,/const details=description\.trim\(\)/);
   assert.match(action,/allocateTimeUid\(occupied\)/);
-  assert.match(action,/const record=\{uid,type:'anchor',title:date,description:details,/);
+  assert.match(action,/const record=\{uid,type:'anchor',title:chosen\?\.title\|\|date,description:details,/);
   assert.match(action,/address:date,anchor_ids:null,invisible:false/);
   assert.match(action,/await insertRows\(table,\[record\]\)/);
   assert.match(action,/setOpen\(false\)/);
@@ -45,4 +45,13 @@ test('expired editor sessions require verified Clerk Scope grant before renewal'
   const save=action.slice(action.indexOf('const save=async'));
   assert.ok(save.indexOf('canManageScopeSync(scopeId)')<
     save.indexOf('clearEditorSession(window.sessionStorage)'));
+});
+test('article without an anchor shows anniversary hint and reuses supplied candidate',()=>{
+  assert.match(ui,/anniversarySuggestions=activeAnchors\.length\?\[\]:/);
+  assert.match(ui,/符合週年／生日/);
+  assert.match(ui,/新增週年定錨/);
+  assert.match(ui,/suggestions=\{anniversarySuggestions\}/);
+  assert.match(action,/const provided=Array\.isArray\(suggestions\)/);
+  assert.match(action,/setDescription\(provided\[0\]\?\.title\|\|''\)/);
+  assert.match(action,/title:chosen\?\.title\|\|date/);
 });
