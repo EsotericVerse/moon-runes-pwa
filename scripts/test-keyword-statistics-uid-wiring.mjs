@@ -8,10 +8,11 @@ const intersection=read('app/modular/modules/statistics/ScopeSelfIntersection.js
 const culture=read('app/modular/features/Culture.jsx');
 const kysely=read('app/loc/providers/kysely-runtime.mjs');
 
-test('Kysely RPC explicitly permits shared directory and requires Scope ID',()=>{
-  assert.match(kysely,/'silver\.read_shared_keyword_classes':\['p_scope_id'\]/);
-  const entries=kysely.match(/'silver\.read_shared_keyword_classes':\['p_scope_id'\]/g)||[];
-  assert.equal(entries.length,2);
+test('Kysely routes shared directories through the unified view with required scope',()=>{
+  assert.ok(kysely.includes("'silver.read_scope_analytics':['p_scope_id','p_view','p_start','p_end','p_options']"));
+  assert.ok(kysely.includes("'silver.read_scope_analytics':['p_scope_id','p_view']"));
+  assert.ok(!kysely.includes("'silver.read_shared_keyword_classes':["));
+
 });
 
 test('Statistics binds Item UID directly to Group UID even with duplicate labels',()=>{
