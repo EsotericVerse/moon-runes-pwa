@@ -48,23 +48,34 @@ test('shared Class directory uses authorized reader for owner and public reader 
   const classes=[{classUid:'eeCc'},{classUid:'IeG0'}];
   const authorized={schema:()=>({rpc:async(name,args)=>{
     authCalls++;
-    assert.equal(name,'read_shared_keyword_classes');
+    assert.equal(name,'read_scope_analytics');
+    assert.equal(args.p_view,'shared_classes');
     assert.equal(args.p_scope_id,'lo3rwang');
     return {data:classes,error:null};
   }})};
   const guest={schema:()=>({rpc:async()=>{publicCalls++;return {data:classes.slice(0,1),error:null};}})};
-  const make=new Function('authClient','publicClient','verifiedKeywordOwner','normalizeScopeId',
+  const analyticsRead=async(scope,view,options,client)=>{
+    assert.equal(scope,'lo3rwang');
+    assert.equal(view,'shared_classes');
+    const {data,error}=await client.schema('silver').rpc('read_scope_analytics',{
+      p_scope_id:scope,p_view:view,p_start:null,p_end:null,p_options:{}
+    });
+    if(error)throw new Error(error.message);
+    return data;
+  };
+  const dbAuthRelation=()=>({select:()=>({eq:()=>({order:()=>({limit:async()=>({data:[],error:null})})})})});
+  const make=new Function('authClient','publicClient','verifiedKeywordOwner','normalizeScopeId','analyticsRead','dbAuthRelation',
     definition+';return readSharedKeywordClasses;');
-  const owner=make(authorized,guest,async()=>true,id=>id);
+  const owner=make(authorized,guest,async()=>true,id=>id,analyticsRead,dbAuthRelation);
   assert.deepEqual(await owner('lo3rwang'),classes);
   assert.equal(authCalls,1);
   assert.equal(publicCalls,0);
-  const anonymous=make(authorized,guest,async()=>false,id=>id);
+  const anonymous=make(authorized,guest,async()=>false,id=>id,analyticsRead,dbAuthRelation);
   assert.deepEqual(await anonymous('lo3rwang'),classes.slice(0,1));
   assert.equal(authCalls,1);
   assert.equal(publicCalls,1);
   const failing=make({schema:()=>({rpc:async()=>({data:null,error:{message:'denied'}})})},
-    guest,async()=>true,id=>id);
+    guest,async()=>true,id=>id,analyticsRead,dbAuthRelation);
   await assert.rejects(failing('lo3rwang'),/denied/);
 });
 
@@ -121,7 +132,7 @@ test('Scope editor hides Category, publishes the exact four-letter Class UID and
   assert.match(editor,/class:'關鍵字群組科目',group:'關鍵字分類群組',item:'關鍵詞分類'/);
   assert.match(editor,/判斷詞列表（一行一個）/);
   assert.match(editor,/公開群組科目 UID：<code>\{activeClass\.uid\}<\/code>/);
-  assert.match(editor,/dbPublicClient\.schema\('silver'\)\.rpc\('read_shared_keyword_classes'/);
+  assert.ok(editor.includes("dbPublicClient.schema('silver').rpc('read_scope_analytics'"));
   assert.match(editor,/\.find\(item=>item\.classUid===uid\)/);
   assert.match(editor,/dbAuthClient\.schema\('silver'\)\.rpc\('import_shared_keyword_class'/);
   assert.match(graph,/關鍵字群組科目 → 關鍵字分類群組 → 關鍵詞分類 → 判斷詞列表/);
