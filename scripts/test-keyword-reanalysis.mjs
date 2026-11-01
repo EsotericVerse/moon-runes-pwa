@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {reanalyzeKeywordClass} from '../app/loc/keyword-reanalysis.mjs';
+import {createKeywordUidDocumentClassifier,classifyKeywordDocumentsByUid} from '../app/loc/model/keyword-uid-analysis.mjs';
 const source=[
  {uid:'CAT1',type:'category',name:'符文',lists:['CL01']},
  {uid:'CL01',type:'class',name:'符文66',lists:['GR01']},
@@ -158,4 +159,15 @@ test('incomplete COUNT or changed data never writes partial Keyword results',asy
  }),/Galaxy 分頁筆數不一致/);
  assert.equal(writes,0);
  assert.equal(finalized,false);
+});
+
+
+test('prepared Keyword Class returns the same UID hits across pages and can be reused',()=>{
+ const create=createKeywordUidDocumentClassifier(source,'CL01');
+ const pages=[
+   [{uid:'Ab123456',content:'心情心情'}, {uid:'Ab123457',content:'月光'}],
+   [{uid:'Ab123458',content:'心情'}, {uid:'Ab123459',content:'靈魂'}]
+ ];
+ for(const docs of pages)
+   assert.deepEqual(create(docs),classifyKeywordDocumentsByUid(docs,source,'CL01'));
 });

@@ -1,3 +1,5 @@
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createNewKeywordDiscovery,existingKeywordSet,readableKeywordContent} from '../app/loc/keyword-discovery.mjs';
@@ -117,4 +119,100 @@ test('Code blocks and serialized JSON metadata are not analyzed as ordinary pros
   for(let i=0;i<3;i++)analyzer.consume(samples.map(content=>({content,createtime:'2026-09-01'})));
   const words=analyzer.finish().candidates.map(item=>item.word);
   for(const bad of ['div','span','template','display','myclass'])assert.ok(!words.includes(bad));
+});
+
+
+test('PELT suggestions use weighted novel hits per article, not a twice-divided monthly rate',()=>{
+  const emitted=[];
+  const code=readFileSync(new URL('../app/loc/keyword-discovery-worker.mjs',import.meta.url),'utf8')
+    .replace(/^import .*$/gm,'');
+  const fakeDiscovery={
+    consume:()=>({read:220,withContent:220}),
+    finish:()=>({
+      read:220,withContent:220,
+      candidates:[{word:'暗黑爵士',documents:20,occurrences:20,
+        months:[['2026-01',5],['2026-02',5],['2026-03',5],['2026-04',5]]}],
+      monthCoverage:[
+        {month:'2026-01',documents:100,existingCovered:10},
+        {month:'2026-02',documents:100,existingCovered:10},
+        {month:'2026-03',documents:10,existingCovered:5},
+        {month:'2026-04',documents:10,existingCovered:5}
+      ]
+    })
+  };
+  const self={postMessage:data=>emitted.push(data)};
+  runInNewContext(code,{self,createNewKeywordDiscovery:()=>fakeDiscovery,
+    detectChangepoints:series=>series.length>=4?[2]:[],PoissonCost:class{}});
+  self.onmessage({data:{type:'start',existingRows:[]}});
+  self.onmessage({data:{type:'batch',rows:[]}});
+  self.onmessage({data:{type:'finish'}});
+  const result=emitted.at(-1).result;
+  assert.equal(result.dense.start,'2026-03');
+  assert.equal(result.dense.novelPerArticle,0.5);
+  assert.equal(result.sparse.novelPerArticle,0.05);
+  assert.equal(result.candidates[0].trendChanges,1);
+  assert.equal(result.overallExistingRatio,30/220);
+});
+
+test('new-term discovery reads dated Galaxy via date cursor, peers and undated exactly once',async()=>{
+  const code=readFileSync(new URL('../app/loc/keyword-discovery-runner.mjs',import.meta.url),'utf8')
+    .replace(/^import .*$/gm,'').replaceAll('export async function ','async function ')
+    .replaceAll('import.meta.url',"'file:///test.mjs'");
+  const docs=Array.from({length:1785},(_,i)=>({
+    uid:'Aa'+String(i).padStart(6,'0'),date:i<1000?'2026-01-01':
+      i<1600?'2026-02-01':i<1783?'2026-03-01':null,
+    content:'都市牢籠',createtime:'2026-01-01T00:00:00Z'
+  }));
+  const queries=[],batches=[];
+  const dbAuthRelation=()=>({
+    select(columns,options={}){
+      const query={columns,options,filters:[],orders:[],limit:Infinity};
+      const builder={
+        gt(k,v){query.filters.push([k,'gt',v]);return builder;},
+        not(k,op,v){query.filters.push([k,'not',op,v]);return builder;},
+        eq(k,v){query.filters.push([k,'eq',v]);return builder;},
+        is(k,v){query.filters.push([k,'is',v]);return builder;},
+        order(k){query.orders.push(k);return builder;},
+        limit(n){query.limit=n;return builder;},
+        then(resolve,reject){
+          queries.push(query);
+          let rows=docs;
+          for(const f of query.filters){
+            if(f[1]==='gt')rows=rows.filter(row=>row[f[0]]>f[2]);
+            else if(f[1]==='eq')rows=rows.filter(row=>row[f[0]]===f[2]);
+            else if(f[1]==='is')rows=rows.filter(row=>row[f[0]]===null);
+            else if(f[1]==='not')rows=rows.filter(row=>row[f[0]]!==null);
+          }
+          if(query.orders.length)rows=[...rows].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+          return Promise.resolve({
+            data:options.head?null:rows.slice(0,query.limit),
+            count:options.count==='exact'?rows.length:null,error:null
+          }).then(resolve,reject);
+        }
+      };
+      return builder;
+    }
+  });
+  const Worker=class{
+    postMessage(data){
+      Promise.resolve().then(()=>this.onmessage({
+        data:data.type==='start'?{type:'ready'}:
+          data.type==='finish'?{type:'finished',result:{read:batches.flat().length}}:
+            (batches.push(data.rows),{type:'progress',withContent:batches.flat().length})
+      }));
+    }
+    terminate(){}
+  };
+  const ctx={dbAuthRelation,Worker,URL};
+  runInNewContext(code+';this.suggestNewKeywords=suggestNewKeywords;',ctx);
+  const result=await ctx.suggestNewKeywords({
+    galaxy:'silver.lo3rwang_galaxy',existingRows:[],onProgress:()=>{}
+  });
+  const all=batches.flat().map(row=>row.uid);
+  assert.equal(result.read,1785);
+  assert.equal(new Set(all).size,docs.length);
+  assert.deepEqual(new Set(all),new Set(docs.map(row=>row.uid)));
+  assert.ok(queries.some(query=>query.orders.includes('date')));
+  assert.ok(queries.every(query=>!query.orders.includes('uid')));
+  assert.ok(queries.every(query=>query.limit===Infinity||query.limit<=10000));
 });
