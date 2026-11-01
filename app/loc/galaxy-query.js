@@ -172,7 +172,7 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
   const match=String(table||'').match(/^(?:silver\.)?([a-z][a-z0-9]*)_galaxy(_media)?$/);
   const kind=match?.[2]?'media':'source';
-  if(!match||categoryColumn!==(kind==='media'?'type':'site')||filters.length)
+  if(!match||!(kind==='media'?['type','media_type'].includes(categoryColumn):categoryColumn==='site')||filters.length)
     throw new Error('Unsupported daily category request; row-streaming fallback is disabled');
   const rows=await readScopeStatistics(match[1],{
     startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated
@@ -187,7 +187,7 @@ async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDat
   // Use the installed DB-side category aggregate; never stream every article.
   const match=String(table||'').match(/^silver\.([a-z][a-z0-9]*)_galaxy(_media)?$/);
   const media=Boolean(match?.[2]);
-  if(!match||categoryColumn!==(media?'type':'site')||filters.length)
+  if(!match||!(media?['type','media_type'].includes(categoryColumn):categoryColumn==='site')||filters.length)
     return [];
   const rows=await readScopeCategoryTotals(match[1],{
     startDate:dateOnly(startDate),endDate:dateOnly(endDate)
@@ -708,7 +708,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
 
 async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  if(!['type','media_platform','media_style'].includes(dimension)){
+  if(!['media_type','media_platform','media_style'].includes(dimension)){
     throw new Error('Unknown media statistics dimension');
   }
   // Only the numbers for public charts are persisted in server ISR.
