@@ -18,8 +18,9 @@ function denseAndSparse(result){
   }
   // Analyze density *per article*, not raw writing volume. A busy month
   // should not count as a new-term burst solely because it has more posts.
-  const series=months.map(row=>
-    Math.round((novelByMonth.get(row.month)||0)/Math.max(1,row.documents)*10));
+  const rawHits=months.map(row=>novelByMonth.get(row.month)||0);
+  const series=months.map((row,index)=>
+    Math.round(rawHits[index]/Math.max(1,row.documents)*10));
   const changes=changePoints(series);
   const boundaries=[0,...changes,months.length];
   const segments=[];
@@ -28,7 +29,7 @@ function denseAndSparse(result){
     const source=months.slice(from,to);
     const documents=source.reduce((sum,x)=>sum+x.documents,0);
     const existingCovered=source.reduce((sum,x)=>sum+x.existingCovered,0);
-    const novelHits=series.slice(from,to).reduce((sum,x)=>sum+x,0);
+    const novelHits=rawHits.slice(from,to).reduce((sum,x)=>sum+x,0);
     if(documents<=0)continue;
     segments.push({
       start:source[0].month,end:source.at(-1).month,
@@ -60,19 +61,14 @@ function denseAndSparse(result){
   return {...result,dense,sparse,overallExistingRatio};
 }
 function annotateTrend(result){
+  const months=result.monthCoverage||[];
   result=denseAndSparse(result);
+  // A high-publication month must not look like a keyword trend merely
+  // because more articles were posted. Compare per-article rates.
   for(const item of result.candidates){
-    const rows=item.months;
-    if(rows.length<4){item.trendChanges=0;delete item.months;continue;}
-    const first=rows[0][0],last=rows.at(-1)[0];
-    const monthValue=s=>Number(s.slice(0,4))*12+Number(s.slice(5,7));
-    const counts=new Map(rows),start=monthValue(first),end=monthValue(last);
-    if(end-start>360){item.trendChanges=0;delete item.months;continue;}
-    const series=[];
-    for(let i=start;i<=end;i++){
-      const y=Math.floor((i-1)/12),m=(i-1)%12+1;
-      series.push(counts.get(String(y)+'-'+String(m).padStart(2,'0'))||0);
-    }
+    const counts=new Map(item.months||[]);
+    const series=months.map(row=>
+      Math.round((counts.get(row.month)||0)/Math.max(1,row.documents)*10));
     item.trendChanges=changePoints(series).length;
     delete item.months;
   }
