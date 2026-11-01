@@ -45,12 +45,14 @@ export function importCheckinDayEntries(records=[]){
     items.sort((a,b)=>Number(b.article)-Number(a.article)||a.at-b.at||a.position-b.position);
     const titles=[...new Set(items.map(item=>item.title).filter(Boolean))];
     const articleTitles=[...new Set(items.filter(item=>item.article).map(item=>item.title))];
-    // The primary article title is already visible; only list multiple
-    // article headlines in the description, never fill it with bare dates.
-    const description=(articleTitles.length>1?articleTitles:[]).reduce((lines,title)=>{
-      if((lines.join('\n').length+title.length+1)>DESCRIPTION_LIMIT)return lines;
-      lines.push(title);return lines;
-    },[]).join('\n');
+    const headlines=articleTitles.length?articleTitles:titles;
+    const prefix='今日大事：';
+    let description=prefix;
+    for(const headline of headlines){
+      const addition=(description===prefix?'':'｜')+headline;
+      if(description.length+addition.length>DESCRIPTION_LIMIT)break;
+      description+=addition;
+    }
     return {date,title:titles[0]||date,description};
   });
 }
