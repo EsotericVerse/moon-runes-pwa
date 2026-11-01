@@ -484,6 +484,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
             <option value="no">不公開</option><option value="yes">公開</option>
           </select>
         </label>
+        {classShareEnabled(activeClass.uid)
+          ?<span className="scope-status">公開 Class UID：<code>{activeClass.uid}</code></span>:null}
         {classShareEnabled(activeClass.uid)?<p className="scope-status">
           公開群組科目 UID：<code>{activeClass.uid}</code>（來源 Scope：{scopeId}）
         </p>:null}

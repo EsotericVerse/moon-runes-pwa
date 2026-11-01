@@ -1,5 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
-import {validateKeywordCategoryEntry,hashKeywordCategory} from './keyword-categories.mjs';
+import {validateKeywordCategoryEntry,hashKeywordCategory,assertPublicKeywordClass} from './keyword-categories.mjs';
 // LOC independent recovery control plane. Never imports a database client or Supabase Auth.
 // The separate Worker is provisioned only when Clerk + root identity + encryption secrets exist.
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'};
@@ -503,6 +503,7 @@ export class LocAuthorityState extends DurableObject {
   async putMcpGroupKeywordCategory(groupid,scopeid,classUid){
     const members=await this.mcpGroupMembers(groupid);
     const valid=validateKeywordCategoryEntry(groupid,scopeid,classUid,members);
+    await assertPublicKeywordClass(valid.scopeid,valid.class,{env:this.env});
     const sha=await hashKeywordCategory(valid.scopeid,valid.class);
     const record={...valid,sha};
     await this.ctx.storage.put('mcp-keyword-category:'+groupid+':'+scopeid+':'+classUid,record);
