@@ -73,7 +73,7 @@ test('UID pool is shared across content types only',async()=>{
 test('new time node allocates range and persists into typed Anchor fields',async()=>{
  const saved=[];
  const schema={from:table=>({
-   insert:row=>({select:async()=>{assert.equal(table,'lo3rwang_anchor');saved.push(row);return {data:[row],error:null};}})
+   insert:rows=>({select:async()=>{assert.equal(table,'lo3rwang_anchor');saved.push(...(Array.isArray(rows)?rows:[rows]));return {data:[...saved],error:null};}})
  })};
  const r=await unifiedAnchorRelation(schema,spec('time'))
    .insert({uid:'A001',type:'anchor',title:'打卡日期',address:'2026-11-02',invisible:false}).select('uid,address,range');
