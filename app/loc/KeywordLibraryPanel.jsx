@@ -352,7 +352,9 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     setImportBusy(true);
     try{
       // Anonymous reader returns only publicly shared Class rows, no Group/Item.
-      const {data,error}=await dbPublicClient.schema('silver').rpc('read_shared_keyword_classes',{p_scope_id:from});
+      const {data,error}=await dbPublicClient.schema('silver').rpc('read_scope_analytics',{
+        p_scope_id:from,p_view:'shared_classes',p_start:null,p_end:null,p_options:{}
+      });
       if(error)throw new Error(error.message||'查詢公開群組科目失敗');
       const found=(Array.isArray(data)?data:[]).find(item=>item.classUid===uid);
       if(!found)throw new Error('此 Scope 找不到已公開的四碼群組科目；其他分類類型不能匯入。');

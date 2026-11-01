@@ -34,10 +34,11 @@ function client({published=null,privateRows=null,login=false,verified=true}={}){
 test('UID tree Class lookup preserves case-sensitive Base62 characters',async()=>{
   const {db,requests}=client({published:catalog('eeCc')});
   assert.deepEqual(await db.readKeywordClass('lo3rwang','eeCc'),catalog('eeCc'));
-  assert.equal(requests[0].name,'read_keyword_tree_catalog');
-  assert.equal(requests[0].args.p_class_uid,'eeCc');
+  assert.equal(requests[0].name,'read_scope_analytics');
+  assert.equal(requests[0].args.p_view,'keyword_catalog');
+  assert.equal(requests[0].args.p_options.classUid,'eeCc');
   assert.equal(await db.readKeywordClass('lo3rwang','eecc'),null);
-  assert.equal(requests[1].args.p_class_uid,'eecc');
+  assert.equal(requests[1].args.p_options.classUid,'eecc');
   assert.equal(await db.readKeywordClass('lo3rwang','ee!c'),null);
   assert.equal(requests.length,2);
 });

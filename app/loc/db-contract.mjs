@@ -291,6 +291,15 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     return !verified.error&&String(verified.data?.user?.id||'')===String(session.user.id);
   }
 
+  async function analyticsRead(scope,view,{startDate='',endDate='',options={}}={},client=publicClient){
+    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
+    const {data,error}=await client.schema('silver').rpc('read_scope_analytics',{
+      p_scope_id:scope,p_view:view,p_start:day(startDate),p_end:day(endDate),p_options:options
+    });
+    if(error){const failure=new Error(error.message||'Scope analytics unavailable');failure.code=error.code;throw failure;}
+    return data;
+  }
+
   async function keywordRead(name,args,{isEmpty=data=>!data}={}){
     const publicResult=await publicClient.schema('silver').rpc(name,args);
     if(publicResult.error)throw new Error(publicResult.error.message||('Keyword RPC '+name+' failed'));
@@ -343,7 +352,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     if(!/^[A-Za-z0-9]{4}$/.test(uid))return null;
     const direct=await readUnifiedKeywordCatalog(scope,uid);
     if(direct)return direct;
-    const data=await keywordRead('read_keyword_tree_catalog',{p_scope_id:scope,p_class_uid:uid},{
+    const data=await keywordRead('read_scope_analytics',{p_scope_id:scope,p_view:'keyword_catalog',p_options:{classUid:uid}},{
       isEmpty:result=>!result?.class_uid||!Array.isArray(result.rows)||result.rows.length===0
     });
     return data?.class_uid===uid?data:null;
@@ -352,9 +361,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function readKeywordTreeSummary(scopeId,{classUid='',startDate='',endDate='',source=''}={}){
     const scope=normalizeScopeId(scopeId);
     const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const data=await keywordRead('read_keyword_tree_summary',{
-      p_scope_id:scope,p_class_uid:classUid||null,p_start:day(startDate),p_end:day(endDate),
-      p_source:String(source||'').trim()||null
+    const data=await keywordRead('read_scope_analytics',{
+      p_scope_id:scope,p_view:'keyword_summary',p_start:day(startDate),p_end:day(endDate),
+      p_options:{classUid:classUid||null,source:String(source||'').trim()||null}
     },{isEmpty:value=>!Array.isArray(value)||value.length===0});
     return Array.isArray(data)?data:[];
   }
@@ -363,8 +372,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const scope=normalizeScopeId(scopeId);
     const direct=await readUnifiedKeywordCatalog(scope,classUid);
     if(direct)return direct;
-    const data=await keywordRead('read_keyword_tree_catalog',{
-      p_scope_id:scope,p_class_uid:classUid||null
+    const data=await keywordRead('read_scope_analytics',{
+      p_scope_id:scope,p_view:'keyword_catalog',p_options:{classUid:classUid||null}
     },{
       isEmpty:value=>!value?.class_uid||!Array.isArray(value.rows)||value.rows.length===0
     });
@@ -384,68 +393,24 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // An authenticated caller sees its authorized Classes; guests use the
     // public reader without requiring a login just to see shared Classes.
     const client=await verifiedKeywordOwner()?authClient:publicClient;
-    const {data,error}=await client.schema('silver').rpc('read_shared_keyword_classes',{
-      p_scope_id:scope
-    });
-    if(error)throw new Error(error.message||'Keyword Class directory read failed');
+    const data=await analyticsRead(scope,'shared_classes',{},client);
     return Array.isArray(data)?data:[];
   }
 
-  // Database-side statistics: the database counts, the browser receives the exact
-  // totals ({day,kind,category,item_count}) instead of every Galaxy/Media row.
   async function readScopeStatistics(scopeId,{startDate='',endDate='',includeUndated=false}={}){
-    const scope=normalizeScopeId(scopeId);
-    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_scope_statistics',{
-      p_scope_id:scope,
-      p_start:day(startDate),
-      p_end:day(endDate),
-      p_include_undated:Boolean(includeUndated)
+    const data=await analyticsRead(normalizeScopeId(scopeId),'daily',{
+      startDate,endDate,options:{includeUndated:Boolean(includeUndated)}
     });
-    if(error){
-      const failure=new Error(error.message||'Scope statistics read failed');
-      failure.code=error.code;
-      throw failure;
-    }
     return Array.isArray(data)?data:[];
   }
-  // Totals-only companion (silver.read_scope_category_totals): one number per
-  // source/media category, no per-day grouping. For a collapsed river lane
-  // that only needs to size a flat water-level bar, this is far cheaper than
-  // readScopeStatistics's day x category aggregate.
   async function readScopeCategoryTotals(scopeId,{startDate='',endDate=''}={}){
-    const scope=normalizeScopeId(scopeId);
-    const day=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
-    const {data,error}=await publicClient.schema('silver').rpc('read_scope_category_totals',{
-      p_scope_id:scope,
-      p_start:day(startDate),
-      p_end:day(endDate)
-    });
-    if(error){
-      const failure=new Error(error.message||'Scope category totals read failed');
-      failure.code=error.code;
-      throw failure;
-    }
+    const data=await analyticsRead(normalizeScopeId(scopeId),'totals',{startDate,endDate});
     return Array.isArray(data)?data:[];
   }
 
-  // One request per chart: the database returns the earliest date, the exact
-  // daily counts and the (tiny) source taxonomy together. RPC errors keep their code
-  // so callers can fall back while the function is not installed.
-  async function rpcJson(name,args,label){
-    const {data,error}=await publicClient.schema('silver').rpc(name,args);
-    if(error){
-      const failure=new Error(error.message||label+' read failed');
-      failure.code=error.code;
-      throw failure;
-    }
-    return data;
-  }
   const dayOrNull=value=>/^\d{4}-\d{2}-\d{2}/.test(String(value||''))?String(value).slice(0,10):null;
   async function readScopeOverview(scopeId,{startDate='',endDate=''}={}){
-    const data=await rpcJson('read_scope_overview',{
-      p_scope_id:normalizeScopeId(scopeId),p_start:dayOrNull(startDate),p_end:dayOrNull(endDate)
-    },'Scope overview');
+    const data=await analyticsRead(normalizeScopeId(scopeId),'overview',{startDate,endDate});
     return {
       earliest:dayOrNull(data?.earliest)||'',
       rows:Array.isArray(data?.rows)?data.rows:[],
@@ -454,10 +419,10 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     };
   }
   async function readScopeEarliest(scopeId){
-    return dayOrNull(await rpcJson('read_scope_earliest',{p_scope_id:normalizeScopeId(scopeId)},'Scope earliest'))||'';
+    return dayOrNull(await analyticsRead(normalizeScopeId(scopeId),'earliest'))||'';
   }
   async function readLocStatistics({startDate='',endDate=''}={}){
-    const data=await rpcJson('read_loc_statistics',{p_start:dayOrNull(startDate),p_end:dayOrNull(endDate)},'LOC statistics');
+    const data=await analyticsRead('loc','loc',{startDate,endDate});
     return {
       earliest:dayOrNull(data?.earliest)||'',
       scopes:Array.isArray(data?.scopes)?data.scopes:[],

@@ -8,12 +8,17 @@ const operators={eq:'=',neq:'!=',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'like',ili
 // Existing application RPCs only. Keep SQL identifiers fixed and bind all values.
 export const RPC_ALLOWLIST={
   'silver.management_write':['p_table','p_operation','p_rows','p_values','p_filters'],
+  'silver.read_scope_analytics':['p_scope_id','p_view','p_start','p_end','p_options'],
   'silver.get_my_scope_management':[],
   'silver.read_music_style_tree':[],
-  'silver.read_shared_keyword_classes':['p_scope_id'],
-  'silver.read_keyword_tree_catalog':['p_scope_id','p_class_uid'],
-  'silver.read_keyword_tree_summary':['p_scope_id','p_start','p_end','p_source','p_class_uid'],
-  'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids','p_start','p_end','p_source','p_class_uid'],
+  // These existing scope procedures perform database-side permission checks,
+  // atomic multi-row writes, or bounded indexed lookups. Do not recreate
+  // transactions as multiple browser requests.
+  'silver.import_shared_keyword_class':['p_target_scope','p_source_scope','p_class_uid'],
+  'silver.save_scope_trace_place_names':['p_scope_id','p_uid','p_names'],
+  'silver.preview_timeline_place_page_json':['p_scope_id','p_windows','p_limit','p_offset'],
+  'silver.apply_timeline_place_ids':['p_scope_id','p_updates'],
+  'silver.search_scope_trace_place_names':['p_scope_id','p_term','p_limit'],
   'silver.is_current_email_blocklisted':[],
   'silver.move_scope_block':['p_scope_id','p_page_name','p_uid','p_direction'],
   'silver.delete_scope':['p_scope_id'],
@@ -24,10 +29,12 @@ export const RPC_ALLOWLIST={
 };
 const RPC_REQUIRED_ARGUMENTS={
   'silver.management_write':['p_table','p_operation'],
-  'silver.read_shared_keyword_classes':['p_scope_id'],
-  'silver.read_keyword_tree_catalog':['p_scope_id'],
-  'silver.read_keyword_tree_summary':['p_scope_id'],
-  'silver.read_trace_keyword_group_totals':['p_scope_id','p_place_ids'],
+  'silver.read_scope_analytics':['p_scope_id','p_view'],
+  'silver.import_shared_keyword_class':['p_target_scope','p_source_scope','p_class_uid'],
+  'silver.save_scope_trace_place_names':['p_scope_id','p_uid','p_names'],
+  'silver.preview_timeline_place_page_json':['p_scope_id','p_windows'],
+  'silver.apply_timeline_place_ids':['p_scope_id','p_updates'],
+  'silver.search_scope_trace_place_names':['p_scope_id','p_term'],
   'silver.move_scope_block':['p_scope_id','p_page_name','p_uid','p_direction'],
   'silver.delete_scope':['p_scope_id'],
   'silver.provision_scope':['p_scope_id','p_display_name','p_email'],
@@ -286,8 +293,15 @@ export function buildAllowlistedRpcQuery(input){
   // as PostgreSQL array literals, which are invalid JSONB (SQLSTATE 22P02).
   // Serialize only these declared JSONB arguments; other RPCs can legitimately
   // accept PostgreSQL arrays. Keep null as SQL NULL, not JSONB 'null'.
-  const jsonbArgs=key==='silver.management_write'
-    ?new Set(['p_rows','p_values','p_filters']):null;
+  // A JS array is a PostgreSQL array by default. These existing procedures
+  // accept JSONB arrays, whereas name lists and place UID lists are SQL arrays.
+  const jsonbArgsByRpc={
+    'silver.management_write':new Set(['p_rows','p_values','p_filters']),
+    'silver.read_scope_analytics':new Set(['p_options']),
+    'silver.preview_timeline_place_page_json':new Set(['p_windows']),
+    'silver.apply_timeline_place_ids':new Set(['p_updates'])
+  };
+  const jsonbArgs=jsonbArgsByRpc[key];
   const params=supplied.map(name=>{
     const value=args[name];
     const parameter=jsonbArgs?.has(name)
