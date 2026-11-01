@@ -15,7 +15,7 @@ test('type, label and attr replace kind, links, date, url and extra media timest
    uid:'0001',type:'date',label:'2026-11-02',attr:{}
  });
  assert.deepEqual(toAnchorRow(spec('trace'),{uid:'T001',trace_type:'space_anchor',address:[121,25],times:[]}),{
-   uid:'T001',type:'point',label:'[121,25]',attr:{times:[]}
+   uid:'T001',type:'point',label:'[121,25]'
  });
  assert.deepEqual(toAnchorRow(spec('keywords'),{uid:'K001',type:'item',name:'靈',lists:['心','靈'],uid_lists:{hits:[]}}),{
    uid:'K001',type:'item',title:'靈',label:'["心","靈"]',attr:{total:0,uidlists:[]}
@@ -120,7 +120,7 @@ test('fixed date ignores accidental interval snapshots, including partial update
  assert.deepEqual(toAnchorRow(specTime,{uid:'006D',type:'anchor',address:'2026-09-23',...payload,attr:{bad:true}}).attr,{});
  assert.deepEqual(toAnchorRow(specTime,{address:'2026-09-23',...payload}).attr,{});
  const period=toAnchorRow(specTime,{uid:'006E',type:'period',anchor_ids:['006D'],...payload});
- assert.deepEqual(period.attr,{range:payload.range});
+ assert.deepEqual(period.attr,{});
 });
 
 test('Time has no cached attr for date, period, era; Era retains selected period UIDs',()=>{
