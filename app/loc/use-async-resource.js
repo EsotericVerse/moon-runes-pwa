@@ -2,12 +2,17 @@
 
 import useSWR,{useSWRConfig,unstable_serialize} from 'swr';
 import useSWRInfinite,{unstable_serialize as serializeInfinite} from 'swr/infinite';
-import {useMemo} from 'react';
+import {useEffect,useMemo} from 'react';
 import {flashMessage} from './flash-message';
 
 // LOC reads are client-triggered resources: SWR owns request deduplication and
 // the browser-session cache; these hooks expose a small shared status contract.
-const infiniteResourceKeys=new Map();
+const infiniteResourceKeys=new WeakMap();
+function infiniteKeysFor(cache){
+  let keys=infiniteResourceKeys.get(cache);
+  if(!keys){keys=new Map();infiniteResourceKeys.set(cache,keys);}
+  return keys;
+}
 // Share in-flight work within the same SWR provider; completed requests are not retained.
 const inFlightByCache=new WeakMap();
 function pendingReads(cache){
@@ -37,6 +42,7 @@ export function useAsyncResource(keyOrOptions,fetcherArg,optionsArg={}){
 }
 
 export function useAsyncInfiniteResource({queryKey,queryFn,enabled=true,initialPageParam=null,getNextPageParam}){
+  const {cache}=useSWRConfig();
   const getPageKey=(pageIndex,previousPage)=>{
     if(!enabled)return null;
     const pageParam=pageIndex===0?initialPageParam:getNextPageParam?.(previousPage);
@@ -44,7 +50,19 @@ export function useAsyncInfiniteResource({queryKey,queryFn,enabled=true,initialP
     return [...queryKey,{__locPage:true,index:pageIndex,param:pageParam}];
   };
   const serializedKey=serializeInfinite(getPageKey);
-  if(enabled)infiniteResourceKeys.set(serializedKey,queryKey);
+  useEffect(()=>{
+    if(!enabled)return undefined;
+    const keys=infiniteKeysFor(cache);
+    const current=keys.get(serializedKey);
+    if(current)current.refs+=1;
+    else keys.set(serializedKey,{queryKey,refs:1});
+    return ()=>{
+      const entry=keys.get(serializedKey);
+      if(!entry)return;
+      if(entry.refs===1)keys.delete(serializedKey);
+      else entry.refs-=1;
+    };
+  },[cache,enabled,serializedKey]);
   const resource=useSWRInfinite(getPageKey,key=>queryFn({pageParam:key.at(-1).param}),{
     persistSize:false,
     revalidateFirstPage:false,
@@ -81,8 +99,8 @@ export function useResourceCache(){
   const {mutate,cache}=useSWRConfig();
   const inFlight=useMemo(()=>pendingReads(cache),[cache]);
   return useMemo(()=>{
-    const matchingInfiniteKeys=queryKey=>[...infiniteResourceKeys]
-      .filter(([,resourceKey])=>keyStartsWith(resourceKey,queryKey))
+    const matchingInfiniteKeys=queryKey=>[...infiniteKeysFor(cache)]
+      .filter(([,entry])=>keyStartsWith(entry.queryKey,queryKey))
       .map(([serializedKey])=>serializedKey);
     const clearMatchingPages=(queryKey,revalidate)=>{
       const pageKeys=[...cache.keys()].filter(key=>{
