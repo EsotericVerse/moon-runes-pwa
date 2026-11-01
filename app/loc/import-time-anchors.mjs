@@ -46,7 +46,7 @@ export function importCheckinDayEntries(records=[]){
     const titles=[...new Set(items.map(item=>item.title).filter(Boolean))];
     const articleTitles=[...new Set(items.filter(item=>item.article).map(item=>item.title))];
     const headlines=articleTitles.length?articleTitles:titles;
-    const prefix='今日大事：';
+    const prefix='重要大事：';
     let description=prefix;
     for(const headline of headlines){
       const addition=(description===prefix?'':'｜')+headline;
