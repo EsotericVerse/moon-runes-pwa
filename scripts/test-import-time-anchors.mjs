@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {importCheckinDates,prepareImportTimeAnchors} from '../app/loc/import-time-anchors.mjs';
+import {importCheckinDates,importCheckinDayEntries,prepareImportTimeAnchors} from '../app/loc/import-time-anchors.mjs';
 
 function memoryTime(initial=[]){
-  const rows=[...initial],calls=[];
+  const rows=[...initial],calls=[],updates=[];
   return {
-    rows,calls,
+    rows,calls,updates,
     relation:table=>{
       assert.equal(table,'silver.lo3rwang_time');
       return {
@@ -16,7 +16,22 @@ function memoryTime(initial=[]){
           calls.push(batch);
           rows.push(...batch);
           return {data:batch.map(({uid,address})=>({uid,address})),error:null};
-        }})
+        }}),
+        update:patch=>{
+          const matches=[];
+          const query={
+            eq:(key,value)=>{matches.push([key,value]);return query;},
+            is:(key,value)=>{matches.push([key,value]);return query;},
+            select:async()=>{
+              const row=rows.find(item=>matches.every(([key,value])=>item[key]===value));
+              if(!row)return {data:[],error:null};
+              updates.push({uid:row.uid,patch});
+              Object.assign(row,patch);
+              return {data:[{uid:row.uid}],error:null};
+            }
+          };
+          return query;
+        }
       };
     }
   };
@@ -55,6 +70,54 @@ test('Time import reuses existing dates, respects all occupied UIDs, and is idem
   assert.equal(again.created,0);
   assert.equal(again.reused,3);
   assert.equal(db.calls.length,1);
+});
+
+test('same-day article titles appear as 重要大事 joined with ｜, with oldest headline as title',async()=>{
+  const entries=importCheckinDayEntries([
+    {title:'第二篇',location:'台北車站',date:'2024-08-01',createtime:'2024-08-01T02:00:00Z'},
+    {title:'第一篇',location:'台北車站',date:'2024-08-01',createtime:'2024-08-01T01:00:00Z'},
+    {title:'第二篇',location:'台北車站',date:'2024-08-01',createtime:'2024-08-01T02:00:00Z'},
+    {title:'單篇文章',location:'另一地點',date:'2024-08-02'},
+    {__importPlaceName:'獨立打卡點',__importVisitTimes:['2024-08-03T10:00:00.000Z']}
+  ]);
+  assert.deepEqual(entries,[
+    {date:'2024-08-01',title:'第一篇',description:'重要大事：第一篇｜第二篇'},
+    {date:'2024-08-02',title:'單篇文章',description:'重要大事：單篇文章'},
+    {date:'2024-08-03',title:'獨立打卡點',description:'重要大事：獨立打卡點'}
+  ]);
+  const db=memoryTime();
+  const res=await prepareImportTimeAnchors([
+    {title:'第一篇',location:'台北車站',date:'2024-08-01'},
+    {title:'第二篇',location:'台北車站',date:'2024-08-01'}
+  ],{scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation});
+  assert.equal(res.created,1);
+  assert.equal(db.rows[0].title,'第一篇');
+  assert.equal(db.rows[0].description,'重要大事：第一篇｜第二篇');
+  assert.equal(db.rows[0].address,'2024-08-01');
+});
+
+test('only repairs dated blank machine placeholders, never human-authored Time anchors',async()=>{
+  const db=memoryTime([
+    {uid:'0001',type:'anchor',title:'2024-08-01',description:'',address:'2024-08-01'},
+    {uid:'0002',type:'anchor',title:'2024-08-02',description:null,address:'2024-08-02'},
+    {uid:'0003',type:'anchor',title:'人工標題',description:'人工內容',address:'2024-08-03'},
+    {uid:'0004',type:'anchor',title:'2024-08-04',description:'已有敘述',address:'2024-08-04'}
+  ]);
+  const inputs=['2024-08-01','2024-08-02','2024-08-03','2024-08-04']
+    .map((date,i)=>({title:'文章'+(i+1),location:'地點',date}));
+  const result=await prepareImportTimeAnchors(inputs,{
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation
+  });
+  assert.equal(result.created,0);
+  assert.equal(result.repaired,2);
+  assert.equal(result.reused,4);
+  assert.deepEqual(db.updates.map(item=>item.uid),['0001','0002']);
+  assert.equal(db.rows[0].title,'文章1');
+  assert.equal(db.rows[0].description,'重要大事：文章1');
+  assert.equal(db.rows[1].title,'文章2');
+  assert.equal(db.rows[2].title,'人工標題');
+  assert.equal(db.rows[2].description,'人工內容');
+  assert.equal(db.rows[3].description,'已有敘述');
 });
 
 test('an empty or local date import never writes to remote relations',async()=>{
