@@ -151,6 +151,7 @@ export default function CultureTimeline({
   labelOf=defaultTimelineLabel,
   focus=EMPTY_FOCUS,
   mode='period',
+  unitOverride=null,
   onSelect=null,
   onTimeClick=null,
   editable=false,
@@ -176,7 +177,8 @@ export default function CultureTimeline({
 }){
   useUiSection('uiExtra.cultureTimeline');
   const {locale,copy}=useUiLocale();
-  const defaultTimeUnit=useDefaultTimeUnit();
+  const userDeviceUnit=useDefaultTimeUnit();
+  const defaultTimeUnit=unitOverride||userDeviceUnit;
   const labels=copy.uiExtra.cultureTimeline;
   const timelineLocale=locale==='zh-Hans'?'zh-cn':locale==='zh-Hant'?'zh-tw':locale;
   const t=text=>translateUiField(locale,text);
