@@ -751,27 +751,25 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // read for the span; full rows are read by UID for real timestamp matches.
       const readSiteSpan=async(site,start,end)=>{
         const pageSize=MAX_ROWS,rows=[],seenUids=new Set();
-        let previousPageLastTime=null;
+        // Timestamp alone is not a unique sort key. Use the UID as the
+        // stable tie-breaker so equal-second posts span pages without loss.
+        // The database can use a sequential scan and bounded sort; this is
+        // cheaper here than an unselective UID-index scan.
         for(let offset=0;;){
           const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime,site_id')
             .ilike('site',site).gte('createtime',start).lte('createtime',end)
-            .order('createtime',{ascending:true})
+            .order('createtime',{ascending:true}).order('uid',{ascending:true})
             .range(offset,offset+pageSize-1);
           if(error)throw Error('createtime 比對失敗：'+error.message);
           const page=data||[];
           if(!page.length)break;
-          const firstTime=Date.parse(String(page[0].createtime||''));
-          const lastTime=Date.parse(String(page.at(-1).createtime||''));
-          if(!Number.isFinite(firstTime)||!Number.isFinite(lastTime)||
-              previousPageLastTime!==null&&firstTime<=previousPageLastTime)
-            throw Error('同秒資料跨越 createtime 分頁邊界，無法確保比對完整；本次未進行文章寫入');
           for(const row of page){
-            const uid=String(row.uid);
-            if(seenUids.has(uid))throw Error('時間區間 SELECT 出現重複文章，已停止匯入以避免漏比對');
+            const uid=String(row.uid||'');
+            if(!uid||seenUids.has(uid))
+              throw Error('時間區間 SELECT 出現重複或無效文章 UID，已停止匯入以避免漏比對');
             seenUids.add(uid);
             rows.push(row);
           }
-          previousPageLastTime=lastTime;
           offset+=page.length;
           if(page.length<pageSize)break;
         }
@@ -811,7 +809,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
           readRowsByUid,consumePage:rows=>consumePage(rows.filter(row=>
-            !reservedSavedUids.has(String(row.uid)))),windowSize:Math.min(MAX_ROWS,1000),concurrency:3,onWindowDone:report
+            !reservedSavedUids.has(String(row.uid)))),windowSize:Math.min(MAX_ROWS,10000),concurrency:times.length>=3000?3:1,onWindowDone:report
         })
       }):new Map();
       const existingBySiteId=new Map([...existingByTime,...matchesById]);

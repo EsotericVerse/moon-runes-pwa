@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {dedupeIncomingImport,matchExistingImportBySiteId,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
+import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCreatedAt,insertImportBatches} from '../app/loc/import-duplicate-check.mjs';
 
 const original={uid:'OLD00001',site:'Threads',site_id:'threads-1',
   createtime:'2026-10-27T07:48:32.000Z',title:'A',content:'original'};
@@ -163,4 +163,19 @@ test('ID-based media lookup stops after a short page instead of making an empty 
     section+'\nreturn readExistingByIds;')(relation,500,function*(values){yield values;});
   assert.equal((await reader('galaxy','uid','uid',['A'],'failed')).length,1);
   assert.equal(requests,1);
+});
+
+test('many articles sharing one timestamp normalize saved and incoming content only once',async()=>{
+  const base={site:'Facebook',site_id:null,createtime:'2024-01-01T00:00:00.000Z',title:'T'};
+  const readings=new Map();
+  const make=(uid,body)=>Object.defineProperty({...base,uid},'content',{
+    enumerable:true,get(){readings.set(uid,(readings.get(uid)||0)+1);return body;}
+  });
+  const incoming=[make('NEW00001','same-1'),make('NEW00002','same-2')];
+  const saved=[make('OLD00001','same-1'),make('OLD00002','same-2')];
+  const matched=await matchExistingImportByCreatedAt(incoming,{readTimestamps:async()=>saved});
+  assert.equal(matched.get('NEW00001')?.uid,'OLD00001');
+  assert.equal(matched.get('NEW00002')?.uid,'OLD00002');
+  for(const uid of ['OLD00001','OLD00002','NEW00001','NEW00002'])
+    assert.equal(readings.get(uid),1,uid+' content normalized more than once');
 });
