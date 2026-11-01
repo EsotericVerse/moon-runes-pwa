@@ -9,13 +9,15 @@ const DESCRIPTION_LIMIT=4000;
 const placeLabel=record=>String(record?.__importPlaceName||record?.location||'').trim();
 const visibleLabel=value=>String(value||'').replace(/[\u0000-\u001f]/g,' ')
   .replace(/\s+/g,' ').trim().slice(0,NAME_LIMIT);
+// A single formatter serves every date in large ZIP and social-archive imports.
+const importDayFormatter=new Intl.DateTimeFormat('sv-SE',{
+  timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+});
 const calendarDay=value=>{
   const literal=String(value||'').trim();
   if(/^\d{4}-\d{2}-\d{2}$/.test(literal))return literal;
   const instant=parseImportCreatedTime(value);
-  return instant?new Intl.DateTimeFormat('sv-SE',{
-    timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
-  }).format(new Date(instant)):'';
+  return instant?importDayFormatter.format(new Date(instant)):'';
 };
 
 // One calendar date is one Time anchor. The first dated article title names
@@ -78,7 +80,7 @@ export async function prepareImportTimeAnchors(records,{
   const occupied=new Set(),existingDays=new Map();
   onProgress?.({phase:'核對既有日期定錨',completed:0,total:0});
   for(let offset=0;;offset+=pageSize){
-    const {data,error}=await relation(table).select('uid,type,title,description,address,anchor_ids')
+    const {data,error}=await relation(table).select('uid,type,title,description,address')
       .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
     if(error)throw Error('讀取日期定錨失敗：'+(error.message||error));
     const rows=data||[];
