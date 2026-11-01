@@ -243,14 +243,14 @@ export function prepareArchiveMedia(evidence=[],knownUids=new Set(),articleTimes
       meta_tags:null,createtime:articleTime,location:null
     };
     const hasUrl=Boolean(row.url);
-    const isLinkedArchiveFile=Boolean(entry.found_in_zip&&entry.referenced_by_post);
-    if(hasUrl||isLinkedArchiveFile){
+    // Only actual URL attributes become media rows. A ZIP-local URI is not a URL.
+    if(hasUrl){
       media.push({...row,__article_uid:owners[0]||null});
       for(const uid of owners)mediaLinks.push({uid,media_uid:id});
     }
     if((Number.isFinite(entry.latitude)&&Number.isFinite(entry.longitude))||entry.camera_local_time)
       exif.push({
-        media_uid:hasUrl||isLinkedArchiveFile?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
+        media_uid:hasUrl?id:null,archive_id:entry.archive_id,entry_path:entry.entry_path,
         platform:entry.platform||null,latitude:entry.latitude,
         longitude:entry.longitude,camera_local_time:entry.camera_local_time
       });
