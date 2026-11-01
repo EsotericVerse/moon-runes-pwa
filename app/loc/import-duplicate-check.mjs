@@ -30,16 +30,30 @@ export function dedupeIncomingImport(records=[]){
     const index=indexByUid.get(uid);
     if(index===undefined)return;
     const saved=unique[index],changes={};
-    // Platform exports may duplicate the same post with partial metadata.
-    // Keep a nonempty check-in from either copy without overwriting a
-    // different existing place on the canonical post.
-    for(const field of ['location','__importPlaceName','__importPlaceAddress',
-      '__importPlaceUrl','__importCoordinates','date']){
-      if((saved[field]==null||saved[field]==='')&&row[field]!=null&&row[field]!=='')
-        changes[field]=row[field];
+    // Place identity is atomic: never combine another check-in's name,
+    // coordinates, URL, or visit times with the canonical post's place.
+    // Date is a post attribute, not a place attribute.
+    const namesOf=item=>[item.location,item.__importPlaceName]
+      .map(name=>String(name??'').normalize('NFKC').trim().toLocaleLowerCase('und'))
+      .filter(Boolean);
+    const savedNames=namesOf(saved),incomingNames=namesOf(row);
+    const conflictingName=Boolean(savedNames.length&&incomingNames.length&&
+      incomingNames.some(name=>!savedNames.includes(name)));
+    const savedCoord=importGeoKey(saved.__importCoordinates);
+    const incomingCoord=importGeoKey(row.__importCoordinates);
+    const samePlace=!conflictingName&&
+      (!savedCoord||!incomingCoord||savedCoord===incomingCoord);
+    if(samePlace){
+      for(const field of ['location','__importPlaceName','__importPlaceAddress',
+        '__importPlaceUrl','__importCoordinates']){
+        if((saved[field]==null||saved[field]==='')&&row[field]!=null&&row[field]!=='')
+          changes[field]=row[field];
+      }
     }
-    if(row.__importCheckin===true)changes.__importCheckin=true;
-    if(Array.isArray(row.__importVisitTimes)&&row.__importVisitTimes.length){
+    if((saved.date==null||saved.date==='')&&row.date!=null&&row.date!=='')
+      changes.date=row.date;
+    if(samePlace&&row.__importCheckin===true)changes.__importCheckin=true;
+    if(samePlace&&Array.isArray(row.__importVisitTimes)&&row.__importVisitTimes.length){
       const prior=Array.isArray(saved.__importVisitTimes)?saved.__importVisitTimes:[];
       const combined=[...new Set([...prior,...row.__importVisitTimes].filter(Boolean))];
       if(combined.length!==prior.length)changes.__importVisitTimes=combined;
