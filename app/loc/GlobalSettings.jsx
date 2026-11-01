@@ -186,7 +186,7 @@ export default function GlobalSettings({initialSection='home'}={}){
         <p className="scope-status">{uiT('uiExtra.globalSettings.timeFilterHint')}</p>
         {timeUnitError?<p role="alert" className="scope-status scope-error">{uiT('uiExtra.globalSettings.timeFilterSaveFailed')}</p>:null}
       </section>
-      {!accountWaiting&&account.user?<LocUserSettingsPanel key={account.user.id}/>:null}
+      {!accountWaiting&&account.user?<LocUserSettingsPanel key={account.user.id} verifiedSubject={account.user.id}/>:null}
       </div>:null}
 
       {activeSection==='mcp'?<ClerkScopeConnections availableScopes={choices}/>:null}
