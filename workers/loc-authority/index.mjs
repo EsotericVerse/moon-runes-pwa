@@ -481,6 +481,14 @@ export class LocAuthorityState extends DurableObject {
     for(const k of saved.keys())set.add(k.split(':').pop());
     return [...set].sort().slice(0,25);
   }
+  async mcpGroupGrants(groupid){
+    validScope(groupid);
+    const members=[groupid,...await this.mcpGroupMembers(groupid)];
+    const allowed=new Set(members);
+    const grants=(await this.listGrants()).filter(grant=>
+      grant.provider==='clerk'&&allowed.has(grant.scope)&&grant.expires_at>Date.now());
+    return {groupid,members,grants};
+  }
   async mcpGroupSearch(groupid,query,limit=10){
     validScope(groupid);
     const members=await this.mcpGroupMembers(groupid);
@@ -590,6 +598,11 @@ async function handleMcpAuthority(request,env,url,origin){
     if(!await allowed(groupid,'read'))throw fail('Group search denied',403);
     const args=await mcpJsonBody(request,1600);
     return json(await stub.mcpGroupSearch(groupid,args.query,args.limit||10),200,origin);
+  }
+  if(parts[0]==='group'&&parts.length===3&&parts[2]==='grants'&&request.method==='GET'){
+    const groupid=validScope(parts[1]);
+    if(!await allowed(groupid,'manage'))throw fail('Group grants denied',403);
+    return json(await stub.mcpGroupGrants(groupid),200,origin);
   }
   if(parts[0]==='group'&&parts.length===3&&parts[2]==='grant'&&request.method==='PUT'){
     const groupid=validScope(parts[1]);
