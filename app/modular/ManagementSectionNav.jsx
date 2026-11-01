@@ -55,12 +55,14 @@ export function useManagementSection(items,defaultValue='',aliases={}){
     const fallback=items.some(item=>item.value===defaultValue)?defaultValue:items[0]?.value||'';
     return items.some(item=>item.value===requested)?requested:fallback;
   };
+  const resolveRef=useRef(resolve);
+  resolveRef.current=resolve;
   const [value,setLocalValue]=useState(()=>resolve(searchParams?.get('section')||''));
   useEffect(()=>{
-    const sync=()=>setLocalValue(resolve(new URL(window.location.href).searchParams.get('section')||''));
+    const sync=()=>setLocalValue(resolveRef.current(new URL(window.location.href).searchParams.get('section')||''));
     window.addEventListener('popstate',sync);
     return ()=>window.removeEventListener('popstate',sync);
-  });
+  },[]);
   const setValue=useCallback(next=>{
     if(!items.some(item=>item.value===next))return;
     // Update the UI immediately; no router.push/replace, no scroll reset.

@@ -2,6 +2,7 @@
 
 import {useEffect,useMemo,useState} from 'react';
 import RuneArtStage from '../visual/RuneArtStage';
+import useRuneDialogFocus from '../visual/useRuneDialogFocus';
 import RuneCardInfo from '../RuneCardInfo';
 import {createPortal} from 'react-dom';
 import {selectRows} from '../../loc/db-query.mjs';
@@ -27,11 +28,7 @@ function groupIndex(row){
   return a.length?Math.floor((Math.min(...a)-1)/8):8;
 }
 function RuneInfoDialog({rune,onClose}){
-  useEffect(()=>{
-    const escape=e=>{if(e.key==='Escape')onClose();};
-    window.addEventListener('keydown',escape);
-    return()=>window.removeEventListener('keydown',escape);
-  },[onClose]);
+  const dialogRef=useRuneDialogFocus(onClose);
   const details=[
     ['角色行動',rune.char_action],['額外規則',rune.extra_rules],
     ['額外留意',rune.extra_notes],['符文歷史',rune.rune_evolution_history],
@@ -39,14 +36,15 @@ function RuneInfoDialog({rune,onClose}){
     ['實踐挑戰',rune.practice_challenge],['儀式建議',rune.ritual_advice],
     ['調和建議',rune.harmony_advice]
   ].filter(([,value])=>String(value??'').trim());
-  return <div className="rune-art-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-art-modal" role="dialog" aria-modal="true" aria-label={rune.rune_name+'符文資料'} onClick={e=>e.stopPropagation()}>
+  if(typeof document==='undefined')return null;
+  return createPortal(<div className="rune-art-modal-backdrop" role="presentation" onClick={onClose}>
+    <section ref={dialogRef} tabIndex={-1} className="rune-art-modal" role="dialog" aria-modal="true" aria-label={rune.rune_name+'符文資料'} onClick={e=>e.stopPropagation()}>
       <div className="rune-art-modal-head">
         <div><span className="loc-eyebrow">RUNE ARCHIVE · {String(rune.rune_id).padStart(2,'0')}</span>
           <h2>{rune.rune_name}</h2>
           <p>{rune.english_name||''}　{rune.group_name||''}</p>
         </div>
-        <button className="rune-skin-btn" type="button" autoFocus onClick={onClose} aria-label="關閉資訊視窗">× 關閉</button>
+        <button className="rune-skin-btn" type="button" onClick={onClose} aria-label="關閉資訊視窗">× 關閉</button>
       </div>
       <div className="rune-art-modal-main rune-art-modal-main--canonical">
         <div className="rune-art-modal-profile">
@@ -60,7 +58,7 @@ function RuneInfoDialog({rune,onClose}){
         </div>
       </div>
     </section>
-  </div>;
+  </div>,document.body);
 }
 export default function RuneAtlasLab({presentationSwitcher=null}){
   const native=useNativeNavigation();

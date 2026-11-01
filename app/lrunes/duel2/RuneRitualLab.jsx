@@ -2,6 +2,7 @@
 
 import {useEffect,useRef,useState} from 'react';
 import RuneArtStage from '../visual/RuneArtStage';
+import useRuneDialogFocus from '../visual/useRuneDialogFocus';
 import {createPortal} from 'react-dom';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/scope-registry.js';
@@ -42,19 +43,15 @@ function officialReading(items){
 // This is exactly the same silver.runes "card basic information" UI used
 // in the accepted original draw. NO runes_etc content or queries in this dialog.
 function RuneDrawCardDialog({item,onClose}){
-  useEffect(()=>{
-    const close=e=>{if(e.key==='Escape')onClose();};
-    window.addEventListener('keydown',close);
-    return()=>window.removeEventListener('keydown',close);
-  },[onClose]);
+  const dialogRef=useRuneDialogFocus(onClose);
   const card=item.card;
   return <div className="rune-art-modal-backdrop rune-art-draw-modal-backdrop" role="presentation" onClick={onClose}>
-    <section className="rune-art-modal rune-art-draw-modal" role="dialog" aria-modal="true"
+    <section ref={dialogRef} tabIndex={-1} className="rune-art-modal rune-art-draw-modal" role="dialog" aria-modal="true"
       aria-label={shortRuneName(card)+'符文基本資料'} onClick={e=>e.stopPropagation()}>
       <div className="rune-art-modal-head">
         <div><span className="loc-eyebrow">RUNE ARCHIVE · 卡片基本資料</span>
           <h2>{shortRuneName(card)}之符文 · {item.direction}</h2></div>
-        <button className="rune-skin-btn" type="button" autoFocus onClick={onClose}>× 關閉</button>
+        <button className="rune-skin-btn" type="button" onClick={onClose}>× 關閉</button>
       </div>
       <div className="rune-art-modal-main rune-art-original-card-info">
         <RuneCardInfo card={card} imageSrc={runeImage(card)}
@@ -64,14 +61,10 @@ function RuneDrawCardDialog({item,onClose}){
   </div>;
 }
 function RuneDrawResultDialog({items,reading,homeHref,homeHrefNative=false,onRestart,onClose}){
-  useEffect(()=>{
-    const closeOnEscape=event=>{if(event.key==='Escape')onClose();};
-    window.addEventListener('keydown',closeOnEscape);
-    return()=>window.removeEventListener('keydown',closeOnEscape);
-  },[onClose]);
+  const dialogRef=useRuneDialogFocus(onClose);
   return <div className="rune-art-modal-backdrop rune-art-result-backdrop"
     role="presentation" onClick={onClose}>
-    <section className="rune-art-modal rune-art-result-modal" role="dialog"
+    <section ref={dialogRef} tabIndex={-1} className="rune-art-modal rune-art-result-modal" role="dialog"
       aria-modal="true" aria-label="本次占卜籤詩" onClick={event=>event.stopPropagation()}>
       <div className="rune-art-modal-head rune-art-result-head">
         <div>
