@@ -47,15 +47,6 @@ function newAnchorUid(length,assigned){
   }
   throw Error('Cannot allocate a unique unified anchor UID');
 }
-function defaultTimeRange(row){
-  const date=String(row.address||'').slice(0,10);
-  const point=['anchor','date'].includes(row.type)&&/^\d{4}-\d\d-\d\d$/.test(date);
-  return {version:1,segments:point?[{
-    index:0,point:true,invalid:false,start_date:date,end_date:date,
-    open_end:false,anchor_ids:[row.uid],start_anchor_id:row.uid,
-    end_anchor_id:null,missing_anchor_ids:[]
-  }]:[],invalid_period_uids:[]};
-}
 function prepareAnchorInsert(spec,row,assigned){
   if(!row||typeof row!=='object'||Array.isArray(row))
     throw Error('Invalid unified insert row');
@@ -69,7 +60,6 @@ function prepareAnchorInsert(spec,row,assigned){
     throw Error('Invalid unified anchor UID');
   if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
   assigned.add(value.uid);
-  if(spec.kind==='time'&&value.range==null)value.range=defaultTimeRange(value);
   if(spec.kind==='trace'){
     if(!hasOwn(value,'address'))value.address=null;
     if(!hasOwn(value,'times'))value.times=[];
@@ -100,7 +90,9 @@ export function toAnchorRow(spec,row){
  if(spec.kind==='time'){
    if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   if(Object.hasOwn(data,'range'))out.attr={range:data.range};
+   // A date node needs only its label; it is its own time coordinate.
+   // Period/era ranges are optional derived projections, stored flat if supplied.
+   if(Object.hasOwn(data,'range')&&type!=='date'&&data.range!=null)out.attr=data.range;
  }else if(spec.kind==='trace'){
    if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
@@ -133,7 +125,9 @@ export function fromAnchorRow(spec,row){
  if(spec.kind==='time'){
    out.address=row.type==='date'?(row.label??null):null;
    out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
-   out.range=row.attr?.range??null;
+   // Existing imported periods/eras have a flat range document in attr;
+   // older application writes nested it under attr.range. Support both.
+   out.range=row.type==='date'?null:(row.attr?.range??(row.attr?.version===1?row.attr:null));
  }else if(spec.kind==='trace'){
    out.trace_type=legacyType(row.type);
    out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
