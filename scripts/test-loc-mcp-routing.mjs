@@ -10,8 +10,20 @@ const pair=await webcrypto.subtle.generateKey({name:'RSASSA-PKCS1-v1_5',modulusL
 const publicKey={...await webcrypto.subtle.exportKey('jwk',pair.publicKey),kid:'test-key'};
 const originalFetch=globalThis.fetch;
 let jwksQueries=0;
-globalThis.fetch=async url=>{if(String(url)!==CLERK_ISSUER+'/.well-known/jwks.json')throw Error('unexpected JWKS URL');
-  jwksQueries++;return Response.json({keys:[publicKey]});};
+let gatewayRequests=[];
+globalThis.fetch=async (url,options)=>{
+  if(String(url)===CLERK_ISSUER+'/.well-known/jwks.json'){
+    jwksQueries++;return Response.json({keys:[publicKey]});
+  }
+  if(String(url).startsWith('https://loc-sql-gateway.sopa2306.workers.dev/rest/v1/')){
+    gatewayRequests.push({url:String(url),options});
+    const params=new URL(url).searchParams;
+    return Response.json(params.has('uid')?
+      [{uid:'30D7AFD7',title:'LP26',content:'Galaxy real article',date:'2026-11-01'}]:
+      [{uid:'30D7AFD7',title:'LP26',date:'2026-11-01'}]);
+  }
+  throw Error('unexpected fetch URL: '+url);
+};
 async function token(claimOverrides={}){
   const now=Math.floor(Date.now()/1000);
   const hdr=encode({alg:'RS256',kid:'test-key',typ:'JWT'});
@@ -58,4 +70,29 @@ test('Valid Clerk JWT can initialize, discover a read-only tool, and ping',async
   assert.ok(jwksQueries>=1);
 });
 
+test('Clerk OAuth can call Galaxy public search and read without forwarding bearer token',async()=>{
+  const jwt=await token();
+  gatewayRequests=[];
+  let r=await handleMcp(req('POST',jwt,rpc('tools/list')));
+  const list=(await r.json()).result.tools;
+  assert.ok(list.some(t=>t.name==='search_memory'));
+  assert.ok(list.some(t=>t.name==='read_memory'));
+  r=await handleMcp(req('POST',jwt,rpc('tools/call',{name:'search_memory',arguments:{query:'LP26'}})));
+  const search=(await r.json()).result;
+  assert.equal(search.structuredContent.results[0].uid,'30D7AFD7');
+  r=await handleMcp(req('POST',jwt,rpc('tools/call',{name:'read_memory',arguments:{uid:'30D7AFD7'}})));
+  const article=(await r.json()).result;
+  assert.equal(article.structuredContent.content,'Galaxy real article');
+  assert.equal(gatewayRequests.length,2);
+  assert.ok(gatewayRequests.every(x=>!x.options.headers.authorization));
+});
+test('MCP tool invalid input returns an error without database access',async()=>{
+  const jwt=await token();
+  gatewayRequests=[];
+  const response=await handleMcp(req('POST',jwt,rpc('tools/call',
+    {name:'search_memory',arguments:{query:'A'}})));
+  const result=(await response.json()).result;
+  assert.equal(result.isError,true);
+  assert.equal(gatewayRequests.length,0);
+});
 test.after(()=>{globalThis.fetch=originalFetch;});

@@ -1,3 +1,4 @@
+import {searchMemory,readMemory} from './galaxy-read.mjs';
 // LOC MCP HTTP entry point. No database write is granted by an OAuth login.
 export const MCP_RESOURCE=(globalThis.process?.env?.LOC_MCP_RESOURCE_URL||'https://loc.lo3rwang.cc/mcp').replace(/\/+$/,'');
 export const CLERK_ISSUER=(globalThis.process?.env?.LOC_CLERK_ISSUER||'https://precise-grackle-3371.clerk.accounts.dev').replace(/\/+$/,'');
@@ -77,9 +78,28 @@ function result(id,value){return response({jsonrpc:'2.0',id,result:value});}
 function rpcError(id,code,message,httpStatus=200){
   return response({jsonrpc:'2.0',id,error:{code,message}},httpStatus);
 }
-const TOOLS=[{name:'loc_connection_status',description:'Read-only confirmation that LOC MCP and Clerk OAuth are connected. Does not expose private Galaxy data.',
-  inputSchema:{type:'object',properties:{},additionalProperties:false},
-  annotations:{readOnlyHint:true,destructiveHint:false}}];
+const TOOLS=[
+  {name:'loc_connection_status',description:'Check LOC MCP and Clerk OAuth connectivity (read only).',
+    inputSchema:{type:'object',properties:{},additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'search_memory',description:'Search PUBLIC LOC Galaxy articles in title or content, e.g. LP26. No private messages or administrator-only results. Returns article UIDs for read_memory.',
+    inputSchema:{type:'object',properties:{
+      query:{type:'string',minLength:2,maxLength:100,description:'Text to search in title and content'},
+      scopeid:{type:'string',enum:['lo3rwang'],description:'Configured public LOC Scope'},
+      limit:{type:'integer',minimum:1,maximum:20},
+      offset:{type:'integer',minimum:0,maximum:500}
+    },required:['query'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'read_memory',description:'Read a PUBLIC LOC Galaxy article by exact, case-sensitive UID; supports content paging with offset/max_chars.',
+    inputSchema:{type:'object',properties:{
+      uid:{type:'string',pattern:'^[A-Za-z0-9]{8}$',description:'Exact Galaxy article UID'},
+      scopeid:{type:'string',enum:['lo3rwang']},
+      offset:{type:'integer',minimum:0,maximum:1000000},
+      max_chars:{type:'integer',minimum:1,maximum:40000}
+    },required:['uid'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}}
+];
+function toolResponse(id,value){return result(id,{content:[{type:'text',text:JSON.stringify(value)}],structuredContent:value});}
 export async function handleMcp(request,env={}){
   const config=mcpConfig(env);
   if(request.method==='OPTIONS')return preflight();
@@ -100,14 +120,28 @@ export async function handleMcp(request,env={}){
       const proposed=payload.params?.protocolVersion;
       return result(payload.id,{protocolVersion:SUPPORTED_PROTOCOLS.has(proposed)?proposed:DEFAULT_PROTOCOL,
         capabilities:{tools:{listChanged:false}},serverInfo:{name:'loc-mcp',version:'0.1.0'},
-        instructions:'LOC MCP connection is active. Galaxy data tools are not enabled yet.'});
+        instructions:'LOC MCP is connected. search_memory/read_memory access only public Galaxy articles; private Galaxy data and write tools are not enabled.'});
     }
     case 'ping':return result(payload.id,{});
     case 'tools/list':return result(payload.id,{tools:TOOLS});
-    case 'tools/call':
-      if(payload.params?.name!=='loc_connection_status')return rpcError(payload.id,-32602,'Unknown tool');
-      return result(payload.id,{content:[{type:'text',text:JSON.stringify({connected:true,provider:'clerk',
-        subject:identity.subject,resource:config.resource,galaxyWriteEnabled:false})}]});
+    case 'tools/call':{
+      const name=payload.params?.name;
+      const args=payload.params?.arguments??{};
+      if(!TOOLS.some(tool=>tool.name===name))return rpcError(payload.id,-32602,'Unknown tool');
+      if(!args||typeof args!=='object'||Array.isArray(args))
+        return rpcError(payload.id,-32602,'Tool arguments must be an object');
+      if(name==='loc_connection_status')return toolResponse(payload.id,{
+        connected:true,provider:'clerk',subject:identity.subject,
+        resource:config.resource,galaxyWriteEnabled:false,galaxyPublicReadEnabled:true});
+      try{
+        const value=name==='search_memory'?await searchMemory(args,env):await readMemory(args,env);
+        return toolResponse(payload.id,value);
+      }catch(error){
+        const validation=error?.code==='INVALID_ARGUMENT';
+        return result(payload.id,{isError:true,content:[{type:'text',
+          text:validation?error.message:'LOC public Galaxy read unavailable; please retry later.'}]});
+      }
+    }
     default:return rpcError(payload.id,-32601,'Method not found');
   }
 }
