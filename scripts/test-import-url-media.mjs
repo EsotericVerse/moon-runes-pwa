@@ -2,8 +2,16 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl,auditArchiveUrlAttributes} from '../app/loc/archive-media-evidence.mjs';
-import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
+import {normalizeImportMedia,mappedImportValue} from '../app/loc/import-batch.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from '../app/loc/import-geocoordinates.mjs';
+
+test('standalone JSON imports prefer original post URLs over generic shared links',()=>{
+  const permalink='https://www.facebook.com/posts/original';
+  assert.equal(mappedImportValue({post_url:permalink,url:'https://news.example.test/story'},'url'),permalink);
+  assert.equal(mappedImportValue({permalink_url:permalink,url:'https://news.example.test/story'},'url'),permalink);
+  assert.equal(mappedImportValue({string_map_data:{'貼文連結':{value:permalink}},url:'https://news.example.test/story'},'url'),permalink);
+  assert.equal(mappedImportValue({url:permalink},'url'),permalink);
+});
 
 test('Google Maps location URL resolves [latitude,longitude] without external requests',()=>{
   const url='https://www.google.com/maps/我家@25.047924,121.517081,17z';
