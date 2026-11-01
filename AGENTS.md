@@ -30,6 +30,8 @@
 - **PR 裡另外加的 GitHub Actions 語法/測試 workflow（例如 manual-only 的 `loc-import-pr-tests.yml`），不是 merge 前置關卡。** 唯一必須在 push 前過的是本機 `npm run check:syntax`（`.githooks/pre-push` 已經強制擋過一次，過了就代表語法這關已經通過）。像 `loc-import-pr-tests.yml` 這類只能手動觸發（`workflow_dispatch`，沒有 `push`/`pull_request` 自動觸發）的 workflow，沒人按就不會自己跑，它的價值是留一份更完整的測試證據，不是「沒跑過/沒跑綠就不能把 PR 轉 ready、不能 merge」的必要條件——main 本身也沒有設 branch protection 要求它通過。**如果 Agent 判斷需要這份額外證據，就自己用 `gh workflow run` 主動觸發、等結果，不准把 PR 晾在 draft 乾等（對應〈除錯方法〉「解法要跟問題同一層級」：卡住的原因是沒人觸發，解法是去觸發，不是等）。** 本機檢查過了、功能也驗證過，PR 就可以推進，不用為了等一個手動限定的 workflow 自己把自己卡住。
 
 
+- **GitHub Workflow 救援途徑，不准把工具失敗當成 PR 等待理由。** 要手動觸發時使用 `gh workflow run loc-import-pr-tests.yml --ref <目前 PR 的 branch>`，或等效的 REST API `gh api -X POST repos/{owner}/{repo}/actions/workflows/loc-import-pr-tests.yml/dispatches -f ref=<branch>`；接著主動讀取執行紀錄與失敗步驟。GraphQL 查詢失敗不代表 GitHub REST API、`gh workflow run` 或 GitHub Actions 無法操作，不准以此推論「只能讓使用者手動點 Run workflow」。**Workflow 綠燈不是 merge 前置條件**；本機 `npm run check:syntax` 與行為驗證才是，絕不靠 Cloudflare 部署驗證語法。不准為了省本機驗證而直接合併；缺少可執行的本機環境時，優先切換到具 repo 工作目錄的執行環境，明確回報阻礙，但不能把 PR 留著等待「Branch 部署」。
+- **舊 PR 防回歸必檢。** 合併前以*當時最新* `main` 為基準，逐一核對 PR 變更的每個檔案和已合併的新修改；同檔不等於相容，GitHub 顯示 `mergeable=true` 只表示沒有文字衝突，**不表示功能相容**。若有落後，保留新 `main` 的現行功能，只挑入 PR 新增且尚未存在的變更，補回歸測試；嚴禁用舊檔整份覆蓋新 `main`、直接 `ours/theirs` 忽略修改或以強制推送抹除修復。每次合併後重新比較其他仍開啟的 PR；確認最終 SHA 和 Cloudflare 佈署成功。已合併／已放棄且沒有獨立未合併變更的分支要清理，不讓過期分支反覆積累；不同 PR 不准因等待不存在的 workflow 綠燈而卡住。
 - **不要把 CI／建置相關的 workflow 觸發條件從手動（`workflow_dispatch`）改回自動（`push`／`pull_request`）**，尤其是用到 macOS runner（計費比 Linux 貴很多）的工作流程——這類工作流程一旦被設成自動觸發，會在短時間內重複執行、不知不覺堆高用量，之前就因此發生過。
 
 - **資料安全不變。** 不因自動部署而刪除 Supabase／Neon／Galaxy 資料；資料庫修改仍要核對正式 schema，並遵守授權和資料保護檢查。
