@@ -12,8 +12,8 @@ export function publicTraceMapChoices(rows=[],scopeId='loc'){
     const routeIds=new Set(routes.map(row=>row.uid));
     const seenPairs=new Set(),pairs=[];
     for(const trace of own.filter(row=>row.trace_type==='trace')){
-      for(const uid of trace.route_list||[])if(routeById.has(uid))routeIds.add(uid);
-      for(const pair of trace.anchor_list||[]){
+      for(const uid of trace.route_list?.routes||[])if(routeById.has(uid))routeIds.add(uid);
+      for(const pair of trace.route_list?.segments||[]){
         if(!Array.isArray(pair)||pair.length!==2||pair[0]===pair[1]||
           pair.some(uid=>!/^[A-Za-z0-9]{4}$/.test(String(uid))))continue;
         const key=pair.join(':');
@@ -22,7 +22,7 @@ export function publicTraceMapChoices(rows=[],scopeId='loc'){
     }
     if(!routeIds.size&&!pairs.length)return [];
     return [{uid:'LOC_UNION',trace_type:'trace',source_scope:source,
-      title:'痕跡圖聯集',description:'',anchor_list:pairs,route_list:[...routeIds],
+      title:'痕跡圖聯集',description:'',anchor_list:[...new Set(pairs.flat())],route_list:{routes:[...routeIds],segments:pairs},
       read_only:true}];
   });
 }
