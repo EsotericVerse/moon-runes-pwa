@@ -222,6 +222,17 @@ export function estimateImportMinutes({articles=0,media=0}={}){
   return {min,max};
 }
 
+// Only estimate the current measurable stage. Other comparison/write phases
+// have independent work and must not be presented as part of this ETA.
+export function estimateImportStageMinutes({completed=0,total=0,elapsedMs=0}={}){
+  const done=Number(completed),all=Number(total),elapsed=Number(elapsedMs);
+  if(!Number.isFinite(done)||!Number.isFinite(all)||!Number.isFinite(elapsed)||
+      all<=0||done<=0||done>=all||elapsed<3000||done/all<.1)return null;
+  const remainingMs=(elapsed/done)*(all-done);
+  if(!Number.isFinite(remainingMs)||remainingMs<0||remainingMs>86400000)return null;
+  return {underMinute:remainingMs<60000,minutes:Math.max(1,Math.ceil(remainingMs/60000))};
+}
+
 export function validImportBatchSize(){return MAX_ROWS;}
 
 export async function writeImportBatches(records,{writeBatch,onProgress}={}){

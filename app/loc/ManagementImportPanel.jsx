@@ -30,7 +30,7 @@ import {reconcileExistingImportAnchors} from './reconcile-import-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
-import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes} from './import-batch.mjs';
+import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes,estimateImportStageMinutes} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {touchEditorSession} from './edit-session-ttl.mjs';
@@ -441,6 +441,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
   const [status,setStatus]=useState('');
   const [busy,setBusy]=useState(false);
   const [progress,setProgress]=useState(null);
+  const [progressTick,setProgressTick]=useState(0);
+  useEffect(()=>{
+    if(!busy)return undefined;
+    const timer=window.setInterval(()=>setProgressTick(tick=>tick+1),5000);
+    return ()=>window.clearInterval(timer);
+  },[busy]);
   const suggested=useMemo(()=>inferImportSourceFromFilename(fileName),[fileName]);
   const deferredSource=useDeferredValue(source);
   const analysisCurrent=deferredSource===source;
@@ -474,6 +480,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       timeWindow?eligibleArchiveEvidence.length:(archiveSummary?.mediaImportable||0));
     return estimateImportMinutes({articles:analyzed.valid.length,media});
   },[analyzed,archiveSummary?.mediaImportable,timeWindow,eligibleArchiveEvidence]);
+  const stageEstimate=useMemo(()=>progress?.stageStartedAt
+    ?estimateImportStageMinutes({completed:progress.completed,total:progress.total,
+      elapsedMs:Date.now()-progress.stageStartedAt})
+    :null,[progress,progressTick]);
   const eligibleGeoRecords=useMemo(()=>geoPlaceCandidates.map(place=>({
     ...place,__importPlaceName:place.location,__importPlaceAddress:place.address,
     __importVisitTimes:(place.__importVisitTimes||[]).filter(time=>
@@ -716,8 +726,12 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // so without this the edit Session's idle timer can expire mid-import
       // even though the browser is actively working the whole time.
       if(!nativeLocal)try{touchEditorSession(window.sessionStorage);}catch{}
-      setProgress({stage,completed,total,
-        percent:total>0?Math.round(100*completed/total):null});
+      setProgress(previous=>({
+        stage,completed,total,
+        stageStartedAt:previous?.stage===stage&&previous.stageStartedAt
+          ?previous.stageStartedAt:Date.now(),
+        percent:total>0?Math.round(100*completed/total):null
+      }));
     };
     showProgress('準備匯入文章');
     try{
@@ -1056,6 +1070,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <input type="file" accept={UNIVERSAL_IMPORT_ACCEPT} multiple disabled={busy} onChange={chooseFile}/>
       </label>
     </div>
+    <div className="scope-import-options-row">
     <label className="scope-import-source-choice"><UiText id="uiExtra.importUI.sourceLabel"/>
       <input type="text" list={'scope-import-sources-'+scopeId} maxLength={80} required
         value={source} onChange={event=>setSource(event.target.value)}
@@ -1073,6 +1088,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       </select>
       <small className="scope-import-range-hint">{timeWindow?timeWindow.start.slice(0,10)+' 至 '+timeWindow.end.slice(0,10):'不限日期'}</small>
     </label>
+    </div>
     <ImportFormatSettings format={format} onChange={changeImportFormat} disabled={busy}/>
     {fileName?<p><UiText id="uiExtra.importUI.fileLabel"/><strong>{fileName}</strong><UiText id="uiExtra.importUI.fileQueue" params={{index:queueIndex+1,total:queue.length}}/><strong>{archiveDetection?(archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')):source||suggested}</strong></p>:null}
     {rows.length||eligibleArchiveEvidence.length?<section className="scope-import-save" aria-label={t('uiExtra.importUI.saveSection')}>
@@ -1080,16 +1096,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         disabled={busy||!analysisCurrent||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length)} onClick={run}>
         {busy?UI_COPY.management.importing:t('uiExtra.importUI.batchImport')}
       </button>
-      <div>
+      <div className="scope-import-save-summary">
+        {!busy&&analysisCurrent?<p className="scope-import-ready-counts">{t('uiExtra.importUI.importReadyCounts',{articles:analyzed.valid.length.toLocaleString(),media:(analyzed.mediaOnly.length+eligibleArchiveEvidence.length).toLocaleString()})}</p>:null}
         {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
-    </section>:null}
-    {!nativeLocal&&scopeId!=='loc'?<section className="scope-import-preview" aria-label="既有地點關聯修復">
-      <p className="scope-status">已匯入文章若有地點、但尚未建立空間或日期定錨，可直接補齊；以文章 date 為準，保留原有打卡時間，不重新匯入或新增文章。</p>
-      <button type="button" className="loc-button" disabled={busy}
-        onClick={restoreExistingAnchors}>
-        {busy?'正在檢查地點關聯…':'補齊既有文章的地點與日期定錨'}
-      </button>
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
     {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
@@ -1100,12 +1110,24 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         <progress value={progress.percent} max="100" aria-label={progress.stage+'，已完成 '+progress.percent+'%'}/>}
       {progress.total>0?<p className="scope-status">已處理 {Number(progress.completed).toLocaleString()} / {Number(progress.total).toLocaleString()}（{progress.percent}%）</p>:
         <p className="scope-status">已處理 {Number(progress.completed||0).toLocaleString()} 項{progress.detail?'；'+progress.detail:'；總量仍在確認'}。</p>}
+      {stageEstimate?<p className="scope-import-stage-estimate">{stageEstimate.underMinute
+        ?t('uiExtra.importUI.importStageLessThanMinute')
+        :t('uiExtra.importUI.importStageRemainingMinutes',{minutes:stageEstimate.minutes})}</p>:null}
     </div>:null}
     {/* Rendered right under the import button/progress area, not after every
         intermediate ZIP/archive detail section below — the user is watching
         here, and a result (success, "no changes", or an error like the
         ambiguous-duplicate abort) buried past a long ZIP summary goes unseen. */}
     {status&&(!busy||!progress)?<p className="scope-status scope-import-live-status" role="status">{status}</p>:null}
+    {!nativeLocal&&scopeId!=='loc'?<details className="scope-import-maintenance">
+      <summary>既有地點與日期定錨修復</summary>
+      <div className="scope-import-maintenance-content">
+        <p className="scope-status">已匯入文章若有地點、但尚未建立空間或日期定錨，可直接補齊；以文章 date 為準，保留原有打卡時間，不重新匯入或新增文章。</p>
+        <button type="button" className="loc-button" disabled={busy} onClick={restoreExistingAnchors}>
+          {busy?'正在檢查地點關聯…':'補齊既有文章的地點與日期定錨'}
+        </button>
+      </div>
+    </details>:null}
     {archiveDetection?<section className="scope-import-preview" aria-label={t('uiExtra.importUI.zipDetected')}>
       <dl className="scope-import-facts">
         <div><dt>{t('uiExtra.importUI.zipDetected')}</dt><dd>{archiveDetection.sources.map(kind=>ZIP_SOURCE_NAMES[kind]||kind).join(' / ')||t('uiExtra.importUI.zipUnknown')}</dd></div>
@@ -1193,10 +1215,10 @@ export default function ManagementImportPanel({scopeId}){
   useUiSection('uiExtra.importUI');
   const [format,setFormat]=useState({recordPath:'',fields:{}});
   return <div className="scope-management-imports">
-    <ScopeSourceCorrection scopeId={scopeId}/>
     <section className="loc-card scope-import-primary">
       <h2><UiText id="uiExtra.importUI.importTitle"/></h2>
       <UniversalImport scopeId={scopeId} format={format} onFormatChange={setFormat}/>
     </section>
+    <ScopeSourceCorrection scopeId={scopeId}/>
   </div>;
 }
