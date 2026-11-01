@@ -33,3 +33,16 @@ test('new Time anchor uses article date, checks duplicates, saves description, a
   assert.match(action,/setOpen\(false\)/);
   assert.doesNotMatch(action,/create_at|createtime|created_at/);
 });
+
+test('expired editor sessions require verified Clerk Scope grant before renewal',()=>{
+  assert.match(action,/from '\.\.\/loc\/edit-session-ttl\.mjs'/);
+  assert.match(action,/editorSessionStatus\(window\.sessionStorage\)\.expired/);
+  assert.match(action,/clearEditorSession\(window\.sessionStorage\)/);
+  assert.match(action,/touchEditorSession\(window\.sessionStorage\)/);
+  const begin=action.slice(action.indexOf('const begin=async'),action.indexOf('const save=async'));
+  assert.ok(begin.indexOf('canManageScopeSync(scopeId)')<
+    begin.indexOf('clearEditorSession(window.sessionStorage)'));
+  const save=action.slice(action.indexOf('const save=async'));
+  assert.ok(save.indexOf('canManageScopeSync(scopeId)')<
+    save.indexOf('clearEditorSession(window.sessionStorage)'));
+});
