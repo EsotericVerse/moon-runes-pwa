@@ -92,14 +92,14 @@ async function scopeStatisticsRows(scope,{startDate='',endDate='',includeUndated
     throw error;
   }
 }
-// Text (source) and media daily counts from ONE database-side call; falls back to the
-// row-level readers only while the function is not installed.
+// Indexed Galaxy.date drives daily article-source statistics. Media is counted
+// only as distinct article-linked UIDs in the overview, never by media date.
 async function scopeDailyCounts(current,range){
   const counted=await scopeStatisticsRows(current,range);
   if(counted){
     return [
       counted.filter(row=>row.kind==='source').map(row=>({scope_id:current.id,site:row.category,day:row.day,item_count:row.item_count})),
-      counted.filter(row=>row.kind==='media'&&row.category).map(row=>({day:row.day,category:row.category,item_count:row.item_count}))
+      []
     ];
   }
   throw new Error('Culture statistics aggregate unavailable; full-row fallback is disabled');
@@ -921,23 +921,14 @@ async function selectScopeDensityRowsRaw(scopes,{startDate='',endDate=''}={}){
 // without loading the full corpus or inventing a historical year ceiling.
 export async function selectFirstScopeStatisticsDate(scope){
   const current=scopeOf(scope);
-  const [text,media]=await Promise.all([
-    selectRows(current.galaxy,{
-      columns:dayColumn(current.galaxy),
-      filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
-      orders:[{column:dayColumn(current.galaxy),ascending:true,nullsFirst:false}],
-      limit:1
-    }),
-    selectRows(current.galaxyMedia,{
-      columns:'createtime',
-      orders:[{column:'createtime',ascending:true,nullsFirst:false}],
-      limit:1
-    })
-  ]);
-  const dates=[
-    ...(text.rows||[]).map(row=>String(row[dayColumn(current.galaxy)]||'').slice(0,10)),
-    ...(media.rows||[]).map(row=>String(row.createtime||'').slice(0,10))
-  ].filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day)).sort();
+  const text=await selectRows(current.galaxy,{
+    columns:dayColumn(current.galaxy),
+    filters:publicContentFilters([{column:'statistics_able',operator:'eq',value:true}]),
+    orders:[{column:dayColumn(current.galaxy),ascending:true,nullsFirst:false}],
+    limit:1
+  });
+  const dates=(text.rows||[]).map(row=>String(row[dayColumn(current.galaxy)]||'').slice(0,10))
+    .filter(day=>/^\d{4}-\d{2}-\d{2}$/.test(day));
   return dates[0]||'';
 }
 
@@ -947,8 +938,11 @@ export async function selectFirstScopeStatisticsDate(scope){
 async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
   if(usesNumericIsr(current.id)){
-    try{return await readNumericIsr(current.id,'statistics',{startDate,endDate});}
-    catch{ /* Optional ISR failure: existing overview RPC. */ }
+    try{
+      const snapshot=await readNumericIsr(current.id,'statistics',{startDate,endDate});
+      // Older ISR snapshots have no linked-media total. Do not display a false zero.
+      if(snapshot?.mediaCount!=null&&Number.isFinite(Number(snapshot.mediaCount)))return snapshot;
+    }catch{ /* Optional ISR failure: existing overview RPC. */ }
   }
   try{
     return await readScopeOverview(current.id,{startDate,endDate});
@@ -960,7 +954,7 @@ async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
     selectScopeSourceBreakdownRows(current,{startDate,endDate}),
     selectSourceTaxonomy()
   ]);
-  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases};
+  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases,mediaCount:null};
 }
 async function selectScopeEarliestRaw(scope){
   const current=scopeOf(scope);

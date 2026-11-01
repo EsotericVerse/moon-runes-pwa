@@ -13,7 +13,7 @@ const aliases={
  time:{address:'label',anchor_ids:'label',range:'attr'},
  trace:{trace_type:'type',anchor_list:'label',address:'label',times:'attr',route_list:'attr'},
  keywords:{name:'title',desc:'description',lists:'label',uid_lists:'attr'},
- galaxy_media:{url:'label',meta_tags:'description',createtime:'uid',location:'uid'}
+ galaxy_media:{url:'label',meta_tags:'description'}
 };
 const attrColumns=new Set(['range','times','route_list','uid_lists']);
 const realTypes={anchor:'date',space_anchor:'point','音樂':'suno','播放清單':'suno',runes:'rune'};
@@ -159,6 +159,9 @@ function fieldsForSelect(spec,columns){
  const fields=new Set(['uid','type']);
  for(const raw of String(columns).split(',')){
    const name=raw.trim().split(':').at(-1).trim(),mapped=readColumn(spec,name);
+   // A few old media readers still request these removed fields. They are
+   // nullable compatibility projections, not aliases to UID or other data.
+   if(spec.kind==='media'&&['createtime','location'].includes(name))continue;
    if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
    fields.add(mapped);
  }
@@ -258,6 +261,9 @@ class UnifiedQuery{
     for(const filter of this.filters){
       const mapped=readColumn(spec,filter.column);
       if(mapped==='attr'){jsonFilters.push(filter);continue}
+      // A timestamp filter cannot be silently converted into a UID filter.
+      if(spec.kind==='media'&&['createtime','location'].includes(filter.column))
+        throw Error('Media '+filter.column+' filtering requires article Galaxy.date/media_link');
       if(!physicalColumns.includes(mapped))throw Error('Unmapped anchor filter: '+filter.column);
       physical=applyFilter(physical,{...filter,column:mapped,
         value:mapped==='type'&&filter.method==='in'?(filter.value||[]).map(physicalType):
@@ -274,7 +280,9 @@ class UnifiedQuery{
       physical=physical.or(rewritten);
     }
     for(const order of this.orders){
-      const mapped=readColumn(spec,order.column);
+      // Media has no creation timestamp by design. Sort its legacy lists by
+      // title instead of the unrelated UID (which is not a time key).
+      const mapped=spec.kind==='media'&&order.column==='createtime'?'title':readColumn(spec,order.column);
       if(mapped==='attr')throw Error('JSONB sort requires a native unified query');
       physical=physical.order(mapped,{ascending:order.ascending,nullsFirst:order.nullsFirst});
     }

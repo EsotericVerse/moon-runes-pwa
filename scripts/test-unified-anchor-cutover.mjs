@@ -82,3 +82,33 @@ test('new time node allocates range and persists into typed Anchor fields',async
  assert.deepEqual(saved[0].attr.range.segments[0].anchor_ids,['A001']);
  assert.equal(r.data[0].address,'2026-11-02');
 });
+
+test('removed media datetime projects as null, never reinterpreted as UID',async()=>{
+ const actual=[];
+ const schema={from:table=>{
+   assert.equal(table,'lo3rwang_anchor');
+   const q={
+     select(cols){actual.push(['select',cols]);return q},
+     in(column,values){actual.push(['in',column,values]);return q},
+     order(column){actual.push(['order',column]);return q},
+     range:async()=>({data:[{uid:'ABCDEFGH',type:'suno',title:'歌曲',label:'https://suno.com/song/test'}],error:null})
+   };
+   return q;
+ }};
+ const rows=await unifiedAnchorRelation(schema,spec('galaxy_media'))
+   .select('uid,type,title,url,createtime,location').order('createtime',{ascending:false}).limit(1);
+ assert.equal(rows.data[0].uid,'ABCDEFGH');
+ assert.equal(rows.data[0].url,'https://suno.com/song/test');
+ assert.equal(rows.data[0].createtime,null);
+ assert.equal(rows.data[0].location,null);
+ assert.ok(actual.some(([op,col])=>op==='order'&&col==='title'));
+ assert.ok(actual.every(entry=>!JSON.stringify(entry).includes('"kind"')));
+});
+test('removed media timestamp is not an indexed date filter',async()=>{
+ const schema={from:()=>({select:()=>({})})};
+ await assert.rejects(
+   unifiedAnchorRelation(schema,spec('galaxy_media')).select('uid')
+     .gte('createtime','2026-01-01').limit(1),
+   /requires article Galaxy.date\/media_link/
+ );
+});
