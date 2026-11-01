@@ -90,8 +90,9 @@ export function toAnchorRow(spec,row){
  if(spec.kind==='time'){
    if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   // A date node is fully represented by label; never persist a duplicate range.
-   if(Object.hasOwn(data,'range')&&type!=='date'&&data.range!=null)out.attr={range:data.range};
+   // Time relation data is normalized entirely into label:
+   // date = ISO day, period = ordered date UIDs, era = selected period UIDs.
+   // Do not store derived interval snapshots in attr.
  }else if(spec.kind==='trace'){
    if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
@@ -108,6 +109,8 @@ export function toAnchorRow(spec,row){
  if(Object.hasOwn(data,'label'))out.label=data.label;
  if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
  if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
+ // Derived Time ranges never become a second source of truth.
+ if(spec.kind==='time')delete out.attr;
  for(const key of Object.keys(data)){
    if(['uid','type','trace_type','title','name','invisible','description','desc',
      'address','anchor_ids','range','anchor_list','times','route_list','lists',
@@ -124,9 +127,8 @@ export function fromAnchorRow(spec,row){
  if(spec.kind==='time'){
    out.address=row.type==='date'?(row.label??null):null;
    out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
-   // Imported root range caches are ignored; period/era ranges are derived
-   // from referenced UIDs, so editing the links never leaves a stale cache.
-   out.range=row.type==='date'?null:(row.attr?.range??null);
+   // Date is a single day; period and era spans are resolved from label UIDs.
+   out.range=null;
  }else if(spec.kind==='trace'){
    out.trace_type=legacyType(row.type);
    out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
@@ -155,6 +157,7 @@ function fieldsForSelect(spec,columns){
    // A few old media readers still request these removed fields. They are
    // nullable compatibility projections, not aliases to UID or other data.
    if(spec.kind==='media'&&['createtime','location'].includes(name))continue;
+   if(spec.kind==='time'&&name==='range')continue;
    if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
    fields.add(mapped);
  }
