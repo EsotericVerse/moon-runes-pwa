@@ -604,7 +604,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     {mediaDimension&&mediaError?<p className="scope-status scope-error">{featureDataErrorMessage(mediaError,UI_COPY)}</p>:null}
     {rankingType!=='place'&&!mediaDimension&&!sourceRows.isPending&&!sourceCatalog.isPending&&adminSourceReady&&!sourceRows.error&&!sourceCatalog.error?<>
       <p className="scope-status">{sourceSummary.startDate&&sourceSummary.endDate?sourceSummary.startDate+' ～ '+sourceSummary.endDate:''}</p>
-      <p className="scope-status">關聯多媒體總數：{Number(overview.data?.mediaCount||0).toLocaleString()}</p>
+      <p className="scope-status">關聯多媒體總數：{overview.data?.mediaCount==null?'—':Number(overview.data.mediaCount).toLocaleString()}</p>
       <StatisticsChartFrame level={zoomLevel} onChange={setZoomLevel} range={queryRange} idPrefix="scope-stat">
         <StatisticsMultiChart
           type={effectiveChartType}
