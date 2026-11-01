@@ -55,6 +55,46 @@ test('Facebook ZIP keeps place, time and original permalink',async()=>{
   assert.equal(a.results[0].location,'高雄車站');
   assert.equal(a.results[0].url,'https://www.facebook.com/post/123');
 });
+test('ZIP restores article URL nested inside post data.array without mistaking body, media, or place URLs',async()=>{
+  const articleUrl='https://www.facebook.com/posts/real-post-123';
+  const foreignUrl='https://outside.example.test/somebody-else';
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      id:'fb-nested-001',timestamp:1720000000,
+      data:{array:[{post:'文章引用 '+foreignUrl,url:articleUrl}]},
+      attachments:[{data:[{media:{uri:'photos/a.jpg',url:'https://cdn.example.test/a.jpg'}},
+        {place:{name:'台北',url:'https://www.facebook.com/pages/place/123'}}]}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,articleUrl);
+  assert.match(a.results[0].content,/outside\\.example\\.test/);
+});
+
+test('ZIP does not invent original post URL from body, media or check-in URL',async()=>{
+  const a=await parsed('facebook-2026.zip',{
+    'your_facebook_activity/posts/your_posts_1.json':j([{
+      id:'fb-no-permalink',timestamp:1720000000,
+      data:{array:[{post:'請看 https://outside.example.test/news'}]},
+      attachments:[{data:[{media:{uri:'photos/a.jpg',url:'https://cdn.example.test/a.jpg'}},
+        {place:{name:'台北',url:'https://www.facebook.com/pages/place/123'}}]}]
+    }])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,undefined);
+});
+
+test('ZIP nested explicit permalink outranks a generic shared-link URL',async()=>{
+  const permalink='https://www.threads.net/@writer/post/actual';
+  const a=await parsed('threads-archive.zip',{
+    'activity/threads/threads_posts.json':j([{id:'th-nested',timestamp:1720000000,
+      title:'測試文章',url:'https://external.example.test/referenced',
+      data:[{post:{permalink}}]}])
+  });
+  assert.equal(a.results.length,1);
+  assert.equal(a.results[0].url,permalink);
+});
+
 test('ChatGPT conversations.json becomes searchable dialogue instead of an inert ZIP scan',async()=>{
   const a=await parsed('chatgpt-export.zip',{
     'conversations.json':j([{
