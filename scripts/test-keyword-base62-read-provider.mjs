@@ -64,3 +64,50 @@ test('Postgres catalog guards active Class and Scope authorization without case 
   assert.doesNotMatch(treeSql,/upper\s*\(/i);
   assert.match(retirementSql,/DROP FUNCTION IF EXISTS silver\.read_keyword_class_by_uid\(text,text\)/);
 });
+
+test('verified LOC owner reads current Class from unified Anchor without stale legacy RPC',async()=>{
+  const calls=[];
+  const rows=[
+    {uid:'eeCc',type:'class',name:'符文 66',desc:'Class',lists:['Gr01']},
+    {uid:'Gr01',type:'group',name:'靈魂組',desc:'Group',lists:['It01']},
+    {uid:'It01',type:'item',name:'靈',desc:'Private meaning',lists:['private','judgement']}
+  ];
+  const adapter={schema:()=>({
+    from:table=>{
+      assert.equal(table,'lo3rwang_keywords');
+      let filters=[];
+      const q={
+        select(){return q},
+        eq(field,value){filters.push(row=>row[field]===value);return q},
+        in(field,values){filters.push(row=>values.includes(row[field]));return q},
+        order(){return q},
+        limit(){return q},
+        then(resolve,reject){
+          calls.push({table,filters:filters.length});
+          return Promise.resolve({
+            data:rows.filter(row=>filters.every(fn=>fn(row))),error:null
+          }).then(resolve,reject);
+        }
+      };
+      return q;
+    },
+    rpc:async()=>{throw Error('Owner must not hit the old Keywords RPC')}
+  })};
+  const auth={
+    getSession:async()=>({data:{session:{user:{id:'owner'},access_token:'token'}},error:null}),
+    getUser:async()=>({data:{user:{id:'owner'}},error:null}),
+    signInWithOAuth:async()=>({error:null}),
+    signOut:async()=>({error:null})
+  };
+  const db=createDatabaseClient({publicClient:adapter,authClient:adapter,auth});
+  const actual=await db.readKeywordClass('lo3rwang','eeCc');
+  assert.equal(actual.class_uid,'eeCc');
+  assert.deepEqual(actual.rows.map(row=>row.uid),['eeCc','Gr01','It01']);
+  assert.deepEqual(actual.rows[2].lists,[]);
+  assert.equal(actual.rows[2].desc,'');
+  assert.equal(calls.length,3);
+  const shared=await db.readSharedKeywordClasses('lo3rwang');
+  assert.deepEqual(shared,[{
+    scopeId:'lo3rwang',classUid:'eeCc',name:'符文 66',category:'eeCc'
+  }]);
+});
