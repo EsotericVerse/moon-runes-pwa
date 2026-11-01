@@ -68,7 +68,7 @@ test('ZIP restores article URL nested inside post data.array without mistaking b
   });
   assert.equal(a.results.length,1);
   assert.equal(a.results[0].url,articleUrl);
-  assert.match(a.results[0].content,/outside\\.example\\.test/);
+  assert.match(a.results[0].content,/outside\.example\.test/);
 });
 
 test('ZIP does not invent original post URL from body, media or check-in URL',async()=>{
