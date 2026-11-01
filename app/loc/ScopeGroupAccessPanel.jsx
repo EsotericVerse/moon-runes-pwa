@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useUiText} from '../i18n/UiText';
-import {getAccountSession} from './db-client.mjs';
+import {mcpClerkSession} from './mcp/clerk-access.mjs';
 import {scopeGroupRequest} from './mcp/scope-group-client.mjs';
 
 const ACTIONS=['read','write','configure','manage'];
@@ -18,8 +18,8 @@ export default function ScopeGroupAccessPanel({groupId}){
   const [busy,setBusy]=useState(false);
   const [status,setStatus]=useState('');
   const call=async(kind,values={})=>{
-    const account=await getAccountSession();
-    return scopeGroupRequest({groupid:groupId,kind,token:account?.session?.access_token,...values});
+    const {token}=await mcpClerkSession();
+    return scopeGroupRequest({groupid:groupId,kind,token,...values});
   };
   const reload=async()=>{
     const result=await call('list');
