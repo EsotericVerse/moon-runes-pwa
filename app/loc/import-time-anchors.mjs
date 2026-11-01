@@ -1,5 +1,6 @@
 import {parseImportCreatedTime} from './import-batch.mjs';
 import {createAnniversaryLookup} from './anniversary.mjs';
+import {readUnifiedAnchorUids} from './unified-anchor-uids.mjs';
 
 // Importing a known check-in creates its calendar-day Time anchor independently
 // from the spatial anchor's full-precision visit timestamps.
@@ -66,7 +67,7 @@ export function importCheckinDates(records=[]){
 
 export async function prepareImportTimeAnchors(records,{
   scopeId,timeTable,relation,pageSize=750,onProgress,
-  anniversaryRecords=[],birthday=''
+  anniversaryRecords=[],birthday='',includeUnifiedUidPool=false
 }={}){
   const entries=importCheckinDayEntries(records);
   const checkinDates=entries.map(item=>item.date);
@@ -98,6 +99,15 @@ export async function prepareImportTimeAnchors(records,{
     }
     onProgress?.({phase:'核對既有日期定錨',completed:offset+rows.length,total:0});
     if(rows.length<pageSize)break;
+  }
+  if(includeUnifiedUidPool){
+    const shared=await readUnifiedAnchorUids(table,async(anchor,offset,limit)=>{
+      const {data,error}=await relation(anchor).select('uid')
+        .order('uid',{ascending:true}).range(offset,offset+limit-1);
+      if(error)throw Error('核對統一定錨 UID 失敗：'+(error.message||error));
+      return data||[];
+    });
+    for(const row of shared)occupied.add(row.uid);
   }
   // One indexed pass over the existing anchors; no article text scan or
   // one-request-per-date lookup for large ZIP imports. Birthday comes from
