@@ -146,11 +146,16 @@ function pickUrl(item,platform=''){
       map?.['Post Link']?.value,map?.['Post URL']?.value,
       map?.Permalink?.value
     ];
-    for(const entry of Array.isArray(node.label_values)?node.label_values:[]){
-      const label=String(entry?.label||'').trim();
-      if(/^(?:貼文(?:連結|網址)|動態(?:連結|網址)|原始貼文連結|post (?:url|link)|permalink)$/i.test(label))
+    const isPostUrlLabel=value=>
+      /^(?:貼文(?:連結|網址)|動態(?:連結|網址)|原始貼文連結|post (?:url|link)|permalink)$/i
+        .test(repairMojibakeText(String(value||'')).trim());
+    // Meta backups frequently contain UTF-8 bytes decoded as Latin-1,
+    // including field LABELS, not only their values.
+    for(const [key,entry] of Object.entries(map||{}))
+      if(isPostUrlLabel(key))sourcePermalinks.push(entry?.value,entry?.url,entry?.href);
+    for(const entry of Array.isArray(node.label_values)?node.label_values:[])
+      if(isPostUrlLabel(entry?.label))
         sourcePermalinks.push(entry?.value,entry?.url,entry?.href);
-    }
     for(const candidate of sourcePermalinks){
       const url=valid(candidate);
       if(url&&sourceHost(url))return url;
