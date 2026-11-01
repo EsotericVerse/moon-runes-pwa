@@ -46,10 +46,12 @@ export async function reconcileExistingImportAnchors({
     onProgress?.({phase:'補齊文章地點關聯',completed:linked,total:candidates.length});
   }
   for(const row of candidates){
-    const matched=importedPlaceId({
+    const saved=String(row.place_id||'').trim();
+    // A validated existing Trace UID takes precedence over a name lookup,
+    // which may be ambiguous when two different locations share a label.
+    const matched=saved&&places.timesByUid?.has(saved)?saved:importedPlaceId({
       incoming:row,byName:places.byName,byCoordinate:places.byCoordinate
     });
-    const saved=String(row.place_id||'').trim();
     if(!matched){unmatched++;continue;}
     if(saved&&saved!==matched){unmatched++;continue;}
     if(!saved){
