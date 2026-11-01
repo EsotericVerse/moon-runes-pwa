@@ -172,7 +172,7 @@ export async function selectSourceDaily(scope,{startDate='',endDate=''}={}){
 export async function selectDailyCategoryCounts(table,categoryColumn,{startDate='',endDate='',filters=[],includeEmpty=false,includeUndated=false}={}){
   const match=String(table||'').match(/^(?:silver\.)?([a-z][a-z0-9]*)_galaxy(_media)?$/);
   const kind=match?.[2]?'media':'source';
-  if(!match||categoryColumn!==(kind==='media'?'media_type':'site')||filters.length)
+  if(!match||categoryColumn!==(kind==='media'?'type':'site')||filters.length)
     throw new Error('Unsupported daily category request; row-streaming fallback is disabled');
   const rows=await readScopeStatistics(match[1],{
     startDate:dateOnly(startDate),endDate:dateOnly(endDate),includeUndated
@@ -187,7 +187,7 @@ async function selectCategoryCountsRaw(table,categoryColumn,{startDate='',endDat
   // Use the installed DB-side category aggregate; never stream every article.
   const match=String(table||'').match(/^silver\.([a-z][a-z0-9]*)_galaxy(_media)?$/);
   const media=Boolean(match?.[2]);
-  if(!match||categoryColumn!==(media?'media_type':'site')||filters.length)
+  if(!match||categoryColumn!==(media?'type':'site')||filters.length)
     return [];
   const rows=await readScopeCategoryTotals(match[1],{
     startDate:dateOnly(startDate),endDate:dateOnly(endDate)
@@ -209,7 +209,7 @@ async function mediaRowsFor(scope,mediaIds=[],{signal=null,includeLegacyRuneRefs
   for(let i=0;i<ids.length;i+=40){
     const batch=ids.slice(i,i+40);
     const page=await selectRows(current.galaxyMedia,{
-      columns:includeLegacyRuneRefs?'uid,title,url,media_type,meta_tags,rune_references':'uid,title,url,media_type,meta_tags',
+      columns:'uid,title,url,type,meta_tags',
       filters:[{column:'uid',operator:'in',value:batch}],
       limit:batch.length,maxLimit:batch.length,signal
     });
@@ -223,7 +223,7 @@ function resolvedLinks(row,mediaById){
   for(const id of mediaIdsOf(row?.media_link)){
     const media=mediaById.get(id);
     if(media?.url&&/^https?:\/\//i.test(String(media.url))){
-      links.push({id:'media:'+id,href:media.url,label:media.title||media.media_type||'媒體連結'});
+      links.push({id:'media:'+id,href:media.url,label:media.title||media.type||'媒體連結'});
     }
   }
   return links;
@@ -356,7 +356,7 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   const day=local?localArticleDate(row.createtime):articleDate(row.date);
   const [relationTitles,mediaRows,space,time,statistics]=await Promise.all([
     relatedArticleTitlesFor(current,row,{includeHidden}).catch(()=>({})),
-    mediaRowsFor(current,mediaIds,{includeLegacyRuneRefs:['lo3rwang','lrunes','local'].includes(current.id)}).catch(()=>[]),
+    mediaRowsFor(current,mediaIds).catch(()=>[]),
     articleSpaceContext(current,placeId,{authenticated:includeHidden}).catch(()=>({place:null,routes:[],traces:[]})),
     articleTimeContext(current,day).catch(()=>({anchors:[],periods:[],eras:[]})),
     articleStatisticsContext(current,day)
@@ -366,21 +366,10 @@ export async function selectGalaxyIdentity(scope,uid,{includeHidden=false}={}){
   // Existing 2026 records sometimes stored card spreads on non-rune media.
   // Expose them as a read-only rune media view until the verified data backfill;
   // do not modify or duplicate any Galaxy article in a read request.
-  const legacyRunes=orderedMedia.flatMap(media=>{
-    const refs=media.rune_references;
-    if(refs==null||refs===''||JSON.stringify(refs)==='{}'||JSON.stringify(refs)==='[]')return [];
-    const description=typeof refs==='string'?refs:JSON.stringify(refs);
-    const alreadyStored=orderedMedia.some(item=>String(item.media_type||'').toLowerCase()==='runes'
-      &&String(item.meta_tags||'')===description);
-    return alreadyStored?[]:[{
-      uid:String(media.uid)+':legacy-runes',media_type:'runes',
-      title:'抽牌結果',url:null,meta_tags:description
-    }];
-  });
   // Keep media and original article URLs as distinct associations.
   return {...row,scope_id:current.id,__table:current.galaxy,
     links:resolvedLinks(row,new Map()),relation_titles:relationTitles,
-    related_media:[...orderedMedia,...legacyRunes],trace_place:space.place,
+    related_media:orderedMedia,trace_place:space.place,
     related_space:space,related_time:time,related_statistics:statistics,
     article_day:day};
 }
@@ -544,7 +533,7 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   const sourceSelection=resolveSourceSelection(sourceFilter,sourceTaxonomy||{});
   if(sourceSelection.kind==='none')return [];
   // The admin taxonomy classifies Galaxy site, not Galaxy Media
-  // media_type or external URL; do not mislabel media as article sources.
+  // type or external URL; do not mislabel media as article sources.
   if(sourceFilter&&(mediaOnly||contentType==='multimedia'||contentType==='timeline'))return [];
   const sourceClause=sourceNameClause(sourceSelection);
   const textKindFilters=[
@@ -587,8 +576,8 @@ function genericScopeProviders(scope,{mediaOnly=false,includeHiddenText=false,co
   });
   const media=makeProvider({
     id:current.id+':media',table:current.galaxyMedia,source:current.id+' 多媒體',scope:current,idColumn:'uid',
-    columns:['uid','media_type','title','url','meta_tags','createtime'],
-    searchFields:['title','meta_tags','media_type','url'],dateColumn:'createtime'
+    columns:['uid','type','title','url','meta_tags','createtime'],
+    searchFields:['title','meta_tags','type','url'],dateColumn:'createtime'
   });
   if(mediaOnly||contentType==='multimedia')return [media];
   const timeline=makeProvider({
@@ -719,7 +708,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
 
 async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',endDate=''}={}){
   const current=scopeOf(scope);
-  if(!['media_type','media_platform','media_style'].includes(dimension)){
+  if(!['type','media_platform','media_style'].includes(dimension)){
     throw new Error('Unknown media statistics dimension');
   }
   // Only the numbers for public charts are persisted in server ISR.
@@ -729,7 +718,7 @@ async function selectMediaStatisticsFacetRowsRaw(scope,dimension,{startDate='',e
     catch{ /* Optional ISR failure: aggregate existing metadata. */ }
   }
   const filters=timeFilters('createtime',startDate,endDate);
-  const columns='uid,media_type,url,meta_tags,createtime';
+  const columns='uid,type,url,meta_tags,createtime';
   const orders=[{column:'uid',ascending:true}];
   const aggregates=new Map();
   let offset=0,total=null,source='auto';
