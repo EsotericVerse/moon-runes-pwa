@@ -443,8 +443,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const original=tree.index.get(source);
     if(!original||original.type!=='class')throw new Error('找不到來源 Class');
     const categoryUid=tree.parent.get(original.uid);
-    if(!categoryUid)throw new Error('Class 缺少 Category');
-    const category=tree.index.get(categoryUid),descendants=descendantsOfKeyword(data,original.uid);
+    const category=categoryUid?tree.index.get(categoryUid):null;
+    const descendants=descendantsOfKeyword(data,original.uid);
     const occupied=[...tree.index.keys()],mapping=new Map();
     for(const node of descendants){
       const uid=generateKeywordClassUid(occupied);
@@ -461,7 +461,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
         await writeKeywordLibraryItem(scope,'insert',copy);
         saved.push(copy);
       }
-      await writeKeywordLibraryItem(scope,'update',{
+      // Category is Scope Group managed. Preserve legacy parent links if present,
+      // but never force new Class trees to create a Category.
+      if(category)await writeKeywordLibraryItem(scope,'update',{
         ...category,lists:[...category.lists,mapping.get(original.uid)]});
     }catch(error){
       for(const node of saved.reverse())

@@ -5,7 +5,7 @@ const SUBJECT=/^user_[A-Za-z0-9]+$/;
 const ACTIONS=new Set(['read','write','manage','configure']);
 
 export async function scopeGroupRequest({groupid,kind='list',scopeid,subject,actions,days=365,
-  token,fetchImpl=globalThis.fetch}={}){
+  token,classUid,fetchImpl=globalThis.fetch}={}){
   if(!SCOPE.test(String(groupid||'')))throw Error('Invalid Group ID');
   if(typeof token!=='string'||!token.trim())throw Error('Clerk login required');
   let path='group/'+groupid+'/grants',method='GET',body;
@@ -23,6 +23,12 @@ export async function scopeGroupRequest({groupid,kind='list',scopeid,subject,act
     if(!SCOPE.test(String(scopeid||''))||scopeid===groupid)
       throw Error('Invalid Group member');
     path='group/'+groupid+'/scope/'+scopeid;method='PUT';body={};
+  }else if(kind==='categoryAdd'||kind==='categoryRemove'){
+    if(!SCOPE.test(String(scopeid||''))||scopeid===groupid||
+        !/^[A-Za-z0-9]{4}$/.test(String(classUid||'')))
+      throw Error('Invalid keyword Category identifier');
+    path='group/'+groupid+'/category';method=kind==='categoryAdd'?'PUT':'POST';
+    body={scopeid,class_uid:classUid};
   }else if(kind!=='list')throw Error('Unknown Group action');
   const origin=await locAuthorityOrigin(fetchImpl);
   const res=await fetchImpl(origin+'/v1/mcp/'+path,{

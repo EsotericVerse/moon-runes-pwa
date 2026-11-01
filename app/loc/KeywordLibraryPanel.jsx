@@ -4,14 +4,14 @@ import {useCallback,useEffect,useMemo,useRef,useState} from 'react';
 import dynamic from 'next/dynamic';
 import {useSWRConfig} from 'swr';
 import {useEditDock} from '../modular/edit-dock';
-import {dbAuthRelation,resetKeywordClassification,updateRows,writeKeywordLibraryItem,copyKeywordLibraryClass} from './db-client.mjs';
+import {dbAuthRelation,dbPublicClient,dbAuthClient,resetKeywordClassification,updateRows,writeKeywordLibraryItem,copyKeywordLibraryClass} from './db-client.mjs';
 import {indexKeywordTree,descendantsOfKeyword} from './keyword-tree.mjs';
 import {keywordClassState,invalidateKeywordClass} from './keyword-class-state.mjs';
 import {generateKeywordClassUid} from './keyword-uidlist.mjs';
 
 const KeywordNetworkEditor=dynamic(()=>import('./KeywordNetworkEditor'),{ssr:false});
-const TYPES=['category','class','group','item'];
-const LABEL={category:'關鍵字目錄',class:'關鍵字群組',group:'關鍵字分類',item:'關鍵字'};
+const TYPES=['class','group','item'];
+const LABEL={category:'關鍵字目錄',class:'關鍵字群組科目',group:'關鍵字分類群組',item:'關鍵詞分類'};
 const onlyWords=value=>[...new Set(String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
 const emptyTree={index:new Map(),parent:new Map(),roots:[]};
 const uidFor=rows=>generateKeywordClassUid(rows.map(row=>row.uid));
@@ -43,6 +43,10 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   const [workspace,setWorkspace]=useState('manual');
   const [chosen,setChosen]=useState({category:'',class:'',group:'',item:''});
   const [copyName,setCopyName]=useState('');
+  const [importScope,setImportScope]=useState('');
+  const [importUid,setImportUid]=useState('');
+  const [importClass,setImportClass]=useState(null);
+  const [importBusy,setImportBusy]=useState(false);
   const [sharingBusy,setSharingBusy]=useState(false);
   const [progress,setProgress]=useState(null);
   const [discovery,setDiscovery]=useState(null);
@@ -57,12 +61,14 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     return indexKeywordTree(rows);
   },[rows]);
   const category=tree.index.get(chosen.category);
-  const classes=childrenOf(tree,category?.uid);
+  // Category identity is maintained by Scope Group, not editable here.
+  const classes=[...tree.index.values()].filter(row=>row.type==='class')
+    .sort((a,b)=>a.name.localeCompare(b.name,'zh-Hant'));
   const activeClass=tree.index.get(chosen.class);
   const groups=childrenOf(tree,activeClass?.uid);
   const activeGroup=tree.index.get(chosen.group);
   const items=childrenOf(tree,activeGroup?.uid);
-  const selected=tree.index.get(chosen.item)||activeGroup||activeClass||category||null;
+  const selected=tree.index.get(chosen.item)||activeGroup||activeClass||null;
   const draft=editor?.node||null;
   const classShareEnabled=uid=>{
     if(!uid)return false;
@@ -103,7 +109,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       if(settings.error)throw settings.error;
       const records=(found.rows||[]).map(row=>({...row,uid_lists:[]})),index=indexKeywordTree(records);
       const first=index.roots[0];
-      const firstClass=first&&childrenOf(index,first.uid)[0];
+      const firstClass=[...index.index.values()].find(row=>row.type==='class');
       const current=index.index.get(preferredUid);
       const target=current||index.index.get(settings.data?.[0]?.current_keyword_class_uid)
         ||index.index.get(chosen.item)||index.index.get(chosen.group)
@@ -131,19 +137,20 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   useEffect(()=>()=>discoveryAbort.current?.abort(),[]);
   const choose=(type,uid)=>{
     const next={...chosen,[type]:uid};
-    if(type==='category'){next.class='';next.group='';next.item='';}
+    if(type==='class')next.category=tree.parent.get(uid)||'';
     if(type==='class'){next.group='';next.item='';}
     if(type==='group')next.item='';
     setChosen(next);setEditor(null);setKeywordText('');
     setError('');setNotice('');
   };
   const edit=(node=selected)=>{
-    if(!node)return;
+    if(!node||node.type==='category')return;
     setPendingParent('');setEditor({node:{...node,lists:[...node.lists],uid_lists:[...node.uid_lists]}});
     setKeywordText(node.type==='item'?node.lists.join('\n'):'');
     setNotice('');
   };
   const create=(type,parentUid='')=>{
+    if(!TYPES.includes(type))return;
     const node=freshNode(type,rows);
     setEditor({node});setPendingParent(parentUid);
     setKeywordText('');setNotice('');
@@ -167,7 +174,8 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
       if(!node.name)throw new Error('請填寫名稱');
       if(!TYPES.includes(node.type))throw new Error('Keywords Type 無效');
       const isNew=!tree.index.has(node.uid);
-      if(isNew&&node.type!=='category'){
+      if(node.type==='category')throw new Error('關鍵字目錄由 Scope Group 管理');
+      if(isNew&&node.type!=='class'){
         const parent=tree.index.get(pendingParent);
         const expected=TYPES[TYPES.indexOf(node.type)-1];
         if(!parent||parent.type!==expected)throw new Error('缺少上層 UID');
@@ -190,7 +198,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     finally{setBusy(false);}
   };
   const removeNode=async(node=draft||selected)=>{
-    if(!node||busy)return;
+    if(!node||busy||node.type==='category')return;
     if(!window.confirm('刪除「'+node.name+'」及其下層分類？原始 Galaxy 文章不受影響。'))return;
     setBusy(true);setError('');
     try{
@@ -334,6 +342,42 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     }
     await discoverNewTerms();
   };
+  const lookupPublicClass=async()=>{
+    if(importBusy||busy)return;
+    const from=importScope.trim().toLowerCase(),uid=importUid.trim();
+    setImportClass(null);setError('');setNotice('');
+    if(!/^[a-z][a-z0-9]{0,14}$/.test(from)||!/^[0-9A-Za-z]{4}$/.test(uid)){
+      setError('請輸入來源 Scope ID 與正確的四碼 Class UID。');return;
+    }
+    setImportBusy(true);
+    try{
+      // Anonymous reader returns only publicly shared Class rows, no Group/Item.
+      const {data,error}=await dbPublicClient.schema('silver').rpc('read_shared_keyword_classes',{p_scope_id:from});
+      if(error)throw new Error(error.message||'查詢公開群組科目失敗');
+      const found=(Array.isArray(data)?data:[]).find(item=>item.classUid===uid);
+      if(!found)throw new Error('此 Scope 找不到已公開的四碼群組科目；其他分類類型不能匯入。');
+      setImportClass({scopeid:from,uid,name:String(found.name||uid)});
+    }catch(error){setError(String(error.message||error));}
+    finally{setImportBusy(false);}
+  };
+  const importPublicClass=async()=>{
+    const from=importScope.trim().toLowerCase(),uid=importUid.trim();
+    if(!importClass||from!==importClass.scopeid||uid!==importClass.uid||busy||importBusy)return;
+    setImportBusy(true);setError('');setNotice('');
+    try{
+      // Server checks actual source Class and published flag. The import
+      // transaction allocates fresh UIDs and clears source article hit lists.
+      const {data,error}=await dbAuthClient.schema('silver').rpc('import_shared_keyword_class',{
+        p_target_scope:scopeId,p_source_scope:from,p_class_uid:uid
+      });
+      if(error||!/^[0-9A-Za-z]{4}$/.test(String(data?.uid||'')))
+        throw new Error(error?.message||'匯入尚未完成，未新增關鍵字群組科目');
+      await load(data.uid);await invalidate();
+      setNotice('已匯入群組科目「'+importClass.name+'」，含 '+Number(data.group_count||0)+' 個分類群組、'+Number(data.item_count||0)+' 個關鍵詞分類。分析結果需在本 Scope 重新計算。');
+      setImportClass(null);setImportUid('');
+    }catch(error){setError(String(error.message||error));}
+    finally{setImportBusy(false);}
+  };
   const copyClass=async()=>{
     const from=activeClass?.uid,to=copyName.trim();
     if(!from||!to)return;
@@ -395,11 +439,11 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     {error?<p className="scope-status scope-error" role="alert">{error}</p>:null}
     {notice?<p className="scope-status" role="status">{notice}</p>:null}
     {!loading&&workspace==='manual'?<section className="loc-card scope-feature-card">
-      <h2>關鍵詞分析 群組對應調整</h2>
+      <h2>關鍵字分類與判斷詞編輯</h2>
       <div className="scope-management-fields">
         {TYPES.map((type,index)=>{
           const parent=index?tree.index.get(chosen[TYPES[index-1]]):null;
-          const options=index?childrenOf(tree,parent?.uid):tree.roots;
+          const options=index?childrenOf(tree,parent?.uid):classes;
           return <label key={type}><span>{LABEL[type]}</span>
             <select className="scope-select" value={chosen[type]} onChange={e=>choose(type,e.target.value)}
               disabled={index>0&&!parent}>
@@ -415,7 +459,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         <button className="loc-button" type="button" disabled={busy} onClick={()=>edit(selected)}>編輯「{selected.name}」</button>
         <span className="scope-status">{LABEL[selected.type]}：{selected.lists.length}{selected.type==='item'?' 個判斷詞':' 筆'}</span>
       </div>:null}
-      {!tree.roots.length?<p className="scope-status">尚無資料，請先新增關鍵字目錄。</p>:null}
+      {!classes.length?<p className="scope-status">尚無關鍵字群組科目，可先建立科目，再新增分類群組與判斷詞。</p>:null}
       {draft?<div className="scope-management-editor">
         <h3>{tree.index.has(draft.uid)?'編輯':'新增'} {LABEL[draft.type]}</h3>
         <div className="scope-management-fields">
@@ -423,7 +467,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
           <label><span>說明</span><textarea rows={2} value={draft.desc} onChange={e=>setEditor({node:{...draft,desc:e.target.value}})}/></label>
         </div>
         {draft.type==='item'?<label className="scope-management-wide-field">
-          <span>判斷詞（一行一個）</span>
+          <span>判斷詞列表（一行一個）</span>
           <textarea rows={9} value={keywordText} onChange={e=>setKeywordText(e.target.value)}/>
         </label>:null}
         <div className="scope-preview-links">
@@ -433,19 +477,45 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         </div>
       </div>:null}
       {activeClass?<div className="scope-stat-controls">
-        <label><span>「{activeClass.name}」共享</span>
+        <label><span>「{activeClass.name}」公開設定</span>
           <select className="scope-select" value={classShareEnabled(activeClass.uid)?'yes':'no'}
             disabled={busy||sharingBusy}
             onChange={e=>saveClassShare(activeClass.uid,e.target.value==='yes')}>
             <option value="no">不公開</option><option value="yes">公開</option>
           </select>
         </label>
+        {classShareEnabled(activeClass.uid)?<p className="scope-status">
+          公開群組科目 UID：<code>{activeClass.uid}</code>（來源 Scope：{scopeId}）
+        </p>:null}
       </div>:null}
       <div className="scope-stat-controls">
-        <label><span>複製選定的關鍵字群組</span><input value={copyName} placeholder="新群組名稱"
+        <label><span>複製選定的關鍵字群組科目</span><input value={copyName} placeholder="新科目名稱"
           onChange={e=>setCopyName(e.target.value)}/></label>
-        <button type="button" className="loc-button" disabled={!selectedClass||!copyName.trim()||busy} onClick={copyClass}>複製整套群組</button>
+        <button type="button" className="loc-button" disabled={!selectedClass||!copyName.trim()||busy} onClick={copyClass}>複製整套科目</button>
       </div>
+      <details className="scope-import-maintenance">
+        <summary>關鍵字群組科目匯入</summary>
+        <div className="scope-import-maintenance-content">
+          <p className="scope-status">輸入來源 Scope ID 和公開四碼 UID。只查詢 Class；Group、Item 不會顯示或匯入。</p>
+          <div className="scope-management-fields">
+            <label><span>來源 Scope ID</span>
+              <input value={importScope} autoCapitalize="off" spellCheck={false}
+                placeholder="lo3rwang" onChange={event=>{
+                  setImportScope(event.target.value.toLowerCase());setImportClass(null);
+                }}/></label>
+            <label><span>公開群組科目 UID（四碼）</span>
+              <input value={importUid} maxLength={4} autoCapitalize="off" spellCheck={false}
+                placeholder="A1b2" onChange={event=>{setImportUid(event.target.value);setImportClass(null);}}/></label>
+          </div>
+          <div className="scope-preview-links">
+            <button type="button" className="loc-button" disabled={busy||importBusy}
+              onClick={lookupPublicClass}>{importBusy?'核對中…':'查詢公開科目'}</button>
+            {importClass?<button type="button" className="loc-button primary" disabled={busy||importBusy}
+              onClick={importPublicClass}>匯入「{importClass.name}」</button>:null}
+          </div>
+          {importClass?<p className="scope-status">已核對：{importClass.scopeid}／{importClass.uid}（只複製規則，不含文章統計）</p>:null}
+        </div>
+      </details>
     </section>:null}
     {!loading&&workspace==='analysis'?<section className="loc-card scope-feature-card">
       <h2>基本設定（此 Scope 共用）</h2>
@@ -464,7 +534,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
     </section>:null}
     {!loading&&workspace==='run'?<section className="loc-card scope-feature-card">
       <h2>重新分析</h2>
-      <p className="scope-status">關鍵字群組：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
+      <p className="scope-status">關鍵字群組科目：{activeClass?.name||'尚未選擇'} · 上次完成：{keywordClassState(config,activeClass?.uid)?.completedAt?new Date(keywordClassState(config,activeClass.uid).completedAt).toLocaleString('zh-TW'):'尚未分析'}</p>
       <p className="scope-status">有效分類文章：{Number(keywordClassState(config,activeClass?.uid)?.matchedDocuments||0).toLocaleString()} 篇</p>
       <div className="scope-preview-links">
         <button type="button" className="loc-button primary" disabled={busy||!(activeClass?.uid||config.current_keyword_class_uid)}
@@ -537,7 +607,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
         }}
         onDeleteGroup={uid=>{const group=groups.find(row=>row.uid===uid);if(group)removeNode(group);}}
         onMessage={setNotice}
-      />:<p className="scope-status">請先建立關鍵字群組、關鍵字分類與關鍵字。</p>}
+      />:<p className="scope-status">請先建立關鍵字群組科目、關鍵字分類群組及關鍵詞分類。</p>}
     </section>:null}
   </div>;
 }

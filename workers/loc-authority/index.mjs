@@ -1,4 +1,5 @@
 import { DurableObject } from 'cloudflare:workers';
+import {validateKeywordCategoryEntry,hashKeywordCategory} from './keyword-categories.mjs';
 // LOC independent recovery control plane. Never imports a database client or Supabase Auth.
 // The separate Worker is provisioned only when Clerk + root identity + encryption secrets exist.
 const JSON_HEADERS={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff'};
@@ -487,7 +488,31 @@ export class LocAuthorityState extends DurableObject {
     const allowed=new Set(members);
     const grants=(await this.listGrants()).filter(grant=>
       grant.provider==='clerk'&&allowed.has(grant.scope)&&grant.expires_at>Date.now());
-    return {groupid,members,grants};
+    return {groupid,members,grants,
+      categories:(await this.mcpGroupKeywordCategories(groupid)).categories};
+  }
+  async mcpGroupKeywordCategories(groupid){
+    validScope(groupid);
+    const members=new Set(await this.mcpGroupMembers(groupid));
+    const prefix='mcp-keyword-category:'+groupid+':';
+    const entries=await this.ctx.storage.list({prefix});
+    const categories=[...entries.values()].filter(row=>members.has(row.scopeid))
+      .sort((a,b)=>a.scopeid.localeCompare(b.scopeid)||a.class.localeCompare(b.class));
+    return {groupid,categories};
+  }
+  async putMcpGroupKeywordCategory(groupid,scopeid,classUid){
+    const members=await this.mcpGroupMembers(groupid);
+    const valid=validateKeywordCategoryEntry(groupid,scopeid,classUid,members);
+    const sha=await hashKeywordCategory(valid.scopeid,valid.class);
+    const record={...valid,sha};
+    await this.ctx.storage.put('mcp-keyword-category:'+groupid+':'+scopeid+':'+classUid,record);
+    return record;
+  }
+  async removeMcpGroupKeywordCategory(groupid,scopeid,classUid){
+    const members=await this.mcpGroupMembers(groupid);
+    validateKeywordCategoryEntry(groupid,scopeid,classUid,members);
+    const removed=await this.ctx.storage.delete('mcp-keyword-category:'+groupid+':'+scopeid+':'+classUid);
+    return {scopeid,class:classUid,removed:Boolean(removed)};
   }
   async mcpGroupSearch(groupid,query,limit=10){
     validScope(groupid);
@@ -603,6 +628,16 @@ async function handleMcpAuthority(request,env,url,origin){
     const groupid=validScope(parts[1]);
     if(!await allowed(groupid,'manage'))throw fail('Group grants denied',403);
     return json(await stub.mcpGroupGrants(groupid),200,origin);
+  }
+  if(parts[0]==='group'&&parts.length===3&&parts[2]==='category'&&
+      (request.method==='PUT'||request.method==='POST')){
+    const groupid=validScope(parts[1]);
+    if(!await allowed(groupid,'manage'))throw fail('Group Category management denied',403);
+    const input=await mcpJsonBody(request,600);
+    const scopeid=validScope(input?.scopeid),classUid=String(input?.class_uid||'');
+    return json(request.method==='PUT'
+      ?await stub.putMcpGroupKeywordCategory(groupid,scopeid,classUid)
+      :await stub.removeMcpGroupKeywordCategory(groupid,scopeid,classUid),200,origin);
   }
   if(parts[0]==='group'&&parts.length===3&&parts[2]==='grant'&&request.method==='PUT'){
     const groupid=validScope(parts[1]);

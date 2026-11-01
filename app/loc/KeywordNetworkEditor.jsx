@@ -12,13 +12,13 @@ function buildGraph(items=[],className='',classId='',expandedGroup='',expandedIt
   const edges=[];
   const meta=new Map();
   const rootId='class:'+String(classId||className||'current');
-  nodes.push({id:rootId,label:className?'關鍵詞組：'+className:'關鍵詞組',level:0,kind:'class',shape:'ellipse'});
+  nodes.push({id:rootId,label:className?'關鍵字群組科目：'+className:'關鍵字群組科目',level:0,kind:'class',shape:'ellipse'});
   meta.set(rootId,{kind:'class',className,classId});
 
   const groups=new Map(rows.filter(row=>row.group_uid).map(row=>[String(row.group_uid),String(row.class_group||'')]));
   for(const [groupUid,groupName] of groups){
     const id='group:'+groupUid;
-    nodes.push({id,label:groupName||'未命名分類',level:1,kind:'group',shape:'box'});
+    nodes.push({id,label:groupName||'未命名分類群組',level:1,kind:'group',shape:'box'});
     edges.push({id:rootId+'>'+id,from:rootId,to:id});
     meta.set(id,{kind:'group',groupUid});
   }
@@ -221,8 +221,8 @@ export default function KeywordNetworkEditor({
 
   return <section className="scope-keyword-network" aria-label="關鍵詞階層圖">
     <div className="scope-keyword-network-help">
-      <strong>關鍵字群組 → 關鍵字分類 → 關鍵字 → 判斷詞</strong>
-      <span>選擇分類展開關鍵字，再點選關鍵字查看判斷詞。可拖曳、縮放與編輯。</span>
+      <strong>關鍵字群組科目 → 關鍵字分類群組 → 關鍵詞分類 → 判斷詞列表</strong>
+      <span>選擇分類群組展開關鍵詞分類，再選擇分類檢視判斷詞列表。可拖曳、縮放與編輯。</span>
     </div>
     <div className="scope-stat-controls" role="group" aria-label="關鍵詞圖譜觸控操作">
       <button type="button" className="loc-button" onClick={()=>{
