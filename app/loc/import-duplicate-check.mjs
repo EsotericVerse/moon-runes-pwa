@@ -69,8 +69,14 @@ export function dedupeIncomingImport(records=[]){
     if(sourceUid){duplicates++;aliases.set(uid,sourceUid);inheritLocation(sourceUid,row);continue;}
     if(source)byNativeId.set(source,uid);
     // For posts without a native ID, compare exact time and normalized text.
-    const time=importTimeKey(row),text=comparableImportText(row.content);
-    const semantic=!importSourceKey(row)&&time&&text?JSON.stringify([time,text]):null;
+    let semantic=null;
+    if(!source){
+      const time=importTimeKey(row);
+      if(time){
+        const text=comparableImportText(row.content);
+        if(text)semantic=JSON.stringify([time,text]);
+      }
+    }
     const seen=semantic?byContentTime.get(semantic):null;
     if(seen){duplicates++;aliases.set(uid,seen);inheritLocation(seen,row);continue;}
     if(semantic)byContentTime.set(semantic,uid);
