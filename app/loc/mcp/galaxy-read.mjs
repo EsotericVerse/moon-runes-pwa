@@ -2,8 +2,7 @@
 // enforce public visibility; an OAuth identity alone never grants private data access.
 const PUBLIC_ORIGIN='https://loc.lo3rwang.cc';
 const DEFAULT_GATEWAY='https://loc-sql-gateway.sopa2306.workers.dev';
-const PUBLIC_SCOPE='lo3rwang';
-const TABLE=PUBLIC_SCOPE+'_galaxy';
+const SCOPE_TABLES=Object.freeze({lo3rwang:'lo3rwang_galaxy',lrunes:'lrunes_galaxy'});
 const UID=/^[A-Za-z0-9]{8}$/;
 
 function clientError(message){return Object.assign(new Error(message),{code:'INVALID_ARGUMENT'});}
@@ -14,8 +13,8 @@ function gatewayOrigin(env){
     throw new Error('Invalid LOC public SQL Gateway configuration');
   return url.origin;
 }
-async function galaxyRows(filters,env={},fetchImpl=globalThis.fetch){
-  const url=new URL(gatewayOrigin(env)+'/rest/v1/'+TABLE);
+async function galaxyRows(filters,scopeid,env={},fetchImpl=globalThis.fetch){
+  const url=new URL(gatewayOrigin(env)+'/rest/v1/'+SCOPE_TABLES[scopeid]);
   for(const [key,value] of Object.entries(filters))url.searchParams.set(key,String(value));
   // Intentionally omit Authorization. The Gateway will use its public provider
   // identity and the existing SELECT + RLS policy on the known Galaxy table.
@@ -31,8 +30,10 @@ async function galaxyRows(filters,env={},fetchImpl=globalThis.fetch){
   return rows;
 }
 function scopeAllowed(scopeid){
-  if(scopeid!==undefined&&scopeid!==PUBLIC_SCOPE)
-    throw clientError('Only the lo3rwang public Galaxy scope is currently configured');
+  const id=scopeid??'lo3rwang';
+  if(!Object.hasOwn(SCOPE_TABLES,id))
+    throw clientError('Only configured public Galaxy Scopes are available');
+  return id;
 }
 function escapeIlike(value){
   // PostgREST logic-tree string: escape quotes and backslashes, then SQL LIKE
@@ -41,7 +42,7 @@ function escapeIlike(value){
     .replace(/([%_*])/g,'\\$1');
 }
 export async function searchMemory(args={},env={},fetchImpl=globalThis.fetch){
-  scopeAllowed(args.scopeid);
+  const scopeid=scopeAllowed(args.scopeid);
   if(typeof args.query!=='string')throw clientError('query is required');
   const term=args.query.trim();
   if(term.length<2||term.length>100||/[\u0000-\u001f\u007f]/.test(term))
@@ -57,14 +58,14 @@ export async function searchMemory(args={},env={},fetchImpl=globalThis.fetch){
     or:'(title.ilike.'+pattern+',content.ilike.'+pattern+')',
     searchable:'eq.true',order:'date.desc.nullslast,createtime.desc.nullslast',
     limit,offset
-  },env,fetchImpl);
-  return {scopeid:PUBLIC_SCOPE,visibility:'public',query:term,limit,offset,
+  },scopeid,env,fetchImpl);
+  return {scopeid,visibility:'public',query:term,limit,offset,
     results:rows.map(row=>({uid:String(row.uid||'').trim(),title:row.title||'',
       date:row.date||null,createtime:row.createtime||null})),
     has_more:rows.length===limit};
 }
 export async function readMemory(args={},env={},fetchImpl=globalThis.fetch){
-  scopeAllowed(args.scopeid);
+  const scopeid=scopeAllowed(args.scopeid);
   const uid=String(args.uid||'').trim();
   if(!UID.test(uid))throw clientError('uid must be an 8-character, case-sensitive Base62 ID');
   const offset=args.offset===undefined?0:Number(args.offset);
@@ -75,10 +76,10 @@ export async function readMemory(args={},env={},fetchImpl=globalThis.fetch){
   const rows=await galaxyRows({
     select:'uid,title,content,date,createtime,site,url',uid:'eq.'+uid,
     searchable:'eq.true',limit:1
-  },env,fetchImpl);
-  if(!rows.length)return {found:false,scopeid:PUBLIC_SCOPE,uid,visibility:'public'};
+  },scopeid,env,fetchImpl);
+  if(!rows.length)return {found:false,scopeid,uid,visibility:'public'};
   const row=rows[0],content=String(row.content||'');
-  return {found:true,scopeid:PUBLIC_SCOPE,visibility:'public',uid:String(row.uid||'').trim(),
+  return {found:true,scopeid,visibility:'public',uid:String(row.uid||'').trim(),
     title:row.title||'',date:row.date||null,createtime:row.createtime||null,
     site:row.site||null,url:row.url||null,content:content.slice(offset,offset+maxChars),
     offset,total_chars:content.length,next_offset:offset+maxChars<content.length?offset+maxChars:null};

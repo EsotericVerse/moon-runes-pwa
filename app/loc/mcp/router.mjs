@@ -85,7 +85,7 @@ const TOOLS=[
   {name:'search_memory',description:'Search PUBLIC LOC Galaxy articles in title or content, e.g. LP26. No private messages or administrator-only results. Returns article UIDs for read_memory.',
     inputSchema:{type:'object',properties:{
       query:{type:'string',minLength:2,maxLength:100,description:'Text to search in title and content'},
-      scopeid:{type:'string',enum:['lo3rwang'],description:'Configured public LOC Scope'},
+      scopeid:{type:'string',enum:['lo3rwang','lrunes'],description:'Select one public LOC Scope; group aggregation requires separate authorization'},
       limit:{type:'integer',minimum:1,maximum:20},
       offset:{type:'integer',minimum:0,maximum:500}
     },required:['query'],additionalProperties:false},
@@ -93,7 +93,7 @@ const TOOLS=[
   {name:'read_memory',description:'Read a PUBLIC LOC Galaxy article by exact, case-sensitive UID; supports content paging with offset/max_chars.',
     inputSchema:{type:'object',properties:{
       uid:{type:'string',pattern:'^[A-Za-z0-9]{8}$',description:'Exact Galaxy article UID'},
-      scopeid:{type:'string',enum:['lo3rwang']},
+      scopeid:{type:'string',enum:['lo3rwang','lrunes']},
       offset:{type:'integer',minimum:0,maximum:1000000},
       max_chars:{type:'integer',minimum:1,maximum:40000}
     },required:['uid'],additionalProperties:false},
