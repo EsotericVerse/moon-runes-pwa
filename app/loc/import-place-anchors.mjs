@@ -170,6 +170,10 @@ export function importedPlaceId({incoming,existing,byName,byCoordinate}={}){
 const PLACE_VISIT_WRITE_CONCURRENCY=6;
 const PLACE_VISIT_WRITE_TIMEOUT_MS=45000;
 export async function recordImportPlaceVisits(visits,{relation,table,timesByUid,onProgress}={}){
+  if(!Array.isArray(visits)||!visits.length){
+    onProgress?.({phase:'補齊定錨打卡時間',completed:0,total:0});
+    return {updated:0,added:0};
+  }
   if(typeof relation!=='function'||!table)throw Error('定錨打卡時間寫入設定不存在');
   const byUid=new Map();
   for(const visit of visits||[]){
