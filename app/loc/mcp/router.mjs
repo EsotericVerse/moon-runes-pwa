@@ -1,3 +1,4 @@
+import {authorityAction} from './authority-client.mjs';
 import {searchMemory,readMemory} from './galaxy-read.mjs';
 // LOC MCP HTTP entry point. No database write is granted by an OAuth login.
 export const MCP_RESOURCE=(globalThis.process?.env?.LOC_MCP_RESOURCE_URL||'https://loc.lo3rwang.cc/mcp').replace(/\/+$/,'');
@@ -98,6 +99,49 @@ const TOOLS=[
       max_chars:{type:'integer',minimum:1,maximum:40000}
     },required:['uid'],additionalProperties:false},
     annotations:{readOnlyHint:true,destructiveHint:false}}
+,
+  {name:'scope_storage',description:'View or change authorized Scope database endpoint and existing table. Enter provider credentials only through secure LOC Clerk UI/Authority endpoint, never in chat.',
+    inputSchema:{type:'object',properties:{
+      scopeid:{type:'string'},endpoint:{type:'string',description:'HTTPS PostgREST URL ending /rest/v1; omit to view'},
+      schema:{type:'string'},table:{type:'string',description:'Existing Galaxy-compatible table; LOC never creates tables'}
+    },required:['scopeid'],additionalProperties:false}},
+  {name:'check_conversation',description:'Compare source updated_at to last successfully saved_at (no database scan or write).',
+    inputSchema:{type:'object',properties:{scopeid:{type:'string'},conversation_id:{type:'string'},
+      updated_at:{type:'string',description:'Actual source last-updated ISO time'}},
+      required:['scopeid','conversation_id','updated_at'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'sync_conversation',description:'Save a supplied updated conversation into its authorized Scope table; unchanged versions are skipped. Requires real source transcript.',
+    inputSchema:{type:'object',properties:{scopeid:{type:'string'},conversation_id:{type:'string'},
+      updated_at:{type:'string'},created_at:{type:'string'},title:{type:'string'},
+      content:{type:'string',maxLength:125000}},required:['scopeid','conversation_id','updated_at','content'],
+      additionalProperties:false}},
+  {name:'search_scope',description:'Search the authenticated Scope’s OWN private title/content; uses its configured database.',
+    inputSchema:{type:'object',properties:{scopeid:{type:'string'},query:{type:'string'},
+      limit:{type:'integer',minimum:1,maximum:20}},required:['scopeid','query'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'read_scope',description:'Read an authorized Scope article by exact UID; groupid permits group-authorized reads.',
+    inputSchema:{type:'object',properties:{scopeid:{type:'string'},uid:{type:'string'},
+      groupid:{type:'string'},offset:{type:'integer'},max_chars:{type:'integer'}},
+      required:['scopeid','uid'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'search_group',description:'Search multiple member Scopes only after Scope Group read authorization; labels each result with scopeid.',
+    inputSchema:{type:'object',properties:{groupid:{type:'string'},query:{type:'string'},
+      limit:{type:'integer',minimum:1,maximum:20}},required:['groupid','query'],additionalProperties:false},
+    annotations:{readOnlyHint:true,destructiveHint:false}},
+  {name:'join_scope_group',description:'Group manager attaches an existing Scope; does not move or copy data.',
+    inputSchema:{type:'object',properties:{groupid:{type:'string'},scopeid:{type:'string'}},
+      required:['groupid','scopeid'],additionalProperties:false}},
+  {name:'grant_scope_access',description:'Only a Scope Group manager may grant Clerk subjects read/write/configure/manage rights to the Group or a member Scope.',
+    inputSchema:{type:'object',properties:{groupid:{type:'string'},scopeid:{type:'string'},
+      subject:{type:'string',description:'Verified Clerk user_... identifier'},
+      actions:{type:'array',items:{type:'string',enum:['read','write','manage','configure']}},
+      days:{type:'integer',minimum:1,maximum:365}},
+      required:['groupid','scopeid','subject','actions'],additionalProperties:false}},
+,
+  {name:'revoke_scope_access',description:'Scope Group manager immediately revokes one member’s Clerk access to a Group or member Scope.',
+    inputSchema:{type:'object',properties:{groupid:{type:'string'},scopeid:{type:'string'},
+      subject:{type:'string',description:'Clerk user_... identifier'}},
+      required:['groupid','scopeid','subject'],additionalProperties:false}},
 ];
 function toolResponse(id,value){return result(id,{content:[{type:'text',text:JSON.stringify(value)}],structuredContent:value});}
 export async function handleMcp(request,env={}){
@@ -119,8 +163,8 @@ export async function handleMcp(request,env={}){
     case 'initialize':{
       const proposed=payload.params?.protocolVersion;
       return result(payload.id,{protocolVersion:SUPPORTED_PROTOCOLS.has(proposed)?proposed:DEFAULT_PROTOCOL,
-        capabilities:{tools:{listChanged:false}},serverInfo:{name:'loc-mcp',version:'0.1.0'},
-        instructions:'LOC MCP is connected. search_memory/read_memory access only public Galaxy articles; private Galaxy data and write tools are not enabled.'});
+        capabilities:{tools:{listChanged:false}},serverInfo:{name:'loc-mcp',version:'0.2.0'},
+        instructions:'Public search/read use existing Galaxy RLS. Private Scope read, write and Group search are independently authorized by Clerk + LOC Authority. sync_conversation only processes supplied source content.'});
     }
     case 'ping':return result(payload.id,{});
     case 'tools/list':return result(payload.id,{tools:TOOLS});
@@ -134,12 +178,16 @@ export async function handleMcp(request,env={}){
         connected:true,provider:'clerk',subject:identity.subject,
         resource:config.resource,galaxyWriteEnabled:false,galaxyPublicReadEnabled:true});
       try{
-        const value=name==='search_memory'?await searchMemory(args,env):await readMemory(args,env);
+        const value=(name==='search_memory'||name==='read_memory')?
+          (name==='search_memory'?await searchMemory(args,env):await readMemory(args,env)):
+          await authorityAction(name,args,match[1],env);
         return toolResponse(payload.id,value);
       }catch(error){
         const validation=error?.code==='INVALID_ARGUMENT';
         return result(payload.id,{isError:true,content:[{type:'text',
-          text:validation?error.message:'LOC public Galaxy read unavailable; please retry later.'}]});
+          text:validation?error.message:
+            error?.httpStatus&&error.httpStatus<500?error.message:
+            'LOC data service unavailable; please retry later.'}]});
       }
     }
     default:return rpcError(payload.id,-32601,'Method not found');

@@ -1,0 +1,115 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {webcrypto} from 'node:crypto';
+
+if(!globalThis.crypto)globalThis.crypto=webcrypto;
+const source=readFileSync(new URL('../workers/loc-authority/index.mjs',import.meta.url),'utf8')
+  .replace("import { DurableObject } from 'cloudflare:workers';",'')
+  .replace('export class LocAuthorityState','class LocAuthorityState')
+  .replace('export default {','const worker={');
+const {LocAuthorityState}=new Function('DurableObject',
+  source+';return {LocAuthorityState};')(class{
+    constructor(ctx,env){this.ctx=ctx;this.env=env;}
+  });
+function state(){
+  const saved=new Map();
+  const storage={
+    get:async key=>saved.get(key),
+    put:async(key,value)=>{saved.set(key,value);},
+    delete:async key=>{saved.delete(key);},
+    list:async({prefix})=>new Map([...saved].filter(([key])=>key.startsWith(prefix)))
+  };
+  const env={LOC_CONTROL_ENCRYPTION_KEY:Buffer.alloc(32,19).toString('base64')};
+  return {do:new LocAuthorityState({storage},env),saved};
+}
+const profile={endpoint:'https://db.example.org/rest/v1',schema:'silver',
+  table:'galaxy',api_key:'sensitive-do-not-expose'};
+const conversation={conversation_id:'chat-1',updated_at:'2026-11-01T01:00:00Z',
+  created_at:'2026-11-01T00:00:00Z',title:'Test',content:'First version'};
+const originalFetch=globalThis.fetch;
+test.after(()=>{globalThis.fetch=originalFetch;});
+
+test('encrypted Scope credentials never appear in public settings',async()=>{
+  const {do:authority,saved}=state();
+  const configured=await authority.putMcpScope('lrunes',profile);
+  assert.equal(configured.configured,true);
+  assert.equal(configured.api_key,undefined);
+  const publicValue=await authority.getMcpScope('lrunes');
+  assert.equal(publicValue.api_key,undefined);
+  assert.doesNotMatch(JSON.stringify(publicValue),/sensitive-do-not-expose/);
+  assert.doesNotMatch(JSON.stringify([...saved.values()]),/sensitive-do-not-expose/);
+  const secret=await authority.mcpPrivateProfile('lrunes');
+  assert.equal(secret.api_key,profile.api_key);
+  await authority.putMcpScope('lrunes',{...profile,table:'another',api_key:''});
+  assert.equal((await authority.mcpPrivateProfile('lrunes')).api_key,profile.api_key);
+});
+
+test('no changed conversation means no database read or write',async()=>{
+  const {do:authority}=state();
+  authority.mcpPrivateProfile=async()=>profile;
+  let writes=0;
+  globalThis.fetch=async()=>{writes++;return new Response(null,{status:204});};
+  const first=await authority.mcpSave('lo3rwang',conversation);
+  const before=await authority.mcpCheckpoint('lo3rwang','chat-1',conversation.updated_at);
+  const unchanged=await authority.mcpSave('lo3rwang',conversation);
+  assert.equal(first.saved,true);
+  assert.equal(before.needs_save,false);
+  assert.equal(unchanged.saved,false);
+  assert.equal(writes,1);
+  assert.equal(first.saved_at!=null,true);
+  assert.equal(first.updated_at,conversation.updated_at);
+});
+
+test('failed save is retried with same UID and saved_at remains unchanged',async()=>{
+  const {do:authority}=state();
+  authority.mcpPrivateProfile=async()=>profile;
+  let failedUid='',successfulUid='',attempts=0;
+  globalThis.fetch=async(_url,options)=>{
+    attempts++;
+    if(attempts===1){failedUid=JSON.parse(options.body).uid;return new Response(null,{status:503});}
+    successfulUid=JSON.parse(options.body).uid;
+    return new Response(null,{status:204});
+  };
+  await assert.rejects(authority.mcpSave('lo3rwang',conversation),/HTTP 503/);
+  const progress=await authority.mcpCheckpoint('lo3rwang','chat-1',conversation.updated_at);
+  assert.equal(progress.needs_save,true);
+  assert.equal(progress.saved_at,null);
+  const result=await authority.mcpSave('lo3rwang',conversation);
+  assert.equal(result.saved,true);
+  assert.equal(result.uid,failedUid);
+  assert.equal(successfulUid,failedUid);
+});
+
+test('100 parallel writes of one unchanged version create one article',async()=>{
+  const {do:authority}=state();
+  authority.mcpPrivateProfile=async()=>profile;
+  let writes=0;
+  globalThis.fetch=async()=>{writes++;return new Response(null,{status:204});};
+  const all=await Promise.all(Array.from({length:100},
+    ()=>authority.mcpSave('lo3rwang',conversation)));
+  assert.equal(all.filter(x=>x.saved).length,1);
+  assert.equal(writes,1);
+});
+
+test('100 concurrent matching searches make one provider request per Scope',async()=>{
+  const {do:authority}=state();
+  authority.mcpPrivateProfile=async()=>profile;
+  let reads=0;
+  globalThis.fetch=async()=>{reads++;return Response.json([
+    {uid:'1B066147',title:'LP26',date:'2026-11-01'}]);};
+  const rows=await Promise.all(Array.from({length:100},
+    ()=>authority.mcpSearch('lo3rwang','LP26',10)));
+  assert.equal(rows.length,100);
+  assert.equal(rows[0].results[0].uid,'1B066147');
+  assert.equal(reads,1);
+});
+
+test('Scope Group membership is explicit beyond its existing built-in Scopes',async()=>{
+  const {do:authority}=state();
+  assert.deepEqual(await authority.mcpGroupMembers('loc'),['lo3rwang','lrunes']);
+  await authority.addGroupScope('loc','thirdscope');
+  assert.deepEqual(await authority.mcpGroupMembers('loc'),
+    ['lo3rwang','lrunes','thirdscope']);
+  await assert.rejects(authority.addGroupScope('loc','loc'),/own group/);
+});

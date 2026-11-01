@@ -20,7 +20,7 @@ async function galaxyRows(filters,scopeid,env={},fetchImpl=globalThis.fetch){
   // identity and the existing SELECT + RLS policy on the known Galaxy table.
   const res=await fetchImpl(url.href,{
     method:'GET',headers:{origin:PUBLIC_ORIGIN,'accept-profile':'silver',accept:'application/json'},
-    signal:AbortSignal.timeout(8500),redirect:'error',cache:'no-store'
+    signal:AbortSignal.timeout(8500),redirect:'manual',cache:'no-store'
   });
   if(!res.ok)throw Object.assign(new Error('LOC public Galaxy read unavailable (HTTP '+res.status+')'),
     {code:'BACKEND_UNAVAILABLE'});
