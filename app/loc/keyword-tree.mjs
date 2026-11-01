@@ -10,6 +10,27 @@ const array=value=>{
   if(typeof value==='string'){try{const v=JSON.parse(value);if(Array.isArray(v))return v;}catch{}}
   throw new Error('Keywords lists and uid_lists must be arrays');
 };
+// PostgreSQL stores exactly one structured uid_lists JSONB object.
+export function keywordUidListData(type,value){
+  const raw=typeof value==='string'?(()=>{try{return JSON.parse(value)}catch{return value}})():value;
+  if(Array.isArray(raw))return raw; // Existing local-file or import documents.
+  if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
+    if(type==='group')return array(raw.articles??[]);
+    if(type==='item')return array(raw.hits??[]);
+    if(['category','class'].includes(type)&&Object.keys(raw).length===0)return [];
+  }
+  throw new Error('Invalid structured Keywords uid_lists for '+type);
+}
+export function keywordUidListRecord(type,value){
+  const entries=keywordUidListData(type,value);
+  if(type==='group')return {articles:[...entries]};
+  if(type==='item')return {hits:[...entries]};
+  if(type==='class'||type==='category'){
+    if(entries.length)throw new Error('Category and Class cannot persist hits');
+    return {};
+  }
+  throw new Error('Unknown Keywords node type');
+}
 const cleanUid=value=>{
   if(typeof value!=='string'||!UID.test(value))throw new Error('Keywords UID must be four case-sensitive Base62 characters');
   return value;
@@ -19,7 +40,7 @@ export function normalizeKeywordTreeRow(row){
   if(!TYPES.has(type))throw new Error('Invalid Keywords type');
   const name=String(row?.name||'').trim(),desc=String(row?.desc??'');
   if(!name)throw new Error('Keywords name is required');
-  const lists=array(row?.lists??[]),uid_lists=array(row?.uid_lists??[]);
+  const lists=array(row?.lists??[]),uid_lists=keywordUidListData(type,row?.uid_lists??[]);
   if(type==='item'){
     if(lists.some(word=>typeof word!=='string'||!word.trim()))throw new Error('Item lists must contain keyword strings');
     const seen=new Set();
