@@ -46,18 +46,22 @@ export function* urlSafeInBatches(values,column){
     const raw=String(value);
     return /[,()]/.test(raw)?'"'+raw.replace(/"/g,'\\"')+'"':raw;
   };
-  const lengthOf=items=>new URLSearchParams({
-    [column]:'in.('+items.map(encode).join(',')+')'
-  }).toString().length;
-  let batch=[];
+  // URLSearchParams escapes separators too: an added comma occupies "%2C".
+  // Maintain the encoded length incrementally instead of re-encoding the
+  // entire growing batch (quadratic for large archive imports).
+  const emptyLength=new URLSearchParams({[column]:'in.()'}).toString().length;
+  let batch=[],length=emptyLength;
   for(const value of values||[]){
-    const candidate=[...batch,value];
-    if(candidate.length>MAX_ROWS||lengthOf(candidate)>budget){
+    const itemLength=new URLSearchParams({v:encode(value)}).toString().length-2;
+    if(batch.length>=MAX_ROWS||length+itemLength+(batch.length?3:0)>budget){
       if(!batch.length)throw Error('單筆查詢值太長，無法放入安全的 GET URL');
       yield batch;
-      batch=[value];
-      if(lengthOf(batch)>budget)throw Error('單筆查詢值太長，無法放入安全的 GET URL');
-    }else batch=candidate;
+      batch=[];
+      length=emptyLength;
+    }
+    if(length+itemLength>budget)throw Error('單筆查詢值太長，無法放入安全的 GET URL');
+    length+=itemLength+(batch.length?3:0);
+    batch.push(value);
   }
   if(batch.length)yield batch;
 }
