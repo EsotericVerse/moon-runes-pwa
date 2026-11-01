@@ -4,7 +4,9 @@ import {dbAuthRelation} from './db-client.mjs';
 
 // The owner's explicit action starts the only scan. Never run during render,
 // ordinary Search, Culture navigation or the existing Keyword reanalysis.
-const PAGE_SIZE=200;
+const PAGE_SIZE=1000;
+const MAX_SAME_DAY_ROWS=10000;
+const ARTICLE_COLUMNS='uid,content,createtime,date';
 const aborted=()=>Object.assign(new Error('已取消關鍵詞建議掃描'),{name:'AbortError'});
 
 export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>{},signal}={}){
@@ -44,45 +46,70 @@ export async function suggestNewKeywords({galaxy,existingRows=[],onProgress=()=>
     if(countError||count===null||count===undefined||!Number.isSafeInteger(Number(count)))
       throw new Error(countError?.message||'無法取得完整文章筆數');
     const total=Number(count);
+    // The existing Galaxy.date B-tree supports a bounded, ascending cursor.
+    // Never use deep OFFSET sorting of all article bodies or SQL UID ordering.
     let completed=0;
-    let serialized=Promise.resolve();
-    const pushBatch=rows=>{
-      // Three read lanes share one Worker aggregator without overwriting
-      // its message handlers or duplicating whole-article buffers in memory.
-      const next=serialized.then(()=>send({type:'batch',rows}));
-      serialized=next.catch(()=>{});
-      return next;
+    const seen=new Set();
+    const readPage=async build=>{
+      let query=build(dbAuthRelation(galaxy));
+      if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
+      const reply=await query;
+      if(signal?.aborted)throw aborted();
+      if(reply.error)throw new Error(reply.error.message||'無法讀取文章內文');
+      return reply;
     };
-    onProgress({completed:0,total,lanes:3});
-    const limits=[0,Math.floor(total/3),Math.floor(total*2/3),total];
-    await Promise.all([0,1,2].map(async lane=>{
-      let offset=limits[lane];
-      const end=limits[lane+1];
-      while(offset<end){
+    const consumePage=async page=>{
+      for(let index=0;index<page.length;index+=PAGE_SIZE){
         if(signal?.aborted)throw aborted();
-        const length=Math.min(PAGE_SIZE,end-offset);
-        // Time-ranked offsets partition the corpus into three disjoint,
-        // bounded streams. A stable UID tie-break orders identical timestamps.
-        let query=dbAuthRelation(galaxy)
-          .select('uid,content,createtime')
-          .order('createtime',{ascending:true,nullsFirst:false})
-          .order('uid',{ascending:true})
-          .range(offset,offset+length-1);
-        if(signal&&typeof query.abortSignal==='function')query=query.abortSignal(signal);
-        const {data,error}=await query;
-        if(signal?.aborted)throw aborted();
-        if(error)throw new Error(error.message||'無法讀取文章內文');
-        const page=Array.isArray(data)?data:[];
-        if(page.length!==length)throw new Error('文章分頁筆數不完整，未覆寫先前暫存');
-        const reply=await pushBatch(page);
+        const batch=page.slice(index,index+PAGE_SIZE);
+        for(const row of batch){
+          if(typeof row.uid!=='string'||seen.has(row.uid))
+            throw new Error('文章掃描出現重複或無效 UID，未覆寫先前暫存');
+          seen.add(row.uid);
+        }
+        const reply=await send({type:'batch',rows:batch});
         if(reply.type!=='progress')throw new Error('關鍵詞背景分析回應異常');
-        offset+=page.length;
-        completed+=page.length;
-        onProgress({completed,total,withContent:reply.withContent,lanes:3});
+        completed+=batch.length;
+        onProgress({completed,total,withContent:reply.withContent,lanes:1});
       }
-    }));
+    };
+    onProgress({completed:0,total,lanes:1});
+    let after=null;
+    for(;;){
+      if(signal?.aborted)throw aborted();
+      const {data}=await readPage(relation=>{
+        let query=relation.select(ARTICLE_COLUMNS).not('date','is',null)
+          .order('date',{ascending:true}).limit(PAGE_SIZE);
+        if(after!==null)query=query.gt('date',after);
+        return query;
+      });
+      const page=Array.isArray(data)?data:[];
+      if(!page.length)break;
+      const boundary=page[page.length-1]?.date;
+      if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(String(boundary||''))||
+        page.some(row=>!row?.date||String(row.date)>String(boundary)))
+        throw new Error('Galaxy 日期分頁資料不完整');
+      // Always fetch the entire last-day peer group: PostgreSQL may return
+      // pages smaller than LIMIT, and date alone is not a unique cursor.
+      const prefix=page.filter(row=>String(row.date)!==String(boundary));
+      const {data:peers,count}=await readPage(relation=>relation
+        .select(ARTICLE_COLUMNS,{count:'exact'}).eq('date',boundary)
+        .limit(MAX_SAME_DAY_ROWS));
+      if(!Array.isArray(peers)||!Number.isSafeInteger(Number(count))||
+        Number(count)>=MAX_SAME_DAY_ROWS||peers.length!==Number(count))
+        throw new Error('Galaxy 同日文章超過掃描上限或資料不完整，未覆寫先前暫存');
+      await consumePage(prefix);
+      await consumePage(peers);
+      after=String(boundary);
+    }
+    const {data:undated,count:undatedCount}=await readPage(relation=>relation
+      .select(ARTICLE_COLUMNS,{count:'exact'}).is('date',null)
+      .limit(MAX_SAME_DAY_ROWS));
+    if(!Array.isArray(undated)||!Number.isSafeInteger(Number(undatedCount))||
+      Number(undatedCount)>=MAX_SAME_DAY_ROWS||undated.length!==Number(undatedCount))
+      throw new Error('Galaxy 無日期文章超過掃描上限或資料不完整，未覆寫先前暫存');
+    await consumePage(undated);
     if(completed!==total)throw new Error('文章數量在掃描期間變動，未覆寫先前暫存');
-    await serialized;
     const done=await send({type:'finish'});
     if(done.type!=='finished'||!done.result)throw new Error('新關鍵詞結果無效');
     return done.result;
