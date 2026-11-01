@@ -171,6 +171,14 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
     const saved=[...(candidates.get(key)?.values()||[])];
     if(!saved.length)continue;
     const used=new Set(),unresolved=[];
+    // Same-second groups can contain many posts. Normalize each saved body
+    // only once instead of once per incoming candidate comparison.
+    const textByUid=new Map();
+    const savedText=row=>{
+      const uid=String(row.uid);
+      if(!textByUid.has(uid))textByUid.set(uid,comparableImportText(row.content));
+      return textByUid.get(uid);
+    };
     const eligible=(record,rows)=>rows.filter(row=>{
       if(used.has(String(row.uid)))return false;
       const incomingId=String(record.site_id||'').trim();
@@ -191,8 +199,8 @@ export async function matchExistingImportByCreatedAt(records,{readTimestamps,onP
       else unresolved.push(record);
     }
     for(const record of unresolved){
-      const sameContent=eligible(record,saved).filter(row=>
-        comparableImportText(row.content)===comparableImportText(record.content));
+      const incomingText=comparableImportText(record.content);
+      const sameContent=eligible(record,saved).filter(row=>savedText(row)===incomingText);
       if(sameContent.length===1){assign(record,sameContent[0]);continue;}
       if(sameContent.length>1){
         ambiguous.push({uid:String(record.uid),site:record.site,createtime:record.createtime});
