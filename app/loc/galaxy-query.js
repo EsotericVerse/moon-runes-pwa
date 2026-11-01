@@ -1,5 +1,6 @@
 'use client';
 import {isAbortError} from './db-query.mjs';
+import {mapBounded} from './bounded-parallel.mjs';
 
 
 import {StatisticsFacets} from './statistics-facets';
@@ -252,7 +253,7 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
   if(!ids.length)return {};
   const batches=[];
   for(let i=0;i<ids.length;i+=50)batches.push(ids.slice(i,i+50));
-  const pages=await Promise.all(batches.map(async batch=>{
+  const pages=await mapBounded(batches,3,async batch=>{
     const {rows=[]}=await selectRows(scope.galaxy,{
       columns:'uid,title',
       filters:[{column:'uid',operator:'in',value:batch}],
@@ -261,7 +262,7 @@ async function relatedArticleTitlesFor(scope,row,{includeHidden=false}={}){
       authenticated:includeHidden
     });
     return rows;
-  }));
+  });
   return Object.fromEntries(pages.flat().map(item=>[String(item.uid),String(item.title||'').trim()]));
 }
 
@@ -679,7 +680,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
     batches.get(scope.id).ids.add(uid);
   }
   const metadata=new Map();
-  await Promise.all([...batches.values()].map(async({scope,ids})=>{
+  await mapBounded([...batches.values()],3,async({scope,ids})=>{
     const keys=[...ids];
     if(keys.length>DEFAULT_LIST_BATCH_SIZE)throw new Error('Search page exceeds bounded UID limit');
     const {rows}=await selectRows(scope.galaxy,{
@@ -690,7 +691,7 @@ export async function hydrateGalaxySearchRows(entries=[],scopes=[],hiddenScopeId
       signal
     });
     for(const row of rows||[])metadata.set(scope.id+':'+row.uid,row);
-  }));
+  });
   return items.map(entry=>{
     const row=entry?.row;
     if(!row?.uid)return entry;
@@ -929,7 +930,7 @@ async function selectLocStatisticsRaw({startDate='',endDate=''}={}){
   const scopes=registry.map(row=>({scope_id:row.scope_id,display_name:row.display_name,data:defaultScopeData(row.scope_id)}))
     .filter(item=>item.data?.galaxy&&item.data?.galaxyMedia);
   const [perScope,dailyStart]=await Promise.all([
-    Promise.all(scopes.map(async item=>{
+    mapBounded(scopes,3,async item=>{
       const [start,rows]=await Promise.all([
         selectFirstScopeStatisticsDate(item.data),
         selectScopeSourceBreakdownRows(item.data,{startDate,endDate})
@@ -937,7 +938,7 @@ async function selectLocStatisticsRaw({startDate='',endDate=''}={}){
       const daily=new Map();
       for(const row of rows)if(row.kind==='total')daily.set(row.day,(daily.get(row.day)||0)+(Number(row.item_count)||0));
       return {start,rows:[...daily].map(([day,item_count])=>({scope_id:item.scope_id,day,item_count}))};
-    })),
+    }),
     selectFirstDailyRuneDate()
   ]);
   return {
@@ -960,7 +961,7 @@ export async function selectScopeSourceBreakdownRows(scope,{startDate='',endDate
 
 export async function selectSourceTrendRows(scopes,{startDate='',endDate=''}={}){
   const range={startDate:dateOnly(startDate),endDate:dateOnly(endDate)};
-  const rows=(await Promise.all((Array.isArray(scopes)?scopes:[]).map(scope=>scopeSourceTrendRows(scope,range)))).flat();
+  const rows=(await mapBounded(Array.isArray(scopes)?scopes:[],3,scope=>scopeSourceTrendRows(scope,range))).flat();
   const merged=new Map();
   for(const row of rows){
     const key=row.day+'|'+row.source;
