@@ -238,7 +238,7 @@ function localMediaMigrationStatements(mediaRows,articles,exifRows){
     {sql:'ALTER TABLE local_galaxy_media RENAME TO local_galaxy_media_legacy_backup',values:[]},
     {sql:LOCAL_MEDIA_TABLE_CREATE,values:[]},
     ...mediaRows.map(row=>({sql:'INSERT INTO local_galaxy_media ('+LOCAL_MEDIA_COLUMNS.join(',')+') VALUES ('+LOCAL_MEDIA_COLUMNS.map(()=>'?').join(',')+')',
-      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(oldId(row)):row[c]))}))
+      values:LOCAL_MEDIA_COLUMNS.map(c=>toSqlValue(c==='uid'?links.get(oldId(row)):c==='type'?(row.type||row.media_type):row[c]))}))
   ];
   for(const row of articles){
     let ids=[];
@@ -265,7 +265,7 @@ function localMediaMigrationStatements(mediaRows,articles,exifRows){
 }
 function upgradeWebLocalMedia(db){
   const columns=rowsOf(db,'PRAGMA table_info(local_galaxy_media)');
-  if(!columns.some(row=>row.name==='media_id'||row.name==='galaxy_link'))return;
+  if(!columns.some(row=>['media_id','galaxy_link','media_type','rune_references'].includes(row.name)))return;
   const rows=rowsOf(db,'SELECT * FROM local_galaxy_media');
   const articles=rowsOf(db,'SELECT uid,media_link FROM local_galaxy');
   const exif=rowsOf(db,'SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL');
@@ -280,7 +280,7 @@ function upgradeWebLocalMedia(db){
 }
 async function upgradeNativeLocalMedia(conn){
   const columns=(await conn.query('PRAGMA table_info(local_galaxy_media)')).values||[];
-  if(!columns.some(row=>row.name==='media_id'||row.name==='galaxy_link'))return;
+  if(!columns.some(row=>['media_id','galaxy_link','media_type','rune_references'].includes(row.name)))return;
   const rows=(await conn.query('SELECT * FROM local_galaxy_media')).values||[];
   const articles=(await conn.query('SELECT uid,media_link FROM local_galaxy')).values||[];
   const exif=(await conn.query('SELECT archive_id,entry_path,media_id FROM local_archive_media_exif WHERE media_id IS NOT NULL')).values||[];
