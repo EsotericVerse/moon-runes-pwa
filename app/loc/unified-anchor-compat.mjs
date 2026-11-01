@@ -3,15 +3,29 @@
 // providers and other Scopes until their own anchor store exists.
 // No SQL, DDL, table creation, migration or old-data synchronization here.
 const legacyName=/^([a-z][a-z0-9]{0,14})_(time|trace|keywords|galaxy_media)$/;
-const physicalColumns=['uid','kind','type','title','description','url','meta_tags','createtime','date','location','invisible','links','attrs'];
+const physicalColumns=['uid','type','title','description','label','invisible','attr'];
 const legacyKinds={time:'time',trace:'trace',keywords:'keywords',galaxy_media:'media'};
-const aliases={
-  time:{address:'date',anchor_ids:'links',range:'attrs'},
-  trace:{trace_type:'type',anchor_list:'links',times:'attrs',address:'attrs',route_list:'attrs'},
-  keywords:{name:'title',desc:'description',lists:'links',uid_lists:'attrs'},
-  galaxy_media:{}
+const scopeTypes={
+ time:['date','period','era'],trace:['point','path','trace'],
+ keywords:['category','class','group','item'],media:['image','video','rune','suno']
 };
-const attrColumns=new Set(['range','times','address','route_list','uid_lists']);
+const aliases={
+ time:{address:'label',anchor_ids:'label',range:'attr'},
+ trace:{trace_type:'type',anchor_list:'label',address:'label',times:'attr',route_list:'attr'},
+ keywords:{name:'title',desc:'description',lists:'label',uid_lists:'attr'},
+ galaxy_media:{url:'label',meta_tags:'description',createtime:'uid',location:'uid'}
+};
+const attrColumns=new Set(['range','times','route_list','uid_lists']);
+const realTypes={anchor:'date',space_anchor:'point','音樂':'suno','播放清單':'suno',runes:'rune'};
+const physicalType=value=>realTypes[String(value)]||String(value);
+const legacyType=value=>({date:'anchor',point:'space_anchor',suno:'音樂'})[value]||value;
+const labelList=value=>Array.isArray(value)?JSON.stringify(value):value==null?null:
+ typeof value==='string'?value:JSON.stringify(value);
+const parseLabelList=value=>{
+ if(Array.isArray(value))return value;
+ if(typeof value!=='string'||!value.trim())return [];
+ try{const parsed=JSON.parse(value);return Array.isArray(parsed)?parsed:[];}catch{return [];}
+};
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
 
@@ -63,7 +77,6 @@ function prepareAnchorInsert(spec,row,assigned){
   }
   if(spec.kind==='keywords'&&value.uid_lists==null)value.uid_lists={};
   const mapped=toAnchorRow(spec,value);
-  if(spec.kind==='media')mapped.attrs={};
   return mapped;
 }
 export function unifiedAnchorSpec(schema,table){
@@ -72,50 +85,84 @@ export function unifiedAnchorSpec(schema,table){
   return {table:matched[1]+'_anchor',kind:legacyKinds[matched[2]],legacy:matched[2]};
 }
 export function toAnchorRow(spec,row){
-  if(!row||typeof row!=='object')throw Error('Invalid unified anchor row');
-  const result={},attrs={};
-  for(const [key,value] of Object.entries(row)){
-    const target=aliases[spec.legacy][key]||key;
-    if(attrColumns.has(key)&&target==='attrs')attrs[key]=value;
-    else if(physicalColumns.includes(target)&&target!=='kind'&&target!=='attrs')
-      result[target]=spec.kind==='trace'&&key==='description'&&value&&typeof value==='object'
-        ?JSON.stringify(value):value;
-    else throw Error('Unsupported legacy anchor column: '+key);
-  }
-  if(Object.keys(attrs).length)result.attrs=attrs;
-  result.kind=spec.kind;
-  return result;
+ if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Invalid unified anchor row');
+ const data={...row},out={};
+ const type=physicalType(data.trace_type||data.type||'');
+ if(type)out.type=type;
+ if(Object.hasOwn(data,'uid'))out.uid=data.uid;
+ if(Object.hasOwn(data,'title'))out.title=data.title;
+ if(Object.hasOwn(data,'name'))out.title=data.name;
+ if(Object.hasOwn(data,'invisible'))out.invisible=data.invisible;
+ if(Object.hasOwn(data,'description'))out.description=
+   spec.kind==='trace'&&data.description&&typeof data.description==='object'
+     ?JSON.stringify(data.description):data.description;
+ if(Object.hasOwn(data,'desc'))out.description=data.desc;
+ if(spec.kind==='time'){
+   if(Object.hasOwn(data,'address')&&type==='date')out.label=data.address==null?null:String(data.address).slice(0,10);
+   if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
+   if(Object.hasOwn(data,'range'))out.attr={range:data.range};
+ }else if(spec.kind==='trace'){
+   if(Object.hasOwn(data,'address')&&type==='point')out.label=labelList(data.address);
+   if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
+   const extra={};for(const key of ['times','route_list'])if(Object.hasOwn(data,key))extra[key]=data[key];
+   if(Object.keys(extra).length)out.attr=extra;
+ }else if(spec.kind==='keywords'){
+   if(Object.hasOwn(data,'lists'))out.label=labelList(data.lists);
+   if(Object.hasOwn(data,'uid_lists'))out.attr={uid_lists:data.uid_lists};
+ }else if(spec.kind==='media'){
+   if(Object.hasOwn(data,'url'))out.label=data.url;
+   if(Object.hasOwn(data,'meta_tags'))out.description=data.meta_tags;
+   if(data.type==='播放清單')out.attr={media_kind:'playlist'};
+ }
+ if(Object.hasOwn(data,'label'))out.label=data.label;
+ if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
+ if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
+ for(const key of Object.keys(data)){
+   if(['uid','type','trace_type','title','name','invisible','description','desc',
+     'address','anchor_ids','range','anchor_list','times','route_list','lists',
+     'uid_lists','url','meta_tags','createtime','location','label','attr','attrs'].includes(key))continue;
+   throw Error('Unsupported legacy anchor column: '+key);
+ }
+ return out;
 }
 export function fromAnchorRow(spec,row){
-  if(!row)return row;
-  const result={},reverse=Object.fromEntries(
-    Object.entries(aliases[spec.legacy]).filter(([key,value])=>value!=='attrs')
-      .map(([key,value])=>[value,key])
-  );
-  for(const [key,value] of Object.entries(row)){
-    if(key==='kind')continue;
-    if(key==='attrs'){
-      for(const field of Object.keys(aliases[spec.legacy]).filter(k=>aliases[spec.legacy][k]==='attrs'))
-        result[field]=value?.[field]??null;
-     }else if(spec.kind==='trace'&&key==='description'&&typeof value==='string'&&value.startsWith('{')){
-      let structured=null;
-      try{structured=JSON.parse(value)}catch{}
-      result.description=structured&&typeof structured==='object'&&!Array.isArray(structured)?structured:value;
-    }else result[reverse[key]||key]=value;
-  }
-  return result;
+ if(!row)return row;
+ const out={};
+ for(const key of ['uid','title','invisible','description'])if(Object.hasOwn(row,key))out[key]=row[key];
+ if(Object.hasOwn(row,'type'))out.type=legacyType(row.type);
+ if(spec.kind==='time'){
+   out.address=row.type==='date'?(row.label??null):null;
+   out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
+   out.range=row.attr?.range??null;
+ }else if(spec.kind==='trace'){
+   out.trace_type=legacyType(row.type);
+   out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
+   out.address=row.type==='point'?parseLabelList(row.label):null;
+   out.times=row.attr?.times??[];
+   out.route_list=row.attr?.route_list??[];
+   if(typeof out.description==='string'&&out.description.startsWith('{')){
+     try{const doc=JSON.parse(out.description);if(doc&&typeof doc==='object'&&!Array.isArray(doc))out.description=doc;}catch{}
+   }
+ }else if(spec.kind==='keywords'){
+   out.name=row.title;out.desc=row.description;out.lists=parseLabelList(row.label);
+   out.uid_lists=row.attr?.uid_lists??{};
+ }else if(spec.kind==='media'){
+   out.url=row.label??null;out.meta_tags=row.description??null;
+   out.createtime=null;out.location=null;
+   if(row.type==='suno'&&row.attr?.media_kind==='playlist')out.type='播放清單';
+ }
+ return out;
 }
 const readColumn=(spec,name)=>aliases[spec.legacy][name]||name;
 function fieldsForSelect(spec,columns){
-  if(!columns||columns==='*')return physicalColumns.join(',');
-  const fields=new Set(['uid']);
-  for(const raw of String(columns).split(',')){
-    const name=raw.trim().split(':').at(-1).trim();
-    const mapped=readColumn(spec,name);
-    if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
-    fields.add(mapped);
-  }
-  return [...fields].join(',');
+ if(!columns||columns==='*')return physicalColumns.join(',');
+ const fields=new Set(['uid','type']);
+ for(const raw of String(columns).split(',')){
+   const name=raw.trim().split(':').at(-1).trim(),mapped=readColumn(spec,name);
+   if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
+   fields.add(mapped);
+ }
+ return [...fields].join(',');
 }
 const applyFilter=(query,filter)=>{
   if(filter.method==='not')return query.not(filter.column,filter.operator,filter.value);
@@ -210,13 +257,15 @@ class UnifiedQuery{
     const jsonFilters=[];
     for(const filter of this.filters){
       const mapped=readColumn(spec,filter.column);
-      if(mapped==='attrs'){jsonFilters.push(filter);continue}
+      if(mapped==='attr'){jsonFilters.push(filter);continue}
       if(!physicalColumns.includes(mapped))throw Error('Unmapped anchor filter: '+filter.column);
-      physical=applyFilter(physical,{...filter,column:mapped});
+      physical=applyFilter(physical,{...filter,column:mapped,
+        value:mapped==='type'&&filter.method==='in'?(filter.value||[]).map(physicalType):
+          mapped==='type'&&typeof filter.value==='string'?physicalType(filter.value):filter.value});
     }
     // The physical kind predicate cannot be overridden by caller-controlled
     // filters, including OR expressions.
-    physical=physical.eq('kind',spec.kind);
+    physical=physical.in('type',scopeTypes[spec.kind]);
     for(const expression of this.orFilters){
       if(/\b(address|times|route_list|uid_lists|range)\b/.test(expression))
         throw Error('JSONB OR filters require a native unified query');
@@ -226,7 +275,7 @@ class UnifiedQuery{
     }
     for(const order of this.orders){
       const mapped=readColumn(spec,order.column);
-      if(mapped==='attrs')throw Error('JSONB sort requires a native unified query');
+      if(mapped==='attr')throw Error('JSONB sort requires a native unified query');
       physical=physical.order(mapped,{ascending:order.ascending,nullsFirst:order.nullsFirst});
     }
     // Supabase postgrest builders support abortSignal; KyselyEdge builders do not.
@@ -239,11 +288,11 @@ class UnifiedQuery{
     const spec=this.spec;
     if(this.operation==='select'){
       let selected=fieldsForSelect(spec,this.fields);
-      if(this.filters.some(f=>readColumn(spec,f.column)==='attrs')&&!selected.split(',').includes('attrs'))
-        selected+=',attrs';
+      if(this.filters.some(f=>readColumn(spec,f.column)==='attr')&&!selected.split(',').includes('attr'))
+        selected+=',attr';
       const head=this.opts?.head===true;
       let query=this.schema.from(spec.table).select(selected,{
-        count:this.opts.count,head:head&&!this.filters.some(f=>readColumn(spec,f.column)==='attrs')
+        count:this.opts.count,head:head&&!this.filters.some(f=>readColumn(spec,f.column)==='attr')
       });
       const {physical,jsonFilters}=this.build(query,false);
       if(!jsonFilters.length){
@@ -292,15 +341,15 @@ class UnifiedQuery{
       if(!this.filters.length&&!this.orFilters.length)throw Error('Unsafe unified anchor update');
       // All updates of JSONB-backed fields are read/merged per UID so they
       // never erase unrelated attributes. Bulk unfiltered mutation is denied.
-      const attrs=Object.keys(this.values||{}).some(key=>readColumn(spec,key)==='attrs');
+      const attrs=Object.keys(this.values||{}).some(key=>readColumn(spec,key)==='attr');
       if(attrs){
         const uid=this.filters.find(f=>f.column==='uid'&&f.method==='eq')?.value;
         if(!uid||this.orFilters.length)throw Error('Unified JSONB updates require exact UID');
-        const read=await this.schema.from(spec.table).select('uid,attrs').eq('uid',uid).eq('kind',spec.kind).maybeSingle();
+        const read=await this.schema.from(spec.table).select('uid,attr').eq('uid',uid).in('type',scopeTypes[spec.kind]).maybeSingle();
         if(read.error)return read;
         if(!read.data)return {data:[],error:null,count:0};
         const mapped=toAnchorRow(spec,this.values);
-        mapped.attrs={...(read.data.attrs||{}),...(mapped.attrs||{})};
+        mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
         let q=this.schema.from(spec.table).update(mapped);
         const {physical}=this.build(q,false);
         const res=await physical.select(fieldsForSelect(spec,this.fields));
