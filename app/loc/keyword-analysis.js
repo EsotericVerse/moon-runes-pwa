@@ -4,7 +4,7 @@ import {dbAuthRelation} from './db-client.mjs';
 import {selectAllRows,selectRows} from './db-query.mjs';
 import {defaultScopeData,selectManagedScope} from './scope-data';
 import {reanalyzeKeywordClass} from './keyword-reanalysis.mjs';
-import {createChronologicalKeywordReader} from './keyword-article-reader.mjs';
+import {createIndexedDateKeywordReader} from './keyword-article-reader.mjs';
 import {keywordClassState,invalidateKeywordClass,completeKeywordClass} from './keyword-class-state.mjs';
 import {keywordTreeCatalog} from './keyword-tree-report.mjs';
 
@@ -134,33 +134,35 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       event.phase==='reading'?'已重新判斷 '+done+' 篇文章':
       event.phase==='writing'?'已更新 '+done+' / '+total+' 筆 Keywords':'分析已完成');
   };
-  // Date-time order determines tie distribution. Complete each timestamp
-  // group before advancing, without relying on random UID SQL ordering.
-  const articleColumns='uid,createtime,content,searchable';
-  const readArticles=createChronologicalKeywordReader({
-    readTimePage:async ({after,limit})=>{
+  // Galaxy.date is already indexed. All eligible LOC Galaxy dates were
+  // checked against their Taipei publication-date components before this
+  // cutover; the reader also validates every returned row before writing.
+  // Within each day articles stay in createtime + UID order.
+  const articleColumns='uid,date,createtime,content,searchable';
+  const readArticles=createIndexedDateKeywordReader({
+    readDatePage:async ({after,limit})=>{
       let query=dbAuthRelation(scope.galaxy)
         .select(articleColumns).eq('statistics_able',true)
-        .not('createtime','is',null)
-        .order('createtime',{ascending:true}).limit(limit);
-      if(after!==null)query=query.gt('createtime',after);
+        .not('date','is',null)
+        .order('date',{ascending:true}).limit(limit);
+      if(after!==null)query=query.gt('date',after);
       const {data,error}=await query;
-      if(error)throw new Error(error.message||'Galaxy 時間分頁讀取失敗');
+      if(error)throw new Error(error.message||'Galaxy 日期索引分頁讀取失敗');
       return data||[];
     },
-    readTimePeers:async ({createtime,maximumRows})=>{
-      const {data,error}=await dbAuthRelation(scope.galaxy)
-        .select(articleColumns).eq('statistics_able',true)
-        .eq('createtime',createtime).limit(maximumRows);
-      if(error)throw new Error(error.message||'Galaxy 同時間文章讀取失敗');
-      return data||[];
+    readDatePeers:async ({date,maximumRows})=>{
+      const {data,count,error}=await dbAuthRelation(scope.galaxy)
+        .select(articleColumns,{count:'exact'}).eq('statistics_able',true)
+        .eq('date',date).limit(maximumRows);
+      if(error)throw new Error(error.message||'Galaxy 同日文章讀取失敗');
+      return {rows:data||[],count};
     },
     readUndated:async ({maximumRows})=>{
-      const {data,error}=await dbAuthRelation(scope.galaxy)
-        .select(articleColumns).eq('statistics_able',true)
-        .is('createtime',null).limit(maximumRows);
-      if(error)throw new Error(error.message||'Galaxy 無發表時間文章讀取失敗');
-      return data||[];
+      const {data,count,error}=await dbAuthRelation(scope.galaxy)
+        .select(articleColumns,{count:'exact'}).eq('statistics_able',true)
+        .is('date',null).limit(maximumRows);
+      if(error)throw new Error(error.message||'Galaxy 無日期文章讀取失敗');
+      return {rows:data||[],count};
     }
   });
   const {keywordUidListRecord}=await import('./keyword-tree.mjs');
