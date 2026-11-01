@@ -751,16 +751,15 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // read for the span; full rows are read by UID for real timestamp matches.
       const readSiteSpan=async(site,start,end)=>{
         const pageSize=MAX_ROWS,rows=[],seenUids=new Set();
-        // UID keyset uses the existing primary key; timestamps are not unique,
-        // so time-only offset pagination may split an entire same-second group.
-        // No new index is required and subsequent pages never rescan an offset.
-        let afterUid=null;
-        for(;;){
-          let query=dbAuthRelation(galaxy).select('uid,createtime,site_id')
-            .ilike('site',site).gte('createtime',start).lte('createtime',end);
-          if(afterUid!==null)query=query.gt('uid',afterUid);
-          const {data,error}=await query.order('uid',{ascending:true})
-            .range(0,pageSize-1);
+        // Timestamp alone is not a unique sort key. Use the UID as the
+        // stable tie-breaker so equal-second posts span pages without loss.
+        // The database can use a sequential scan and bounded sort; this is
+        // cheaper here than an unselective UID-index scan.
+        for(let offset=0;;){
+          const {data,error}=await dbAuthRelation(galaxy).select('uid,createtime,site_id')
+            .ilike('site',site).gte('createtime',start).lte('createtime',end)
+            .order('createtime',{ascending:true}).order('uid',{ascending:true})
+            .range(offset,offset+pageSize-1);
           if(error)throw Error('createtime 比對失敗：'+error.message);
           const page=data||[];
           if(!page.length)break;
@@ -771,7 +770,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             seenUids.add(uid);
             rows.push(row);
           }
-          afterUid=String(page.at(-1).uid);
+          offset+=page.length;
           if(page.length<pageSize)break;
         }
         return rows;
@@ -810,7 +809,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         readTimestamps:(times,consumePage,site,report)=>readImportCandidatesByTimeWindows(times,{
           readWindow:(start,end)=>readSiteSpan(site,start,end),
           readRowsByUid,consumePage:rows=>consumePage(rows.filter(row=>
-            !reservedSavedUids.has(String(row.uid)))),windowSize:Math.min(MAX_ROWS,1000),concurrency:3,onWindowDone:report
+            !reservedSavedUids.has(String(row.uid)))),windowSize:Math.min(MAX_ROWS,10000),concurrency:times.length>=3000?3:1,onWindowDone:report
         })
       }):new Map();
       const existingBySiteId=new Map([...existingByTime,...matchesById]);
