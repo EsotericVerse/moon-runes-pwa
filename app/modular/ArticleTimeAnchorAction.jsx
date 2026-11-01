@@ -6,6 +6,7 @@ import {selectManagedScope} from '../loc/scope-data';
 import {selectRows,DB_QUERY_BATCH_SIZE} from '../loc/db-query.mjs';
 import {insertRows} from '../loc/db-client.mjs';
 import {allocateTimeUid} from '../loc/time-anchor-ranges.mjs';
+import {readUnifiedAnchorUids} from '../loc/unified-anchor-uids.mjs';
 import {anniversarySuggestionsForDate} from '../loc/anniversary.mjs';
 import {editorSessionStatus,clearEditorSession,touchEditorSession} from '../loc/edit-session-ttl.mjs';
 
@@ -30,7 +31,12 @@ async function allocateScopedTimeUid(table){
     occupied.push(...rows);
     if(rows.length<DB_QUERY_BATCH_SIZE)break;
   }
-  return allocateTimeUid(occupied);
+  const shared=await readUnifiedAnchorUids(table,async(anchor,offset,limit)=>{
+    const {rows=[]}=await selectRows(anchor,{columns:'uid',
+      orders:[{column:'uid',ascending:true}],limit,offset,authenticated:true});
+    return rows;
+  });
+  return allocateTimeUid([...occupied,...shared]);
 }
 
 export default function ArticleTimeAnchorAction({
