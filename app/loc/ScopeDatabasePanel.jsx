@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import {useUiText} from '../i18n/UiText';
-import {getAccountSession} from './db-client.mjs';
+import {mcpClerkSession} from './mcp/clerk-access.mjs';
 import {scopeConfigRequest} from './mcp/scope-config-client.mjs';
 
 const EMPTY={endpoint:'',schema:'public',table:''};
@@ -24,8 +24,7 @@ export default function ScopeDatabasePanel({scopeId}){
     setValues(EMPTY);setApiKey('');setConfigured(false);
     setLoading(true);setStatus('');
     (async()=>{
-      const session=await getAccountSession();
-      const token=session?.session?.access_token;
+      const {token}=await mcpClerkSession();
       const data=await scopeConfigRequest({scopeid:scopeId,token});
       if(!active)return;
       setConfigured(Boolean(data.configured));
@@ -46,9 +45,9 @@ export default function ScopeDatabasePanel({scopeId}){
     }
     setSaving(true);setStatus('');
     try{
-      const session=await getAccountSession();
+      const {token}=await mcpClerkSession();
       const next=await scopeConfigRequest({scopeid:scopeId,
-        token:session?.session?.access_token,values:{...values,api_key:apiKey}});
+        token,values:{...values,api_key:apiKey}});
       setConfigured(Boolean(next.configured));
       setValues({endpoint:next.endpoint||'',schema:next.schema||'public',table:next.table||''});
       setApiKey('');
