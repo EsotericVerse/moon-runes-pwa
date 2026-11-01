@@ -1,4 +1,24 @@
 export default {
+  "fieldLabels": {
+    "uid": "識別碼",
+    "title": "標題",
+    "content": "文章內文",
+    "createtime": "發表時間",
+    "location": "地點",
+    "place_id": "地點代碼",
+    "searchable": "公開搜尋",
+    "UpdateTime": "最後更新",
+    "url": "原始連結",
+    "source_id": "來源文章代碼",
+    "target_id": "關聯目標",
+    "ref_id": "參考文章代碼",
+    "site": "發表平台",
+    "media_link": "關聯多媒體",
+    "statistics_able": "統計開放",
+    "type": "多媒體類型",
+    "meta_tags": "媒體標籤"
+  },
+
   "summaryText": "目前資料庫內有總{articles}筆文章，共{chars}字。從{first}到{last}。",
   "summaryEmpty": "目前資料庫內有0筆文章，共0字，尚無文章日期。",
   "summaryLoading": "正在讀取文章統計…",

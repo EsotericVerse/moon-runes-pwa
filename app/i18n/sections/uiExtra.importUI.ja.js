@@ -60,7 +60,7 @@ export default {
     "attachment": "添付",
     "collection": "データ集合"
   },
-  "mediaHelp": "外部メディアへの参照とテキストのメタデータのみを保存します。画像・音声・動画ファイルは保存しません。メディア識別コード はDBが生成し、URL は任意です。",
+  "mediaHelp": "外部メディアへの参照とテキストのメタデータのみを保存します。画像・音声・動画ファイルは保存しません。メディア識別コードはDBが生成し、URL は任意です。",
   "mediaUidHint": "8 文字の UID（任意）",
   "placeHint": "場所・撮影地",
   "externalUrlHint": "外部 URL／クラウドリンク（任意）",

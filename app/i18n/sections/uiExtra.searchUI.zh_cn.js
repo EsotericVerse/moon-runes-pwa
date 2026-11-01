@@ -1,4 +1,24 @@
 export default {
+  "fieldLabels": {
+    "uid": "识别码",
+    "title": "标题",
+    "content": "文章正文",
+    "createtime": "发布时间",
+    "location": "地点",
+    "place_id": "地点代码",
+    "searchable": "公开搜索",
+    "UpdateTime": "最后更新",
+    "url": "原始链接",
+    "source_id": "来源文章代码",
+    "target_id": "关联目标",
+    "ref_id": "参考文章代码",
+    "site": "发布平台",
+    "media_link": "关联媒体",
+    "statistics_able": "统计开放",
+    "type": "媒体类型",
+    "meta_tags": "媒体标签"
+  },
+
   "mediaTypeRequired": "请选择媒体类型。",
   "mediaLinkUidInvalid": "关联文章代码必须为 8 位。",
   "runeReferencesInvalid": "符文参照资料必须是有效的 JSON。",

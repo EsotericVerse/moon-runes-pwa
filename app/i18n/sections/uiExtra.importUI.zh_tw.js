@@ -60,7 +60,7 @@ export default {
     "attachment": "附件",
     "collection": "資料集合"
   },
-  "mediaHelp": "只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。媒體識別碼 由資料庫自動產生，url 可留空。",
+  "mediaHelp": "只記錄外部媒體參照與文字 metadata：URL／雲端連結、檔名或標題、來源 ID、時間、地點與 Meta Tag；不接收、不暫存任何圖片／音訊／影片檔案。媒體識別碼由資料庫自動產生，url 可留空。",
   "mediaUidHint": "8 字 UID，可留空",
   "placeHint": "打卡地點／拍攝位置",
   "externalUrlHint": "外部 URL／雲端連結，可留空，之後再補",

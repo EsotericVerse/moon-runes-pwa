@@ -1081,7 +1081,7 @@ export default function Search({managementMode=false}){
         <button type="button" className="loc-button" aria-pressed={placeOnly}
           onClick={()=>{setPlaceOnly(true);resetSearchState();}}>只查打卡地點</button>
       </div>:null}
-      {placeOnly?<p className="scope-status">僅搜尋 Galaxy 的 location；結果仍使用 LOC 原有文章列表與分頁，不搜尋文章內文。</p>:null}
+      {placeOnly?<p className="scope-status">僅搜尋文章的打卡地點；結果仍使用原有文章列表與分頁，不搜尋文章內文。</p>:null}
       {placeOnly&&managementMode?<div className="loc-search-next-step">
         <p className="scope-status">這裡顯示的是已有打卡地點的文章。如果要為尚未標註地點的文章批次補寫，請前往搜尋管理，搜尋文章後勾選。</p>
         <button type="button" className="loc-button" onClick={()=>{

@@ -1,4 +1,24 @@
 export default {
+  "fieldLabels": {
+    "uid": "識別コード",
+    "title": "タイトル",
+    "content": "記事本文",
+    "createtime": "公開日時",
+    "location": "場所",
+    "place_id": "場所コード",
+    "searchable": "公開検索",
+    "UpdateTime": "最終更新",
+    "url": "元のリンク",
+    "source_id": "元記事コード",
+    "target_id": "関連先",
+    "ref_id": "参照記事コード",
+    "site": "投稿サービス",
+    "media_link": "関連メディア",
+    "statistics_able": "統計公開",
+    "type": "メディアの種類",
+    "meta_tags": "メディアタグ"
+  },
+
   "summaryText": "現在、データベースには{articles}件の記事、合計{chars}文字があります。期間：{first}～{last}。",
   "summaryEmpty": "現在、記事は0件、文字数は0文字です。記事の日付はありません。",
   "summaryLoading": "記事統計を読み込んでいます…",

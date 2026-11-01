@@ -1,4 +1,24 @@
 export default {
+  "fieldLabels": {
+    "uid": "Identifier",
+    "title": "Title",
+    "content": "Article text",
+    "createtime": "Publication time",
+    "location": "Location",
+    "place_id": "Location code",
+    "searchable": "Public search",
+    "UpdateTime": "Last updated",
+    "url": "Original link",
+    "source_id": "Source article ID",
+    "target_id": "Linked targets",
+    "ref_id": "Reference article ID",
+    "site": "Publishing platform",
+    "media_link": "Linked media",
+    "statistics_able": "Statistics enabled",
+    "type": "Media type",
+    "meta_tags": "Media tags"
+  },
+
   "summaryText": "This database currently contains {articles} articles and {chars} characters, from {first} to {last}.",
   "summaryEmpty": "There are currently 0 articles and 0 characters, with no article dates.",
   "summaryLoading": "Loading article statistics…",
