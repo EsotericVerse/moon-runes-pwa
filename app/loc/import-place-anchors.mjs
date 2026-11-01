@@ -87,6 +87,13 @@ export async function prepareImportPlaceAnchors(records,{
   // Locate exact known coordinates first. Name-only visits can reuse a single
   // unambiguous named anchor, but never choose between different coordinates.
   const ordered=[...names.values()].sort((a,b)=>Number(Boolean(b.coordinates))-Number(Boolean(a.coordinates)));
+  // Avoid scanning every location for each name-only place during large imports.
+  const coordinatePeers=new Map();
+  for(const place of ordered){
+    if(!place.coordinates)continue;
+    if(!coordinatePeers.has(place.name))coordinatePeers.set(place.name,[]);
+    coordinatePeers.get(place.name).push(place);
+  }
   const nameOnlyAliases=[];
   for(const place of ordered){
     const candidates=existingByName.get(place.name)||[];
@@ -96,7 +103,7 @@ export async function prepareImportPlaceAnchors(records,{
     if(matched){register(place,matched.uid);reused++;continue;}
     if(!place.coordinates){
       if(candidates.length>1)continue;
-      const peers=ordered.filter(p=>p.name===place.name&&p.coordinates);
+      const peers=coordinatePeers.get(place.name)||[];
       if(!candidates.length&&peers.length===1){
         nameOnlyAliases.push({name:place.name,coordinates:peers[0].coordinates});
         continue;
