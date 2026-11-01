@@ -78,10 +78,10 @@ test('import compares site IDs before time and fills only missing metadata',()=>
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/\.ilike\('site',site\)\.in\('site_id',idsPage\)/);
   assert.match(panel,/\.select\('uid,createtime,site_id'\)\s*\.ilike\('site',site\)\.gte\('createtime',start\)\.lte\('createtime',end\)/);
-  assert.match(panel,/\.gt\('uid',afterUid\)/);
-  assert.match(panel,/\.order\('uid',\{ascending:true\}\)\s*\.range\(0,pageSize-1\)/);
+  assert.match(panel,/\.order\('createtime',\{ascending:true\}\)\.order\('uid',\{ascending:true\}\)/);
+  assert.match(panel,/\.range\(offset,offset\+pageSize-1\)/);
   const timeSelect=panel.slice(panel.indexOf('const readSiteSpan=async('),panel.indexOf('const readRowsByUid=async'));
-  assert.doesNotMatch(timeSelect,/\.order\('createtime'/);
+  assert.doesNotMatch(timeSelect,/\.gt\('uid'/);
   assert.match(panel,/urlSafeInBatches\(uids,'uid'\)/);
   assert.match(panel,/matchExistingImportBySiteId\(existingCandidates,/);
   assert.match(panel,/matchExistingImportByCreatedAt\(remaining,/);
