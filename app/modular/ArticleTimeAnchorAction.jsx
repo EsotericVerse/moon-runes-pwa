@@ -6,6 +6,7 @@ import {selectManagedScope} from '../loc/scope-data';
 import {selectRows,DB_QUERY_BATCH_SIZE} from '../loc/db-query.mjs';
 import {insertRows} from '../loc/db-client.mjs';
 import {allocateTimeUid} from '../loc/time-anchor-ranges.mjs';
+import {anniversarySuggestionsForDate} from '../loc/anniversary.mjs';
 import {editorSessionStatus,clearEditorSession,touchEditorSession} from '../loc/edit-session-ttl.mjs';
 
 const validDay=value=>/^\d{4}-\d{2}-\d{2}$/.test(String(value||''));
@@ -41,6 +42,7 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
   const [open,setOpen]=useState(false);
   const [table,setTable]=useState('');
   const [description,setDescription]=useState('');
+  const [annualSuggestions,setAnnualSuggestions]=useState([]);
   const [notice,setNotice]=useState('');
   const [error,setError]=useState('');
 
@@ -55,6 +57,7 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
     if(saving)return;
     setOpen(false);
     setDescription('');
+    setAnnualSuggestions([]);
   };
 
   const begin=async()=>{
@@ -62,6 +65,7 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
     setChecking(true);
     setError('');
     setNotice('');
+    setAnnualSuggestions([]);
     try{
       if(!validDay(date)||scopeId==='loc'||scopeId==='local')
         throw new Error('這篇文章沒有可用的時間定錨日期。');
@@ -86,6 +90,24 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
       setTable(target.time);
       setDescription('');
       setOpen(true);
+      // Only check other anniversaries after the user explicitly opens
+      // CREATE. Never preload all Time anchors on article detail read.
+      // Suggestions are ephemeral; writes happen only on Submit.
+      try{
+        const existingAnchors=[];
+        for(let offset=0;;offset+=DB_QUERY_BATCH_SIZE){
+          const result=await selectRows(target.time,{
+            columns:'uid,type,title,address',
+            filters:[{column:'type',operator:'eq',value:'anchor'}],
+            orders:[{column:'uid',ascending:true}],
+            offset,limit:DB_QUERY_BATCH_SIZE,authenticated:true
+          });
+          existingAnchors.push(...result.rows);
+          if(result.rows.length<DB_QUERY_BATCH_SIZE)break;
+        }
+        setAnnualSuggestions(anniversarySuggestionsForDate(date,existingAnchors));
+      }catch{setAnnualSuggestions([]);}
+
     }catch(cause){
       setError(String(cause?.message||cause||'無法確認編輯權限。'));
     }finally{
@@ -127,6 +149,7 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
       }
       setOpen(false);
       setDescription('');
+      setAnnualSuggestions([]);
     }catch(cause){
       setError(String(cause?.message||cause||'新增時間定錨失敗。'));
     }finally{
@@ -144,6 +167,15 @@ export default function ArticleTimeAnchorAction({scopeId='',date='',onCreated=nu
       <h2 id={titleId}>新增時間定錨</h2>
       <p className="scope-status">定錨日期：{date}</p>
       <form className="scope-editor" onSubmit={save}>
+        {annualSuggestions.length?<div className="scope-status" role="group"
+          aria-label="週年紀念虛擬定錨建議">
+          <strong>週年紀念建議（虛擬定錨，尚未儲存）</strong>
+          {annualSuggestions.map(item=><div key={item.sourceUid+':'+item.date}>
+            <span>{item.title}｜原始定錨 {item.sourceDate}</span>
+            <button type="button" className="loc-button" disabled={saving}
+              onClick={()=>setDescription(item.title)}>套用建議</button>
+          </div>)}
+        </div>:null}
         <label>敘述
           <textarea className="scope-input" value={description} rows={4}
             maxLength={4000} autoFocus required disabled={saving}
