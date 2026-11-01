@@ -16,3 +16,29 @@ test('runtime I/O settings apply across live exported limits and reject unsafe v
     assert.equal(limits.MAX_ROWS,500,'invalid settings must not partially apply');
   } finally {applyRuntimeIoLimits({});}
 });
+
+test('URL-bounded import lookup batches match the legacy partition for mixed Unicode IDs',()=>{
+  const values=Array.from({length:1400},(_,i)=>
+    'post-'+i+(i%11===0?'(附註,你好)':i%17===0?'😀"test':''));
+  const encode=value=>{
+    const raw=String(value);
+    return /[,()]/.test(raw)?'"'+raw.replace(/"/g,'\\"')+'"':raw;
+  };
+  const legacy=[];
+  let current=[];
+  const queryLength=batch=>new URLSearchParams({
+    site_id:'in.('+batch.map(encode).join(',')+')'
+  }).toString().length;
+  for(const value of values){
+    const candidate=[...current,value];
+    if(candidate.length>limits.MAX_ROWS||queryLength(candidate)>limits.MAX_GET_URL_CHARS-1024){
+      legacy.push(current);current=[value];
+    }else current=candidate;
+  }
+  if(current.length)legacy.push(current);
+  const batches=[...limits.urlSafeInBatches(values,'site_id')];
+  assert.deepEqual(batches,legacy);
+  assert.ok(batches.every(batch=>queryLength(batch)<=limits.MAX_GET_URL_CHARS-1024));
+  assert.deepEqual([...limits.urlSafeInBatches([],'uid')],[]);
+  assert.throws(()=>[...limits.urlSafeInBatches(['x'.repeat(9000)],'uid')],/單筆查詢值太長/);
+});

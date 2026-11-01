@@ -293,3 +293,19 @@ test('partial visit-write failures report completed anchors and allow a deduped 
   assert.ok(restarted.added>0);
   assert.ok(restarted.added<4,'previously persisted visit timestamps are not duplicated');
 });
+
+test('many independent name-only locations and GPS aliases keep exact matching semantics',async()=>{
+  const db=memoryTrace();
+  const records=Array.from({length:500},(_,i)=>({location:'地點'+i}));
+  records.push(named('唯一同名點',25.05,121.51));
+  records.push({location:'唯一同名點'});
+  const resolved=await prepareImportPlaceAnchors(records,{
+    scopeId:'lo3rwang',relation:db.relation,createMissing:true
+  });
+  assert.equal(resolved.created,501);
+  assert.equal(db.inserts,501);
+  assert.equal(importedPlaceId({incoming:{location:'唯一同名點'},
+    byName:resolved.byName,byCoordinate:resolved.byCoordinate}),
+    importedPlaceId({incoming:named('唯一同名點',25.05,121.51),
+      byName:resolved.byName,byCoordinate:resolved.byCoordinate}));
+});

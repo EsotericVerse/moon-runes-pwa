@@ -136,3 +136,31 @@ test('same file name is only a display label; repeat parsing uses source identit
   assert.match(panel,/const incoming=dedupeIncomingImport\(analyzed\.valid\);/);
   assert.match(panel,/const matchesById=existingCandidates\.length\?await matchExistingImportBySiteId\(/);
 });
+
+test('native post IDs do not require expensive body normalization for deduplication',()=>{
+  const row={...original,uid:'SINGLE01'};
+  Object.defineProperty(row,'content',{get(){throw Error('unexpected content normalization');}});
+  assert.equal(dedupeIncomingImport([row]).unique.length,1);
+});
+
+test('archive selection does not count ZIP entries in an unused extra scan',()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  assert.doesNotMatch(panel,/zipEntryCount\(file\)/);
+});
+
+test('ID-based media lookup stops after a short page instead of making an empty request',async()=>{
+  const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
+  const section=panel.slice(panel.indexOf('async function readExistingByIds('),
+    panel.indexOf('// Shared idempotent media attachment write'));
+  let requests=0;
+  const relation=()=>({select:()=>({in:()=>({order:()=>({
+    range:async start=>{
+      requests++;
+      return {data:start?[]:[{uid:'A'}],error:null};
+    }
+  })})})});
+  const reader=new Function('dbAuthRelation','MAX_ROWS','urlSafeInBatches',
+    section+'\nreturn readExistingByIds;')(relation,500,function*(values){yield values;});
+  assert.equal((await reader('galaxy','uid','uid',['A'],'failed')).length,1);
+  assert.equal(requests,1);
+});
