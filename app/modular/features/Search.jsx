@@ -46,8 +46,8 @@ const ScopeEditableBlocks=dynamic(()=>import('../../loc/ScopeEditableBlocks'),{l
 const TraceBlocks=dynamic(()=>import('./TraceBlocks'),{loading:()=>null});
 
 
-const MEDIA_EDITOR_COLUMNS='uid,location,media_type,title,url,meta_tags,createtime';
-const MEDIA_ATTR_ORDER=['uid','location','media_type','url','meta_tags','createtime'];
+const MEDIA_EDITOR_COLUMNS='uid,location,type,title,url,meta_tags,createtime';
+const MEDIA_ATTR_ORDER=['uid','location','type','url','meta_tags','createtime'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,searchable,UpdateTime,url,source_id,target_id,ref_id,site,media_link,statistics_able';
@@ -100,7 +100,7 @@ function highlightSearchText(text='',query=''){
 function toResult(row,source,scopeId,copy=UI_COPY){
   const isMedia=Boolean(row.uid&&(row.record_type==='galaxy_media'||
     String(row.__table||'').endsWith('_media')||
-    (row.media_type&&!Object.prototype.hasOwnProperty.call(row,'content'))));
+    (row.type&&!Object.prototype.hasOwnProperty.call(row,'content'))));
   const isGalaxy=Boolean(row.uid)&&!isMedia&&!['anchor','period','era'].includes(String(row.type||''));
   const explicitTitle=workDisplayText(row.title||row.name||row.display_title||row.label||row.rune_name||row.song_id||row.id||'').trim();
   const fallbackTitle=isMedia?MEDIA_FALLBACK_TITLE:WORK_FALLBACK_TITLE;
@@ -707,7 +707,7 @@ export default function Search({managementMode=false}){
         contentPatch={...(titleChanged?{title:nextTitle}:{}),content:body,UpdateTime:new Date().toISOString(),...attrs};
       }else{
         const attrs=SearchEditDraft.changedAttributes('media',editDraft,t);
-        const {rune_references,...plainAttrs}=attrs;
+        const plainAttrs=attrs;
         assertPlainGalaxyAttributes({...plainAttrs,...(titleChanged?{title:nextTitle}:{})});
         contentPatch={...(titleChanged?{title:nextTitle}:{}),...attrs};
         if(!Object.keys(contentPatch).length){
