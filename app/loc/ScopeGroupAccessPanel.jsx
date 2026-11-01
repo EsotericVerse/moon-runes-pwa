@@ -14,6 +14,9 @@ export default function ScopeGroupAccessPanel({groupId}){
   const [scope,setScope]=useState('');
   const [newScope,setNewScope]=useState('');
   const [categoryUid,setCategoryUid]=useState('');
+  const [publicClasses,setPublicClasses]=useState([]);
+  const [classesLoading,setClassesLoading]=useState(false);
+  const [classesError,setClassesError]=useState('');
   const [selected,setSelected]=useState(['read']);
   const [days,setDays]=useState(365);
   const [loading,setLoading]=useState(true);
@@ -38,6 +41,22 @@ export default function ScopeGroupAccessPanel({groupId}){
       .finally(()=>{if(active)setLoading(false);});
     return()=>{active=false;};
   },[groupId]);
+  useEffect(()=>{
+    if(!data||!scope||scope===groupId){setPublicClasses([]);setCategoryUid('');return;}
+    let active=true;
+    setClassesLoading(true);setClassesError('');setCategoryUid('');
+    // SQL only returns published type=class nodes from the selected Scope's
+    // own Keywords table. Group/Item identifiers are never included.
+    dbPublicClient.schema('silver').rpc('read_shared_keyword_classes',{p_scope_id:scope})
+      .then(({data:rows,error})=>{
+        if(!active)return;
+        if(error)throw error;
+        setPublicClasses((Array.isArray(rows)?rows:[])
+          .filter(row=>row.scopeId===scope&&/^[A-Za-z0-9]{4}$/.test(row.classUid)));
+      }).catch(error=>{if(active){setPublicClasses([]);setClassesError(error.message||'無法讀取公開科目');}})
+      .finally(()=>{if(active)setClassesLoading(false);});
+    return()=>{active=false;};
+  },[data?.members?.join(','),scope,groupId]);
   const submit=async(kind,values,success)=>{
     if(busy)return;
     setBusy(true);setStatus('');
@@ -54,11 +73,8 @@ export default function ScopeGroupAccessPanel({groupId}){
       if(kind==='categoryAdd'){
         // Validate against the public Class-only directory; no Group or Item
         // and no private Class may be browsed from this Group UI.
-        const {data:shared,error}=await dbPublicClient.schema('silver')
-          .rpc('read_shared_keyword_classes',{p_scope_id:scopeid});
-        if(error)throw new Error(error.message||'無法核對公開科目');
-        if(!(Array.isArray(shared)?shared:[]).some(row=>row.classUid===classUid))
-          throw new Error('僅能加入此 Scope 已公開的群組科目（四碼 Class UID）');
+        if(!publicClasses.some(row=>row.classUid===classUid))
+          throw new Error('僅能匯入此 Scope 已公開的四碼 Class UID');
       }
       await call(kind,{scopeid,classUid});
       await reload();
@@ -119,13 +135,26 @@ export default function ScopeGroupAccessPanel({groupId}){
       <h3>關鍵字目錄（Scope Group 管理）</h3>
       <p className="scope-status">每筆記錄：Scope ID／四碼群組科目 UID／SHA。只允許已公開的 Class，不能選擇 Group 或 Item。</p>
       <div className="scope-management-fields">
-        <label><span>四碼群組科目 UID</span>
-          <input value={categoryUid} maxLength={4} autoCapitalize="off" spellCheck={false}
-            onChange={event=>setCategoryUid(event.target.value)} placeholder="A1b2"/></label>
+        <label><span>匯入來源 Scope ID</span>
+          <select className="scope-select" value={scope} onChange={event=>setScope(event.target.value)}>
+            {data.members.filter(id=>id!==groupId).map(id=><option key={id} value={id}>{id}</option>)}
+          </select></label>
+        <label><span>公開的關鍵字群組科目（Class UID）</span>
+          <select className="scope-select" value={categoryUid}
+            disabled={classesLoading||!publicClasses.length}
+            onChange={event=>setCategoryUid(event.target.value)}>
+            <option value="">{classesLoading?'正在核對公開科目…':'選擇公開的 Class UID'}</option>
+            {publicClasses.map(row=><option key={row.classUid} value={row.classUid}>
+              {row.name}／{row.classUid}
+            </option>)}
+          </select></label>
+        {classesError?<p className="scope-status scope-error" role="alert">{classesError}</p>:null}
+        {!classesLoading&&!classesError&&!publicClasses.length
+          ?<p className="scope-status">此 Scope 沒有公開的關鍵字群組科目；Group、Item 不可匯入。</p>:null}
         <div className="scope-management-wide-field">
           <button type="button" className="loc-button"
-            disabled={busy||!scope||scope===groupId||!/^[A-Za-z0-9]{4}$/.test(categoryUid)}
-            onClick={()=>updateCategory('categoryAdd',scope,categoryUid)}>加入公開群組科目</button>
+            disabled={busy||classesLoading||!publicClasses.some(row=>row.classUid===categoryUid)}
+            onClick={()=>updateCategory('categoryAdd',scope,categoryUid)}>匯入公開群組科目</button>
         </div>
       </div>
       {(data.categories||[]).length
