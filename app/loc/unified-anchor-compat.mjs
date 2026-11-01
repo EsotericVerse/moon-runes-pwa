@@ -90,9 +90,8 @@ export function toAnchorRow(spec,row){
  if(spec.kind==='time'){
    if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
    if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   // A date node needs only its label; it is its own time coordinate.
-   // Period/era ranges are optional derived projections, stored flat if supplied.
-   if(Object.hasOwn(data,'range')&&type!=='date'&&data.range!=null)out.attr=data.range;
+   // A date node is fully represented by label; never persist a duplicate range.
+   if(Object.hasOwn(data,'range')&&type!=='date'&&data.range!=null)out.attr={range:data.range};
  }else if(spec.kind==='trace'){
    if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
    if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
@@ -125,9 +124,9 @@ export function fromAnchorRow(spec,row){
  if(spec.kind==='time'){
    out.address=row.type==='date'?(row.label??null):null;
    out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
-   // Existing imported periods/eras have a flat range document in attr;
-   // older application writes nested it under attr.range. Support both.
-   out.range=row.type==='date'?null:(row.attr?.range??(row.attr?.version===1?row.attr:null));
+   // Imported root range caches are ignored; period/era ranges are derived
+   // from referenced UIDs, so editing the links never leaves a stale cache.
+   out.range=row.type==='date'?null:(row.attr?.range??null);
  }else if(spec.kind==='trace'){
    out.trace_type=legacyType(row.type);
    out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
