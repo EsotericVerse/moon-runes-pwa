@@ -11,6 +11,7 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
 import {anniversarySuggestionsForDate} from '../../loc/anniversary.mjs';
+import {readUnifiedAnchorUids} from '../../loc/unified-anchor-uids.mjs';
 
 const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,range,invisible';
 const TYPES=['anchor','period','era'];
@@ -258,6 +259,12 @@ export default function CultureTimelineEditor({
             day(anchors.get(segment.end)?.address)<=day(anchors.get(segment.start)?.address))
             throw new Error('結束定錨點必須晚於起始定錨點');
         }
+        const globalUids=await readUnifiedAnchorUids(timeTable,
+          async(anchor,offset,limit)=>{
+            const {rows=[]}=await selectRows(anchor,{columns:'uid',
+              orders:[{column:'uid',ascending:true}],limit,offset,authenticated:true});
+            return rows;
+          });
         let pairPeriodUids=[];
         if(draft.type==='era'&&tracePairs.length){
           if(tracePairs.some(pair=>!anchors.has(pair[0])||!anchors.has(pair[1])))
@@ -266,7 +273,7 @@ export default function CultureTimelineEditor({
           for(const pair of tracePairs){
             const existingUid=existingPeriodByPair.get(periodKeyOf(pair));
             if(existingUid){pairPeriodUids.push(existingUid);continue;}
-            const uid=allocateTimeUid([...all,...extraPeriodRows]);
+            const uid=allocateTimeUid([...all,...globalUids,...extraPeriodRows]);
             taken.add(uid);
             const [a,b]=pair;
             const titleA=anchors.get(a)?.title||a,titleB=anchors.get(b)?.title||b;
@@ -283,7 +290,7 @@ export default function CultureTimelineEditor({
       if(selectedId){
         await updateRows(timeTable,payload,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
       }else{
-        await insertRows(timeTable,[{uid:nextTimeUid([...all,...extraPeriodRows]),...payload}]);
+        await insertRows(timeTable,[{uid:nextTimeUid([...all,...globalUids,...extraPeriodRows]),...payload}]);
       }
       refresh();reset();setMessage('已儲存。');return true;
     }catch(error){setMessage(error?.message||'儲存失敗');editDock?.setNotice?.(error?.message||'儲存失敗');return false;}

@@ -43,8 +43,10 @@ function buildScopeData(row,id){
     role:String(row?.role||'').trim(),
     birthday:String(row?.birthday||'').slice(0,10)||null,
     galaxy,
+    // One physical store for Time, Trace, Keywords and Media.
+    anchor:'silver.'+id+'_anchor',
     galaxyMedia:galaxy+'_media',
-    // The real silver.<scope>_time table now uses uid/type/address.
+    // Compatibility aliases are resolved only by the DB adapter.
     time:`silver.${id}_${timeSuffix}`,
     keywords:`silver.${id}_keywords`,
     blocks:`silver.${id}_blocks`

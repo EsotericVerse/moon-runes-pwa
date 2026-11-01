@@ -27,6 +27,7 @@ import {useRiverDensityAnalysis} from '../modules/culture-timeline/use-river-den
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
 import {buildEraRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
+import {readUnifiedAnchorUids} from '../../loc/unified-anchor-uids.mjs';
 
 import {selectGalaxyIdentity,selectScopeDailyCounts} from '../../loc/galaxy-query';
 import {revalidateServerMetadata} from '../../loc/scope-data';
@@ -1118,6 +1119,12 @@ export default function Culture(){
       const verified=await account.refresh();
       if(!verified?.authorizer?.canManageScopeSync(scopeId))throw new Error('請先登入具備此 Scope 權限的帳號。');
       const used=new Set((query.data?.timelineItems||[]).filter(row=>row?.entry_type==='anchor').map(row=>String(row.uid||'')));
+      const globalUids=await readUnifiedAnchorUids(scopeData.time,async(anchor,offset,limit)=>{
+        const {rows=[]}=await selectRows(anchor,{columns:'uid',
+          orders:[{column:'uid',ascending:true}],limit,offset,authenticated:true});
+        return rows;
+      });
+      for(const row of globalUids)used.add(row.uid);
       const payload=dates.map(date=>{
         const uid=allocateTimeUid([...used].map(uid=>({uid})));
         used.add(uid);

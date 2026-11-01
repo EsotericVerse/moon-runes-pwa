@@ -4,6 +4,7 @@ import {DB_QUERY_BATCH_SIZE,MAX_ROWS} from './query-batch-size.mjs';
 import {parseVerifiedGoogleOAuthUser} from './oauth-identity.mjs';
 import {assertAuthorizationForTable,clearAuthorization,readAuthorization} from './authorization-runtime.mjs';
 import {assertEditorSession} from './edit-session-ttl.mjs';
+import {unifiedAnchorSpec} from './unified-anchor-compat.mjs';
 
 // Keyword read, write and reset use the shared MaxRows.
 export {MAX_ROWS as KEYWORD_CLASSIFICATION_BATCH_SIZE,MAX_ROWS as KEYWORD_CLASSIFICATION_WRITE_BATCH_SIZE,MAX_ROWS as KEYWORD_CLASSIFICATION_WRITE_PAUSE_INTERVAL};
@@ -76,6 +77,38 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function managementWriteUnchecked(payload){
     preflightWrite(payload?.p_table);
+    // The unified anchor store is already governed by the Clerk-verified
+    // authenticated Kysely client and its database RLS. Legacy management
+    // SQL RPCs are never used for this cutover.
+    const parts=String(payload?.p_table||'').split('.');
+    const spec=unifiedAnchorSpec(parts[0],parts[1]);
+    if(spec){
+      const relation=()=>dbAuthRelation(payload.p_table);
+      const filters=Array.isArray(payload.p_filters)?payload.p_filters:[];
+      const op=String(payload.p_operation||'');
+      const filtered=q=>{
+        for(const f of filters){
+          if(!['eq','neq','gt','gte','lt','lte','like','ilike','is','in'].includes(f.operator))
+            throw Error('Unsupported unified write filter: '+f.operator);
+          q=q[f.operator](f.column,f.value);
+        }
+        return q;
+      };
+      if(op==='insert'){
+        const rows=Array.isArray(payload.p_rows)?payload.p_rows:[];
+        const {data,error}=await relation().insert(rows).select('uid');
+        if(error)throw Error(error.message||'Unified insert failed');
+        return {count:data?.length||0};
+      }
+      if(op==='update'||op==='delete'){
+        if(!filters.length)throw Error('Unsafe unfiltered unified write');
+        const q=op==='update'?relation().update(payload.p_values||{}):relation().delete();
+        const {data,error}=await filtered(q).select('uid');
+        if(error)throw Error(error.message||'Unified write failed');
+        return {count:data?.length||0};
+      }
+      throw Error('Unsupported unified operation: '+op);
+    }
     const {data,error}=await authClient.schema('silver').rpc('management_write',payload);
     if(error)throw new Error(error.message||'Management write failed');
     if(payload?.p_table==='silver.manage'){
@@ -446,6 +479,17 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const category=categoryUid?tree.index.get(categoryUid):null;
     const descendants=descendantsOfKeyword(data,original.uid);
     const occupied=[...tree.index.keys()],mapping=new Map();
+    if(scope==='lo3rwang'){
+      // Shared PK means 4-character class UIDs must not collide with
+      // Time or Trace nodes. Read only UIDs, and only during copy.
+      for(let offset=0;;offset+=500){
+        const {data,error}=await dbAuthRelation('silver.lo3rwang_anchor')
+          .select('uid').order('uid',{ascending:true}).range(offset,offset+499);
+        if(error)throw Error('無法核對統一定錨 UID：'+(error.message||error));
+        for(const row of data||[])occupied.push(String(row.uid));
+        if((data||[]).length<500)break;
+      }
+    }
     for(const node of descendants){
       const uid=generateKeywordClassUid(occupied);
       occupied.push(uid);mapping.set(node.uid,uid);

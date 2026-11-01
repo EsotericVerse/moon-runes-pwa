@@ -4,6 +4,7 @@ import {createDatabaseClient} from './db-contract.mjs';
 import {createConfiguredAdapter} from './providers/configured.mjs';
 import {configureDbSourceLabels} from './db-source-status.mjs';
 import {createLocalSqliteAdapter} from './providers/local-sqlite.mjs';
+import {unifiedAnchorSpec,unifiedAnchorRelation} from './unified-anchor-compat.mjs';
 
 // Provider construction is the only runtime composition point.
 const adapter=createConfiguredAdapter();
@@ -39,7 +40,11 @@ function isLocalRelation(table,schemaName){
 function routedSchema(schemaName,cloudSchema){
   const localSchema=localAdapter.publicClient.schema(schemaName);
   return {
-    from(table){return isLocalRelation(table,schemaName)?localSchema.from(table):cloudSchema.from(table);},
+    from(table){
+      if(isLocalRelation(table,schemaName))return localSchema.from(table);
+      const unified=unifiedAnchorSpec(schemaName,table);
+      return unified?unifiedAnchorRelation(cloudSchema,unified):cloudSchema.from(table);
+    },
     rpc(name,args={},options={}){
       const toLocal=name==='management_write'?isLocalRelation(args?.p_table,schemaName):String(args?.p_scope_id||'')==='local';
       return toLocal?localSchema.rpc(name,args):cloudSchema.rpc(name,args,options);
@@ -60,7 +65,8 @@ const client=createDatabaseClient(routedAdapter);
 // Use the existing public Supabase SDK socket for browser/iOS game rooms.
 export const dbRealtimeClient=adapter.realtimeClient;
 export const dbBackupPublicClient=adapter.backupPublicClient||null;
-export const dbConfiguredPublicClient=adapter.configuredPublicClient||null;
+export const dbConfiguredPublicClient=adapter.configuredPublicClient
+  ?{schema:name=>routedSchema(name,adapter.configuredPublicClient.schema(name))}:null;
 // Passive Auth events use the configured SDK, not the routed query client.
 export const dbAuthEvents=adapter.auth;
 export const dbPrimarySourceLabel=adapter.primarySourceLabel||'Primary';
