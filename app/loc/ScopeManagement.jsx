@@ -16,7 +16,7 @@ const PlaceManagement=dynamic(()=>import('./PlaceManagement').catch(recoverChunk
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'空間定錨、Google Timeline 地點整理、糾紛點與補充資料。'},
   {value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',description:'從已有地點自動完成選點，組合有序 Frame。'},
-  {value:'settings',label:'主題',shortLabel:'主題',description:''}
+  {value:'settings',label:'主題／資料庫',shortLabel:'設定',description:'Scope 主題及獨立資料庫連線。'}
 ]);
 
 export default function ScopeManagement({scopeId:routeScopeId='loc',section:entrySection=''}){
