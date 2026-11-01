@@ -39,6 +39,11 @@ export function dedupeIncomingImport(records=[]){
         changes[field]=row[field];
     }
     if(row.__importCheckin===true)changes.__importCheckin=true;
+    if(Array.isArray(row.__importVisitTimes)&&row.__importVisitTimes.length){
+      const prior=Array.isArray(saved.__importVisitTimes)?saved.__importVisitTimes:[];
+      const combined=[...new Set([...prior,...row.__importVisitTimes].filter(Boolean))];
+      if(combined.length!==prior.length)changes.__importVisitTimes=combined;
+    }
     if(Object.keys(changes).length)unique[index]={...saved,...changes};
   };
   let duplicates=0;
