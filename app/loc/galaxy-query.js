@@ -7,7 +7,7 @@ import {sourceTaxonomyFromArrays} from './source-classification.mjs';
 import {DEFAULT_LIST_BATCH_SIZE} from './db-contract.mjs';
 import {parseSearchQuery} from './search-query.mjs';
 import {normalizeRelationIds,publicContentFilters} from './content-policy';
-import {timePeriodContainsDate} from './time-anchor-ranges.mjs';
+import {storedTimeRange,timePeriodContainsDate} from './time-anchor-ranges.mjs';
 import {DB_QUERY_BATCH_SIZE,applyFilters,applyOrders,executePublicRead,selectCount,selectRows} from './db-query.mjs';
 import {readLocStatistics,readScopeCategoryTotals,readScopeEarliest,readScopeOverview,readScopeStatistics} from './db-client.mjs';
 import {defaultScopeData,selectScopeRegistry} from './scope-data';
@@ -282,24 +282,53 @@ function shiftedDay(day,shift){
 // A selected article only needs the lightweight Time graph. Share the
 // canonical Culture range resolution among article reads for a short TTL.
 const articleTimeCache=new Map();
+// Detail reads just the selected day and the small stored period/era ranges.
+// Avoid fetching every daily Time anchor for each reader (important at 100 users).
 async function articleTimeRows(scope){
   const key=String(scope.id)+'|'+String(scope.time),now=Date.now();
   const cached=articleTimeCache.get(key);
   if(cached&&cached.expires>now)return cached.promise;
-  const promise=import('./culture-query').then(({selectCultureTimeRows})=>selectCultureTimeRows(scope));
-  articleTimeCache.set(key,{expires:now+5_000,promise});
+  const promise=(async()=>{
+    const projected=[];
+    const pageSize=200;
+    for(let offset=0;;offset+=pageSize){
+      const result=await selectRows(scope.time,{
+        columns:'uid,type,title,range',
+        filters:[{column:'type',operator:'in',value:['period','era']}],
+        orders:[{column:'uid',ascending:true}],limit:pageSize,offset
+      });
+      projected.push(...result.rows);
+      if(result.rows.length<pageSize)break;
+    }
+    if(projected.some(row=>!storedTimeRange(row.range))){
+      const {selectCultureTimeRows}=await import('./culture-query');
+      return (await selectCultureTimeRows(scope)).filter(row=>
+        row.entry_type==='period'||row.entry_type==='era');
+    }
+    return projected.map(row=>({...row,entry_type:row.type,
+      ranges:storedTimeRange(row.range)?.ranges||[]}));
+  })();
+  articleTimeCache.set(key,{expires:now+60_000,promise});
   promise.catch(()=>{if(articleTimeCache.get(key)?.promise===promise)articleTimeCache.delete(key);});
   return promise;
 }
 async function articleTimeContext(scope,day){
   if(!day||!scope.time)return {anchors:[],periods:[],eras:[]};
-  const rows=await articleTimeRows(scope);
+  const [selectedDay,ranges]=await Promise.all([
+    selectRows(scope.time,{
+      columns:'uid,title,address',
+      filters:[{column:'type',operator:'eq',value:'anchor'},
+        {column:'address',operator:'eq',value:day}],
+      limit:100,maxLimit:100
+    }),
+    articleTimeRows(scope)
+  ]);
   const matches=row=>timePeriodContainsDate(row,day);
-  const labels=records=>records.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
+  const labels=rows=>rows.map(item=>({uid:String(item.uid),title:String(item.title||'')}));
   return {
-    anchors:labels(rows.filter(row=>row.entry_type==='anchor'&&articleDate(row.address)===day)),
-    periods:labels(rows.filter(row=>row.entry_type==='period'&&matches(row))),
-    eras:labels(rows.filter(row=>row.entry_type==='era'&&matches(row)))
+    anchors:labels(selectedDay.rows||[]),
+    periods:labels(ranges.filter(row=>row.entry_type==='period'&&matches(row))),
+    eras:labels(ranges.filter(row=>row.entry_type==='era'&&matches(row)))
   };
 }
 async function articleSpaceContext(scope,placeId,{authenticated=false}={}){
