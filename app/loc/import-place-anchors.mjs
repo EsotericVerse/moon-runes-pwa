@@ -157,18 +157,24 @@ export function importedPlaceId({incoming,existing,byName,byCoordinate}={}){
 // `times` array. Merge the newly imported articles' times into the saved ones:
 // the same instant is stored once, the result is sorted, and an anchor with
 // nothing new is not written.
-export async function recordImportPlaceVisits(visits,{relation,table,timesByUid}={}){
-  if(!visits?.length)return {updated:0,added:0};
+// Bound independent per-anchor writes. One UID is written by at most one
+// worker, preserving the existing append/dedupe semantics without issuing
+// hundreds of sequential round trips or flooding the database.
+const PLACE_VISIT_WRITE_CONCURRENCY=6;
+const PLACE_VISIT_WRITE_TIMEOUT_MS=45000;
+export async function recordImportPlaceVisits(visits,{relation,table,timesByUid,onProgress}={}){
   if(typeof relation!=='function'||!table)throw Error('定錨打卡時間寫入設定不存在');
   const byUid=new Map();
-  for(const visit of visits){
+  for(const visit of visits||[]){
     const uid=String(visit?.uid||'');
     const stamp=Date.parse(String(visit?.time??''));
     if(!VALID_UID.test(uid)||!Number.isFinite(stamp))continue;
     if(!byUid.has(uid))byUid.set(uid,new Set());
     byUid.get(uid).add(stamp);
   }
-  let updated=0,added=0;
+  // Assemble one update per real anchor before writing. Existing timestamps
+  // are never removed, and repeated runs skip already persisted instants.
+  const pending=[];
   for(const [uid,incoming] of byUid){
     const saved=new Set();
     for(const when of timesByUid?.get(uid)||[]){
@@ -177,11 +183,43 @@ export async function recordImportPlaceVisits(visits,{relation,table,timesByUid}
     }
     const fresh=[...incoming].filter(stamp=>!saved.has(stamp));
     if(!fresh.length)continue;
-    const merged=[...new Set([...saved,...fresh])].sort((a,b)=>a-b).map(stamp=>new Date(stamp).toISOString());
-    const {error}=await relation(table).update({times:merged}).eq('uid',uid).eq('trace_type','space_anchor');
-    if(error)throw Error('寫入定錨打卡時間失敗：'+(error.message||error));
-    timesByUid?.set(uid,merged);
-    updated++;added+=fresh.length;
+    const merged=[...new Set([...saved,...fresh])].sort((a,b)=>a-b)
+      .map(stamp=>new Date(stamp).toISOString());
+    pending.push({uid,merged,added:fresh.length});
   }
+  const total=pending.length,phase='補齊定錨打卡時間';
+  onProgress?.({phase,completed:0,total});
+  if(!total)return {updated:0,added:0};
+
+  let cursor=0,completed=0,updated=0,added=0,firstError=null;
+  const progressStep=Math.max(1,Math.ceil(total/50));
+  const worker=async()=>{
+    while(cursor<total&&!firstError){
+      const {uid,merged,added:delta}=pending[cursor++];
+      try{
+        let request=relation(table).update({times:merged})
+          .eq('uid',uid).eq('trace_type','space_anchor');
+        // An aborted request is reported as a partial write failure. Re-run
+        // after checking status: the next scan reads actual persisted times.
+        if(typeof request.abortSignal==='function'&&
+          typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function')
+          request=request.abortSignal(AbortSignal.timeout(PLACE_VISIT_WRITE_TIMEOUT_MS));
+        const {error}=await request;
+        if(error)throw Error(error.message||String(error));
+        timesByUid?.set(uid,merged);
+        updated++;added+=delta;
+        completed++;
+        if(completed%progressStep===0||completed===total)
+          onProgress?.({phase,completed,total});
+      }catch(error){
+        if(!firstError)firstError=error;
+      }
+    }
+  };
+  await Promise.all(Array.from({length:Math.min(PLACE_VISIT_WRITE_CONCURRENCY,total)},
+    ()=>worker()));
+  if(firstError)throw Error('補齊打卡時間中斷（已完成 '+completed+'/'+total+
+    ' 個定錨）；已完成部分不會回滾，重新執行會先比對去重。原因：'+
+    String(firstError?.message||firstError));
   return {updated,added};
 }
