@@ -16,7 +16,6 @@ import {heroImageUrl as heroImageUrlOf} from '../loc/hero-image.mjs';
 import {HomeBlock} from '../loc/home-block-model';
 import ScopeLink from './ScopeLink';
 import {featureNavigationHref} from './feature-navigation';
-import {anniversaryForDay} from '../loc/anniversary.mjs';
 import {scopeHref} from './scope-registry';
 // Shared display stays light: mount the editor only on pages that need it.
 const BlockNoteEditor=dynamic(()=>import('../loc/BlockNoteEditor'),{loading:()=>null});
@@ -273,13 +272,6 @@ function ArticleRelationNavigation({
   if(addedAnchor?.scope===scope&&addedAnchor?.day===day&&
     !activeAnchors.some(item=>item.uid===addedAnchor.anchor.uid))activeAnchors.push(addedAnchor.anchor);
   const timeAnchors=named(activeAnchors,item=>timeHref(item,'anchor'));
-  // A recurring anniversary exists only for an actual Time anchor.
-  // No generated event or new database record is created by viewing an article.
-  const anniversary=dateValid&&activeAnchors.length?anniversaryForDay(day):null;
-  const annualItems=anniversary?<>
-    <span>{anniversary.nextDate} · 第 {anniversary.years} 週年</span>
-    {named(activeAnchors,item=>timeHref(item,'anchor'))}
-  </>:null;
   const periods=named(time.periods,item=>timeHref(item,'period'));
   const eras=named(time.eras,item=>timeHref(item,'period'));
   const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
@@ -308,7 +300,7 @@ function ArticleRelationNavigation({
       </>)}
       {row('期間',periods.length?periods:'—')}
       {row('時代',eras.length?eras:'—')}
-      {row('週年紀念',annualItems||'—')}
+
     </div>
     <div className="scope-article-context-group">
       <h3>空間</h3>
