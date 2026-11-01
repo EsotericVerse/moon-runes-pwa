@@ -56,13 +56,13 @@ test('lookup handles many records once and does not suggest a fictitious leap da
   assert.deepEqual(lookup('2019-10-16'),[]);
 });
 
-test('article and import wire the same birthday/anniversary rule',()=>{
+test('virtual anniversary suggestions are isolated from article import',()=>{
   const imports=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/modular/features/CultureTimelineEditor.jsx',import.meta.url),'utf8');
   const action=readFileSync(new URL('../app/modular/ArticleTimeAnchorAction.jsx',import.meta.url),'utf8');
-  assert.match(imports,/anniversaryRecords:anchorRecords,birthday:scope\?\.birthday/);
-  assert.match(imports,/anniversaryRecords:unique\.map\(/);
+  assert.doesNotMatch(imports,/anniversaryRecords:/);
+  assert.doesNotMatch(imports,/birthday:scope\?\.birthday/);
   assert.match(culture,/birthday=\{scopeData\?\.birthday\|\|''\}/);
   assert.match(editor,/anniversarySuggestionsForDate\(day\(draft\.address\),anchorChoices,\{birthday\}\)/);
   assert.match(action,/label='新增時間定錨'/);

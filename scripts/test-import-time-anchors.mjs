@@ -136,7 +136,7 @@ test('standalone visit importer keeps original per-visit timestamps and writes T
   assert.match(panel,/__importVisitTimes:time\?\[/);
   assert.match(panel,/const dates=await prepareImportTimeAnchors\(candidates,/);
   assert.match(panel,/recordImportPlaceVisits\(visits,\{/);
-  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.checkinAnchorRecords,\.\.\.geoAnchorRecords\]/);
 });
 
 test('the physical Time relation is supplied by Scope registry and is never guessed',async()=>{

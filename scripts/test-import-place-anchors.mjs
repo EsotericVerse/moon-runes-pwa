@@ -168,7 +168,7 @@ test('reimports reconcile both existing and new article anchors',async()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
   assert.match(panel,/prepareImportPlaceAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
   assert.match(panel,/if\(restoredPlace\)changes\.place_id=restoredPlace/);
-  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.checkinAnchorRecords,\.\.\.geoAnchorRecords\]/);
 });
 
 test('check-in times are merged into the anchor times array: sorted, no duplicates, no empty writes',async()=>{

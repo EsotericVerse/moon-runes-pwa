@@ -11,7 +11,7 @@ export const IMPORT_FIELD_ALIASES=Object.freeze({
   title:['title','name','subject'],
   createtime:['createtime','created_at','create_time','created_time','creation_timestamp','timestamp_ms','timestamp','taken_at','createdAt','createAt','published_at','publishedAt','date'],
   location:['location','place'],
-  url:['url','link','permalink'],
+  url:['url'],
   media_link:['media_link'],
   media:['galaxy_media','attachments','media','media_items'],
   media_type:['media_type'],

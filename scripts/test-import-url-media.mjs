@@ -2,8 +2,19 @@ import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl,auditArchiveUrlAttributes} from '../app/loc/archive-media-evidence.mjs';
-import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
+import {normalizeImportMedia,mappedImportValue} from '../app/loc/import-batch.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from '../app/loc/import-geocoordinates.mjs';
+
+test('article url uses the dedicated url field, never content or unrelated links',()=>{
+  const articleUrl='https://www.facebook.com/posts/original';
+  const record={url:articleUrl,post_url:'https://www.facebook.com/posts/other',
+    content:'提到 https://outside.example.test/story 的內文',
+    link:'https://outside.example.test/elsewhere'};
+  assert.equal(mappedImportValue(record,'url'),articleUrl);
+  assert.equal(mappedImportValue({content:record.content,link:record.link},'url'),'');
+  assert.equal(mappedImportValue({content:record.content,url:articleUrl},'content'),record.content);
+  assert.equal(mappedImportValue({content:record.content,url:articleUrl},'url'),articleUrl);
+});
 
 test('Google Maps location URL resolves [latitude,longitude] without external requests',()=>{
   const url='https://www.google.com/maps/我家@25.047924,121.517081,17z';
