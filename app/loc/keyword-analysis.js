@@ -163,11 +163,15 @@ export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:reque
       return data||[];
     }
   });
+  const {keywordUidListRecord}=await import('./keyword-tree.mjs');
+  const typeByUid=new Map(treeRows.map(row=>[row.uid,row.type]));
   const result=await reanalyzeKeywordClass({
     classUid,treeRows,minChars,pageSize:KEYWORD_ANALYSIS_READ_PAGE_SIZE,expectedCount:eligibleCount,
     readPage:readArticles,
     writeNode:async ({uid,uid_lists})=>{
-      const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists})
+      const type=typeByUid.get(uid);
+      if(!type)throw new Error('Keyword UID missing during classification write');
+      const {data,error}=await dbAuthRelation(scope.keywords).update({uid_lists:keywordUidListRecord(type,uid_lists)})
         .eq('uid',uid).select('uid');
       if(error||data?.length!==1)throw new Error('Keywords.uid_lists 儲存失敗：'+uid+' '+(error?.message||''));
     },

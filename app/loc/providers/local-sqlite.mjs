@@ -104,7 +104,7 @@ CREATE TABLE IF NOT EXISTS local_keywords (
   name TEXT NOT NULL,
   "desc" TEXT NOT NULL DEFAULT '',
   lists TEXT NOT NULL DEFAULT '[]',
-  uid_lists TEXT NOT NULL DEFAULT '[]'
+  uid_lists TEXT NOT NULL DEFAULT '{}'
 );
 CREATE TABLE IF NOT EXISTS local_daily (
   record_id TEXT PRIMARY KEY NOT NULL,
@@ -397,7 +397,7 @@ function rowsOf(db,sql,params=[]){
     return result;
   }finally{stmt.free();}
 }
-const KEYWORD_TREE_SCHEMA=`CREATE TABLE local_keywords_portable (uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),name TEXT NOT NULL,\"desc\" TEXT NOT NULL DEFAULT '',lists TEXT NOT NULL DEFAULT '[]',uid_lists TEXT NOT NULL DEFAULT '[]')`;
+const KEYWORD_TREE_SCHEMA=`CREATE TABLE local_keywords_portable (uid TEXT PRIMARY KEY NOT NULL CHECK(length(uid)=4),type TEXT NOT NULL CHECK(type IN ('category','class','group','item')),name TEXT NOT NULL,\"desc\" TEXT NOT NULL DEFAULT '',lists TEXT NOT NULL DEFAULT '[]',uid_lists TEXT NOT NULL DEFAULT '{}')`;
 // This local-file migration preserves the author's Keywords rules. Historical
 // classification hits are deliberately recomputed from Galaxy, not migrated.
 function legacyKeywordTree(items=[]){
@@ -443,7 +443,7 @@ function keywordMigrationStatements(items=[]){
   const statements=[{sql:KEYWORD_TREE_SCHEMA,values:[]}];
   for(const node of nodes)statements.push({
     sql:'INSERT INTO local_keywords_portable(uid,type,name,"desc",lists,uid_lists) VALUES(?,?,?,?,?,?)',
-    values:[node.uid,node.type,node.name,node.desc,JSON.stringify(node.lists),JSON.stringify(node.uid_lists)]
+    values:[node.uid,node.type,node.name,node.desc,JSON.stringify(node.lists),JSON.stringify(node.type==='group'?{articles:node.uid_lists}:node.type==='item'?{hits:node.uid_lists}:{})]
   });
   statements.push({sql:'DROP TABLE local_keywords',values:[]});
   statements.push({sql:'ALTER TABLE local_keywords_portable RENAME TO local_keywords',values:[]});
@@ -995,7 +995,7 @@ async function readKeywordTreeSummaryLocal({p_class_uid=null,p_start=null,p_end=
     group_hits AS (
       SELECT g.uid AS group_uid,article.uid AS article_uid,
         date(article.createtime,'+8 hours') AS day
-      FROM groups g JOIN json_each(g.uid_lists) hit
+      FROM groups g JOIN json_each(CASE WHEN json_type(g.uid_lists)='array' THEN g.uid_lists ELSE json_extract(g.uid_lists,'$.articles') END) hit
       JOIN local_galaxy article ON article.uid=hit.value
       JOIN settings s
       WHERE article.searchable=1 AND article.statistics_able=1
@@ -1007,7 +1007,7 @@ async function readKeywordTreeSummaryLocal({p_class_uid=null,p_start=null,p_end=
       SELECT i.item_uid,i.group_uid,article.uid AS article_uid,
         date(article.createtime,'+8 hours') AS day,
         CAST(json_extract(hit.value,'$.times') AS INTEGER) AS times
-      FROM items i JOIN json_each(i.uid_lists) hit
+      FROM items i JOIN json_each(CASE WHEN json_type(i.uid_lists)='array' THEN i.uid_lists ELSE json_extract(i.uid_lists,'$.hits') END) hit
       JOIN local_galaxy article ON article.uid=json_extract(hit.value,'$.uid')
       JOIN settings s
       WHERE article.searchable=1 AND article.statistics_able=1
@@ -1039,7 +1039,7 @@ export async function restoreKeywordLibraryFromDefault(defaultRows=[]){
   for(const row of defaultRows)statements.push({
     sql:'INSERT INTO local_keywords(uid,type,name,"desc",lists,uid_lists) VALUES(?,?,?,?,?,?)',
     values:[row.uid,row.type,row.name,row.desc,
-      JSON.stringify(row.lists),JSON.stringify(row.uid_lists)]
+      JSON.stringify(row.lists),JSON.stringify(row.type==='group'?{articles:row.uid_lists}:row.type==='item'?{hits:row.uid_lists}:{})]
   });
   const first=defaultRows.find(row=>row.type==='class')?.uid||null;
   statements.push({sql:"UPDATE local SET current_keyword_class_uid=?,keyword_meta='{}',staticstime=NULL WHERE id='local'",

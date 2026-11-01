@@ -12,7 +12,7 @@ const body=code.slice(from,to);
 test('reset erases only the active Class Group/Item uid_lists',()=>{
  assert.match(body,/descendantsOfKeyword/);
  assert.match(body,/node=>node.type==='group'\|\|node.type==='item'/);
- assert.match(body,/update\(\{uid_lists:\[\]\}\)/);
+ assert.match(body,/update\(\{uid_lists:keywordUidListRecord\(row\.type,\[\]\)\}\)/);
  assert.match(body,/\.eq\('uid',row.uid\)/);
  assert.doesNotMatch(body,/apply_keyword_classification|\.update\(\{class_id|galaxy/);
 });

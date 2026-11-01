@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {indexKeywordTree,descendantsOfKeyword,keywordClassCatalog,rebuildKeywordUidLists} from '../app/loc/keyword-tree.mjs';
+import {indexKeywordTree,descendantsOfKeyword,keywordClassCatalog,rebuildKeywordUidLists,keywordUidListData,keywordUidListRecord} from '../app/loc/keyword-tree.mjs';
 const rows=[
  {uid:'S0p1',type:'category',name:'符文',desc:'符文各種',lists:['C0a1','C0a2'],uid_lists:[]},
  {uid:'C0a1',type:'class',name:'符文66',desc:'66符文',lists:['G001'],uid_lists:[]},
@@ -59,4 +59,17 @@ test('same display name is allowed across Classes and Groups, all membership fol
  assert.throws(()=>rebuildKeywordUidLists(shared,'CL11',[
   {uid:'Ab12Cd34',classification_group:'靈魂組',hits:[]}
  ]),/Group UID/);
+});
+
+test('JSONB object contract preserves Group article UID and Item occurrence totals',()=>{
+ const group=keywordUidListRecord('group',['Ab12Cd34','aB12Cd34']);
+ const item=keywordUidListRecord('item',[{uid:'Ab12Cd34',times:4},{uid:'aB12Cd34',times:2}]);
+ assert.deepEqual(group,{articles:['Ab12Cd34','aB12Cd34']});
+ assert.deepEqual(item,{hits:[{uid:'Ab12Cd34',times:4},{uid:'aB12Cd34',times:2}]});
+ assert.deepEqual(keywordUidListRecord('class',[]),{});
+ assert.deepEqual(keywordUidListData('group',group),group.articles);
+ assert.deepEqual(keywordUidListData('item',item),item.hits);
+ const structured=rows.map(row=>({...row,uid_lists:keywordUidListRecord(row.type,row.uid_lists)}));
+ assert.equal(indexKeywordTree(structured).index.size,6);
+ assert.throws(()=>keywordUidListData('item',{articles:[]}),/Invalid/);
 });

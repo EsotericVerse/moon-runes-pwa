@@ -227,7 +227,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     const classUid=String(requestedClassUid||config?.current_keyword_class_uid||'');
     if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
     const all=await readOwnedKeywordNodes(table);
-    const {descendantsOfKeyword}=await import('./keyword-tree.mjs');
+    const {descendantsOfKeyword,keywordUidListRecord}=await import('./keyword-tree.mjs');
     const children=descendantsOfKeyword(all,classUid)
       .filter(node=>node.type==='group'||node.type==='item');
     const {invalidateKeywordClass}=await import('./keyword-class-state.mjs');
@@ -240,7 +240,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let completed=0;
     for(const row of children){
       const {data,error}=await dbAuthRelation(table)
-        .update({uid_lists:[]}).eq('uid',row.uid).select('uid');
+        .update({uid_lists:keywordUidListRecord(row.type,[])}).eq('uid',row.uid).select('uid');
       if(error||data?.length!==1)throw new Error(error?.message||'清空 '+row.uid+' 失敗');
       completed++;
       onProgress?.({phase:'resetting',completed,total:children.length});
@@ -415,11 +415,11 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     preflightWrite(table);
     const op=String(operation||'').toLowerCase();
     if(!['insert','update','delete'].includes(op))throw new Error('Unsupported Keywords operation');
-    const {normalizeKeywordTreeRow}=await import('./keyword-tree.mjs');
+    const {normalizeKeywordTreeRow,keywordUidListRecord}=await import('./keyword-tree.mjs');
     const normalized=normalizeKeywordTreeRow(node);
     const relation=dbAuthRelation(table);
     let query;
-    if(op==='insert')query=relation.insert(normalized).select('uid');
+    if(op==='insert')query=relation.insert({...normalized,uid_lists:keywordUidListRecord(normalized.type,normalized.uid_lists)}).select('uid');
     else if(op==='update')query=relation.update({
       type:normalized.type,name:normalized.name,desc:normalized.desc,
       lists:normalized.lists

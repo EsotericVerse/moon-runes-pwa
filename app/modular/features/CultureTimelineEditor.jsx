@@ -11,7 +11,7 @@ import {revalidateServerMetadata} from '../../loc/scope-data';
 import {DB_QUERY_BATCH_SIZE,selectRows} from '../../loc/db-query.mjs';
 import {decodeTimeSegments,encodeTimeSegment,resolveTimeSegments,isTimeUid,allocateTimeUid} from '../../loc/time-anchor-ranges.mjs';
 
-const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,invisible';
+const TIME_COLUMNS='uid,type,title,description,address,anchor_ids,range,invisible';
 const TYPES=['anchor','period','era'];
 const TYPE_TABS=[...TYPES].reverse();
 const normalizeType=value=>({event:'period'}[value]||value);
