@@ -1,0 +1,79 @@
+# LOC Agent 能力路由與 Skill 去重紀錄
+
+> 2026-11-01；依使用者本次明確授權整理。本文按需讀取，`AGENTS.md` 不全文預載路由表。Claude 與 Codex 共享最高判別原則「審時度勢」，不得用某一個 Plugin 的通用流程取代。
+
+## 清理執行範圍
+
+- 移除 `.agents/skills/tdd/` 與 `.claude/skills/tdd/` 共 **8 個檔案**（兩邊各有 `SKILL.md`、`tests.md`、`mocking.md`、`agents/openai.yaml`）。兩個 Agent 都已安裝 Superpowers，TDD、驗證及除錯改由已安裝的 Superpowers 工作流程提供；不另外維護較舊的 TDD 副本，也不要求使用者逐項核准測試 seam。
+- 保留 `.agents/skills/`、`.claude/skills/` 其他能力與各自的自動發現入口。此前比對有 39 個同名、Git Tree SHA 相同的目錄，但它們分屬 Codex／Claude 的主要發現路徑，**檔案重複不代表同一會話雙倍載入 Token**。不使用 Windows 相容性不確定的 Git symlink 取代。
+- 把原本 `AGENTS.md` 的長篇路由表搬到本文，僅在任務需要時載入。原有資料庫、部署、授權及安全門檻不變；`CLAUDE.md` 仍連結至 `AGENTS.md`。
+- Git `scripts/check-bulk-delete.mjs` 的 20 個 D/R 檔案防護維持，**不為本次例外永久放寬**。日後若另一個獲明確授權的提交真正超過門檻，應以原有 `[bulk-delete-ok]` 稽核標記通過，不繞過 hook；本次沒有必要啟用。
+
+## 使用與 Token 原則
+
+1. 從使用者的功能目的判斷專業需求，不等待特定技能名稱。優先已連接的 Plugin、既有程式套件與同一任務已載入的 Skill。
+2. Codex 優先 `.agents/skills` 或自己安裝的 Plugins；Claude 優先 `.claude/skills` 或自己安裝的 Plugins。相同能力**每次任務只選最適合的一份完整指引**；不要一次載入各種重疊 UI 或 TDD 全文。
+3. 工具本身需提供實作或可核對的量測結果；「已安裝、已列出、已搜尋」不算使用。找到可證實的缺口才使用 `find-skills`／skills.sh 搜尋新方法；不自動安裝重複能力。
+4. App（含手機）、匯入、SEO、3D、數據／PELT、文學、歌詞與曲風採相同原則。文學與音樂保留使用者已定義的語義、原始文稿及曲序；創作判斷不能因為有通用工具就覆蓋作者原則。
+5. 100 位同時使用者正常操作是驗收目標，**不是未經測量即能保證的性能數字**。測試需包含慢連線、重複請求、錯誤及資源占用；在測試完成前回報未驗證。
+
+## 原 LOC Skill 路由對照（按需查閱）
+
+### Skill 對應優先層級
+- **Security：** 新 skill/package → `find-skills`；auth/輸入輸出/密鑰相關 → `code-review-expert` 的 `security-checklist.md`（只當檢查清單用，不跑完整 review）；Postgres/Supabase schema → `supabase-postgres-best-practices`；Supabase Auth/Edge/Realtime → `supabase`；MCP server → `mcp-builder`。
+- **Portable：** 寫新程式碼前先找既有實作；改 LOC 詞彙/Scope 邊界/ADR → `domain-modeling`。
+- **Loading/UI：** React/Next.js → `vercel-react-best-practices`；不明原因的錯誤/效能 → `systematic-debugging`；N+1/慢查詢 → `sql-optimization-patterns`；元件 API → `vercel-composition-patterns`；視覺/互動 → `ui-ux-pro-max`；驗證有沒有真的動 → `webapp-testing`；宣稱修好前 → `verification-before-completion`。
+
+## Skill 路由表
+
+| Repository skill | Use it for |
+|---|---|
+| `.agents/skills/brainstorming/SKILL.md` | Brainstorm unresolved product choices; if goal/authorization already clear, skip ceremony. |
+| `.agents/skills/domain-modeling/SKILL.md` | LOC terminology, Scope/Registry boundaries, glossary, ADRs. |
+| `.agents/skills/vercel-react-best-practices/SKILL.md` | React/Next.js implementation and performance. |
+| `.agents/skills/vercel-composition-patterns/SKILL.md` | Component API design, compound components. |
+| `.agents/skills/supabase-postgres-best-practices/SKILL.md` | Any Postgres/Supabase schema, RLS, migration, performance work. |
+| `.agents/skills/sql-optimization-patterns/SKILL.md` | N+1, slow SQL, aggregation, EXPLAIN. |
+| `.agents/skills/supabase/SKILL.md` | Supabase Auth, Edge Functions, Realtime, Storage, CLI/MCP. |
+| `.agents/skills/ui-skills-root/SKILL.md` | Selecting a small set of relevant UI skills. |
+| `.agents/skills/frontend-design/SKILL.md` | Deliberate visual direction for new/reshaped UI. |
+| `.agents/skills/ui-ux-pro-max/SKILL.md` | Layout, color, typography, UX review (`python3 .agents/skills/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>`). |
+| `.agents/skills/design-taste-frontend/SKILL.md` | Explicit public-page/app-screen redesign; use `references/app-screens.md` for admin screens. |
+| `.agents/skills/baseline-ui/SKILL.md` | Quick spacing/hierarchy/typography polish. |
+| `.agents/skills/fixing-accessibility/SKILL.md` | Keyboard access, ARIA, contrast, WCAG. |
+| `.agents/skills/fixing-metadata/SKILL.md` | Page metadata, social previews, structured data. |
+| `.agents/skills/fixing-motion-performance/SKILL.md` | Animation jank, layout thrashing. |
+| `.agents/skills/improve-ui/SKILL.md` | Read-only UI audit + implementation plan. |
+| `.agents/skills/web-design-guidelines/SKILL.md` | Read-only Web Interface Guidelines review. |
+| `.agents/skills/create-design-md/SKILL.md` | Create/update `DESIGN.md` from evidence. |
+| `.agents/skills/component-canvas/SKILL.md` | Interactive canvas of existing component variants. |
+| `.agents/skills/create-canvas/SKILL.md` | Freeform canvas for exploring ideas. |
+| `.agents/skills/sleek-design-mobile-apps/SKILL.md` | Mobile screens in Sleek / React Native / HTML. |
+| `.agents/skills/vercel-react-native-skills/SKILL.md` | React Native / Expo, native modules, mobile performance. |
+| `.agents/skills/agent-browser/SKILL.md` | General browser automation and testing. |
+| `.agents/skills/browser-use/SKILL.md` | Direct CDP / logged-in-session browser control. |
+| `.agents/skills/remotion-best-practices/SKILL.md` | Remotion video/animation workflow router. |
+| `.agents/skills/seo-audit/SKILL.md` | SEO audit/diagnosis. |
+| `.agents/skills/code-review-expert/SKILL.md` | Security checklist reference; full review only when explicitly asked. |
+| `.agents/skills/find-skills/SKILL.md` | Discover/install a skill for a real capability gap. |
+| `.agents/skills/skill-creator/SKILL.md` | Create/edit/evaluate a skill. |
+| `.agents/skills/grill-me/SKILL.md` / `grilling/SKILL.md` / `grill-with-docs/SKILL.md` | Stress-test a plan via interview; `grill-with-docs` also records ADRs. |
+| `.agents/skills/improve-codebase-architecture/SKILL.md` | User-invoked architecture review only (`disable-model-invocation`). |
+| `.agents/skills/tdd/SKILL.md` | Test-first development. |
+| `.agents/skills/setup-matt-pocock-skills/SKILL.md` | One-time repo setup for engineering skills. |
+| `.agents/skills/triage/SKILL.md` | Issue/PR triage. |
+| `.agents/skills/prototype/SKILL.md` | Throwaway prototype for a design question. |
+| `.agents/skills/hyperframes/SKILL.md` / `hyperframes-cli/SKILL.md` / `hyperframes-registry/SKILL.md` | HyperFrames video authoring, CLI jobs, component registry. |
+| `.agents/skills/media-use/SKILL.md` | Media for HyperFrames videos; HeyGen needs user's own key. |
+| `.agents/skills/systematic-debugging/SKILL.md` | Reproduce → trace root cause → fix minimally. |
+| `.agents/skills/webapp-testing/SKILL.md` | Playwright verification before claiming a UI change works. |
+| `.agents/skills/verification-before-completion/SKILL.md` | Fresh evidence before reporting done. |
+| `.agents/skills/mcp-builder/SKILL.md` | Build/review an MCP server. |
+| `.agents/skills/handoff/SKILL.md` | Compact a conversation into a handoff doc. |
+
+這個 repo 另外內建 `systematic-debugging`、`sql-optimization-patterns`、`verification-before-completion` 的本地副本；同名的 Global 版本跟這份一樣算一個能力，不要自動同步或覆蓋。沒裝在 runtime 或 repo 的 skill 只能當參考讀，不要當成已安裝。
+
+## 本次處理後的追蹤
+
+- 只做經授權的 TDD 副本去重與 Agent 文檔整理；其餘用途不同或 Claude 仍依賴的目錄不刪。
+- 後續若要精簡更多內容，應先比較真實 Skill 觸發／上下文占用，以及實際 Agent 可否找到保留版本，再逐項決定，不再靠同名判斷。
