@@ -217,6 +217,8 @@ test('import progress touches the edit Session, so a long read-only comparison p
   assert.match(panel,/if\(!nativeLocal\)try\{touchEditorSession\(window\.sessionStorage\);\}catch\{\}/);
   // The touch must live inside showProgress itself, not only at one call site,
   // since the comparison phase's only hook into run() is its onProgress callback.
-  assert.ok(panel.indexOf('touchEditorSession(window.sessionStorage)')>panel.indexOf('const showProgress='));
-  assert.ok(panel.indexOf('touchEditorSession(window.sessionStorage)')<panel.indexOf('setProgress({stage,completed,total,'));
+  const progressStart=panel.indexOf('const showProgress=');
+  const progressTouch=panel.indexOf('touchEditorSession(window.sessionStorage)',progressStart);
+  assert.ok(progressTouch>progressStart);
+  assert.ok(progressTouch<panel.indexOf('setProgress({stage,completed,total,',progressStart));
 });
