@@ -7,7 +7,7 @@ export const TRACE_SCOPES=Object.freeze(['loc','lo3rwang','lrunes']);
 export const traceKey=(scopeId,{includeHidden=false}={})=>['scope-trace',scopeId,...(includeHidden?['manager']:[])];
 export const traceMapIndexKey=(scopeId,{nativeOnly=false,includeHidden=false}={})=>['trace-map-index',scopeId,...(nativeOnly?['native']:[]),...(includeHidden?['manager']:[])];
 export const traceCurrentKey=(scopeId,route,{nativeOnly=false,includeHidden=false}={})=>
-  ['trace-current',scopeId,route.uid,JSON.stringify(route.anchor_list||[]),...(nativeOnly?['native']:[]),...(includeHidden?['manager']:[])];
+  ['trace-current',scopeId,route.uid,JSON.stringify([route.anchor_list||[],route.route_list||{}]),...(nativeOnly?['native']:[]),...(includeHidden?['manager']:[])];
 export const traceAllAnchorsKey=(scopeId,{nativeOnly=false,includeHidden=false}={})=>
   ['trace-all-anchors',scopeId,...(nativeOnly?['native']:[]),...(includeHidden?['manager']:[])];
 const VALID_ID=/^[A-Za-z0-9]{4}$/;
