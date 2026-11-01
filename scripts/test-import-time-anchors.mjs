@@ -73,7 +73,7 @@ test('standalone visit importer keeps original per-visit timestamps and writes T
   assert.match(panel,/__importVisitTimes:time\?\[/);
   assert.match(panel,/const dates=await prepareImportTimeAnchors\(candidates,/);
   assert.match(panel,/recordImportPlaceVisits\(visits,\{/);
-  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.unique,\.\.\.geoAnchorRecords\]/);
+  assert.match(panel,/prepareImportTimeAnchors\(\[\.\.\.anchorRecords,\.\.\.geoAnchorRecords\]/);
 });
 
 test('the physical Time relation is supplied by Scope registry and is never guessed',async()=>{
@@ -94,17 +94,17 @@ test('the physical Time relation is supplied by Scope registry and is never gues
 });
 
 
-test('only explicit check-ins trigger Time anchors, not generic geotagged articles',()=>{
+test('an article location is an import check-in; date wins over timestamp',()=>{
   assert.deepEqual(importCheckinDates([
-    {location:'文章地點',createtime:'2024-04-01T10:00:00Z'},
+    {location:'文章地點',date:'2024-04-05',createtime:'2024-04-01T10:00:00Z'},
     {location:'另一篇文章',__importCoordinates:{latitude:25,longitude:121},
       createtime:'2024-04-02T10:00:00Z'},
     {location:'明確打卡',__importCheckin:true,createtime:'2024-04-03T10:00:00Z'},
     {__importPlaceName:'獨立打卡',__importVisitTimes:['2024-04-04T12:00:00Z']}
-  ]),['2024-04-03','2024-04-04']);
+  ]),['2024-04-02','2024-04-03','2024-04-04','2024-04-05']);
 });
 
-test('an existing period contains the check-in: reuse without creating a new day',async()=>{
+test('an existing period does not conceal a missing exact date anchor',async()=>{
   const db=memoryTime([
     {uid:'0001',type:'anchor',address:'2024-01-01',anchor_ids:[]},
     {uid:'0002',type:'anchor',address:'2024-01-31',anchor_ids:[]},
@@ -119,8 +119,8 @@ test('an existing period contains the check-in: reuse without creating a new day
   const first=await prepareImportTimeAnchors(events,{
     scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation
   });
-  assert.equal(first.created,1);
-  assert.equal(first.reused,2);
+  assert.equal(first.created,2);
+  assert.equal(first.reused,1);
   assert.equal(db.rows.at(-1).address,'2024-02-03');
   const next=await prepareImportTimeAnchors(events,{
     scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation

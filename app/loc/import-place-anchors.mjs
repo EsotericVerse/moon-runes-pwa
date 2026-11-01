@@ -3,10 +3,14 @@ import {importGeoKey} from './import-geocoordinates.mjs';
 // An exact coordinate identifies an existing Trace location even if the
 // original place label differs. Without GPS, only unambiguous names are used.
 const VALID_UID=/^[A-Za-z0-9]{4}$/;
-const nameKey=value=>String(value??'').normalize('NFKC').trim().replace(/\s+/g,' ').toLocaleLowerCase('und');
+const normalizedPlaceText=value=>String(value??'').normalize('NFKC')
+  .replace(/[\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim();
+const nameKey=value=>normalizedPlaceText(value).toLocaleLowerCase('und');
 const safeTitle=value=>{
-  const title=String(value??'').trim();
-  return title&&title.length<=120&&!/[\u0000-\u001f]/u.test(title)?title:'';
+  // Preserve the Galaxy.location text verbatim. Control characters from old
+  // platform exports cannot enter Trace titles, so normalize only the label.
+  const title=normalizedPlaceText(value);
+  return title&&title.length<=120?title:'';
 };
 const recordPlaceName=record=>safeTitle(record?.__importPlaceName||record?.location);
 const spatialKey=(name,coordinates)=>coordinates?'coordinate:'+coordinates:'name:'+name;

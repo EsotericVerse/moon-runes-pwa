@@ -26,6 +26,7 @@ import {dedupeIncomingImport,matchExistingImportBySiteId,matchExistingImportByCr
 import {importTimeRangeWindow,filterImportAnalysisByTime} from './import-time-range.mjs';
 import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from './import-place-anchors.mjs';
 import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
+import {reconcileExistingImportAnchors} from './reconcile-import-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
 import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from './archive-media-evidence.mjs';
@@ -660,6 +661,32 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     }catch(error){setStatus('Trace 地點儲存失敗：'+String(error?.message||error));}
     finally{setBusy(false);setProgress(null);}
   }
+  async function restoreExistingAnchors(){
+    if(busy||nativeLocal||scopeId==='loc')return;
+    if(!window.confirm('補齊目前資料庫內已有地點文章的空間定錨、日期定錨與文章地點關聯；不新增或刪除文章，也不覆寫既有地點。確定執行？'))return;
+    setBusy(true);setStatus('');
+    const show=p=>{
+      try{touchEditorSession(window.sessionStorage);}catch{}
+      setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
+        percent:p.total?Math.round(100*p.completed/p.total):null});
+    };
+    try{
+      const scope=account.scopeDataFor(scopeId);
+      if(!scope?.galaxy||!scope?.time)throw Error('資料範圍尚未載入');
+      const result=await reconcileExistingImportAnchors({
+        scopeId,galaxy:scope.galaxy,timeTable:scope.time,relation:dbAuthRelation,
+        updateImportRows,onProgress:show
+      });
+      setStatus('既有地點文章核對 '+result.scanned.toLocaleString()+' 筆；空間定錨新增 '+
+        result.places.created.toLocaleString()+'、沿用 '+result.places.reused.toLocaleString()+
+        '；日期定錨新增 '+result.dates.created.toLocaleString()+'、沿用 '+
+        result.dates.reused.toLocaleString()+'；文章地點關聯補齊 '+
+        result.linked.toLocaleString()+'，打卡時間補入 '+result.visits.toLocaleString()+
+        '，未能確定地點 '+result.unmatched.toLocaleString()+' 筆。');
+    }catch(error){
+      setStatus('既有打卡定錨修復失敗；已完成的部分可能已寫入，重新執行會沿用既有資料。原始錯誤：'+String(error?.message||error));
+    }finally{setProgress(null);setBusy(false);}
+  }
   async function run(){
     if(busy||(!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length))return;
     const selected=canonicalSource(source);
@@ -748,7 +775,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         const rows=[];
         for(const batch of urlSafeInBatches(uids,'uid')){
           const {data,error}=await dbAuthRelation(galaxy)
-            .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
+            .select('uid,createtime,date,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
             .in('uid',batch);
           if(error)throw Error('uid 比對失敗：'+error.message);
           for(const row of data||[])rows.push(row);
@@ -764,7 +791,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         readSiteIds:async(ids,consumePage,site)=>{
           for(const idsPage of urlSafeInBatches(ids,'site_id')){
             const {data,error}=await dbAuthRelation(galaxy)
-              .select('uid,createtime,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
+              .select('uid,createtime,date,content,title,place_id,location,url,site,site_id,source_id,target_id,ref_id')
               .ilike('site',site).in('site_id',idsPage);
             if(error)throw Error('site_id 比對失敗：'+error.message);
             consumePage(data||[]);
@@ -808,7 +835,8 @@ function UniversalImport({scopeId,format,onFormatChange}) {
           eligibleGeoRecords.length||
           analyzed.normalized.some(item=>(item.mediaRecords?.length||0)||
             (item.mediaRefs?.length||0)))
-      })&&!unique.some(record=>record.location||record.__importPlaceName)){
+      })&&!unique.some(record=>record.location||record.__importPlaceName||
+        existingBySiteId.get(record.uid)?.location)){
         setProgress(null);
         setStatus(t('uiExtra.importUI.importNoChanges'));
         setRows([]);
@@ -819,11 +847,21 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       // The Timeline importer remains supplemental and does not run here.
       showProgress('準備空間定錨');
       const geoAnchorRecords=eligibleGeoRecords;
-      const placeAnchors=await prepareImportPlaceAnchors([...unique,...geoAnchorRecords],{
+      // Reimports must also repair the existing row's location and exact
+      // Galaxy.date, even when the incoming duplicate has no place metadata.
+      const anchorRecords=unique.map(record=>{
+        const saved=existingBySiteId.get(record.uid);
+        return {...record,
+          location:record.location||saved?.location||null,
+          date:saved?.date||record.date||null
+        };
+      });
+      const placeRecordByUid=new Map(anchorRecords.map(row=>[String(row.uid),row]));
+      const placeAnchors=await prepareImportPlaceAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,relation:dbAuthRelation,createMissing:true,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
-      const timeAnchors=await prepareImportTimeAnchors([...unique,...geoAnchorRecords],{
+      const timeAnchors=await prepareImportTimeAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,timeTable:scope?.time,relation:dbAuthRelation,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
@@ -857,9 +895,10 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         if(!String(existing.source_id||'').trim()&&String(record.source_id||'').trim())changes.source_id=record.source_id;
         if(!(Array.isArray(existing.target_id)&&existing.target_id.length)&&record.target_id?.length)
           changes.target_id=record.target_id;
-        const restoredPlace=importedPlaceId({incoming:record,existing,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
+        const placeRecord=placeRecordByUid.get(String(record.uid))||record;
+        const restoredPlace=importedPlaceId({incoming:placeRecord,existing,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         if(restoredPlace)changes.place_id=restoredPlace;
-        const matchedPlace=importedPlaceId({incoming:record,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
+        const matchedPlace=importedPlaceId({incoming:placeRecord,byName:placeAnchors.byName,byCoordinate:placeAnchors.byCoordinate});
         const visitUid=restoredPlace||(
           matchedPlace===String(existing.place_id||'').trim()?matchedPlace:null);
         if(visitUid&&record.createtime)placeVisits.push({uid:visitUid,time:record.createtime});
@@ -1027,6 +1066,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       <div>
         {!busy&&analysisCurrent&&importEstimate?<p className="scope-status">{t('uiExtra.importUI.importEstimatedMinutes',importEstimate)}</p>:null}
       </div>
+    </section>:null}
+    {!nativeLocal&&scopeId!=='loc'?<section className="scope-import-preview" aria-label="既有地點關聯修復">
+      <p className="scope-status">已匯入文章若有地點、但尚未建立空間或日期定錨，可直接補齊；以文章 date 為準，保留原有打卡時間，不重新匯入或新增文章。</p>
+      <button type="button" className="loc-button" disabled={busy}
+        onClick={restoreExistingAnchors}>
+        {busy?'正在檢查地點關聯…':'補齊既有文章的地點與日期定錨'}
+      </button>
     </section>:null}
     {rows.length&&!busy&&!analysisCurrent?<p className="scope-status" role="status">正在更新匯入資料預覽，完成後才能開始匯入。</p>:null}
     {rows.length&&!busy&&analysisCurrent&&!analyzed.valid.length&&!analyzed.mediaOnly.length&&!eligibleArchiveEvidence.length?<p className="scope-status" role="status">目前沒有可匯入的有效紀錄，請查看上方略過原因。</p>:null}
