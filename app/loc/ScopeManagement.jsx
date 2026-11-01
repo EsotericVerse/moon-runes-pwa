@@ -4,15 +4,18 @@ import {useEffect} from 'react';
 import dynamic from 'next/dynamic';
 import {useSearchParams} from 'next/navigation';
 import {useEditDock} from '../modular/edit-dock';
+import {useAccount} from './use-account';
 import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 import {recoverChunkOnce} from './chunk-recovery.mjs';
 
+const ScopeGroupAccessPanel=dynamic(()=>import('./ScopeGroupAccessPanel'),{loading:PanelLoading});
 const ScopeSettingsPanel=dynamic(()=>import('./ScopeSettingsPanel'),{loading:PanelLoading});
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceManagement=dynamic(()=>import('./PlaceManagement').catch(recoverChunkOnce),{loading:PanelLoading});
 
+const GROUP_OPTION={value:'groupAccess',label:'群組權限',shortLabel:'授權',description:'Scope Group 的 Clerk 權限、成員及跨 Scope 搜尋授權。'};
 const MANAGEMENT_OPTIONS=Object.freeze([
   {value:'placeManage',label:'地點管理',shortLabel:'地點管理',description:'空間定錨、Google Timeline 地點整理、糾紛點與補充資料。'},
   {value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',description:'從已有地點自動完成選點，組合有序 Frame。'},
@@ -21,11 +24,15 @@ const MANAGEMENT_OPTIONS=Object.freeze([
 
 export default function ScopeManagement({scopeId:routeScopeId='loc',section:entrySection=''}){
   const editDock=useEditDock();
+  const account=useAccount();
   const searchParams=useSearchParams();
   const isLoc=routeScopeId==='loc';
   const traceOnly=entrySection==='traceMap';
   const options=traceOnly?MANAGEMENT_OPTIONS.filter(item=>item.value==='traceMap')
-    :isLoc?MANAGEMENT_OPTIONS.slice(0,2):MANAGEMENT_OPTIONS.filter(item=>item.value!=='traceMap');
+    :isLoc?[...MANAGEMENT_OPTIONS.slice(0,2),GROUP_OPTION]
+      :account.canManageGroupSync(routeScopeId)
+        ?[...MANAGEMENT_OPTIONS.filter(item=>item.value!=='traceMap'),GROUP_OPTION]
+        :MANAGEMENT_OPTIONS.filter(item=>item.value!=='traceMap');
   // Links saved before the two panels moved to Article Control still open the
   // same Scope's panel instead of silently falling back to Trace Management.
   const requestedSection=searchParams?.get('section');
@@ -56,6 +63,7 @@ export default function ScopeManagement({scopeId:routeScopeId='loc',section:entr
         {section==='placeManage'?<PlaceManagement scopeId={routeScopeId}/>:null}
         {section==='traceMap'?<TraceManagementPanel scopeId={routeScopeId} mode="map"/>:null}
         {section==='settings'?<ScopeSettingsPanel key={routeScopeId+'-settings'} scopeId={routeScopeId}/>:null}
+        {section==='groupAccess'?<ScopeGroupAccessPanel groupId={routeScopeId}/>:null}
       </div>
     </div>
     </div>
