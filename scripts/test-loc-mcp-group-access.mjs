@@ -81,3 +81,34 @@ test('Group Category is scoped to the registered member and server-side Group ma
   assert.match(worker,/removeMcpGroupKeywordCategory/);
   assert.match(worker,/hashKeywordCategory\(valid\.scopeid,valid\.class\)/);
 });
+
+test('public Class import is verified by authority, not solely by UI',async()=>{
+  const {assertPublicKeywordClass}=await import('../workers/loc-authority/keyword-categories.mjs');
+  const calls=[];
+  const fetchImpl=async(url,opts)=>{
+    calls.push({url,opts});
+    return Response.json([{scopeId:'lo3rwang',classUid:'A1b2',name:'音樂'},
+      {scopeId:'lo3rwang',classUid:'G3rp',name:'Other'}]);
+  };
+  await assertPublicKeywordClass('lo3rwang','A1b2',{fetchImpl});
+  await assert.rejects(assertPublicKeywordClass('lo3rwang','item',{fetchImpl}),/public Class UID/);
+  assert.equal(calls[0].opts.method,'POST');
+  assert.deepEqual(JSON.parse(calls[0].opts.body),{p_scope_id:'lo3rwang'});
+  assert.equal(calls[0].opts.headers['accept-profile'],'silver');
+  assert.equal(calls[0].opts.headers['content-profile'],'silver');
+  assert.equal(calls[0].url.endsWith('/rest/v1/rpc/read_shared_keyword_classes'),true);
+});
+test('authority fail-closes if public Class RPC is unavailable',async()=>{
+  const {assertPublicKeywordClass}=await import('../workers/loc-authority/keyword-categories.mjs');
+  const fetchImpl=async()=>new Response('unavailable',{status:503});
+  await assert.rejects(assertPublicKeywordClass('lo3rwang','A1b2',{fetchImpl}),/unavailable/);
+});
+test('Scope Group UI lists only publicly shared Class identifiers',()=>{
+  const src=readFileSync(new URL('../app/loc/ScopeGroupAccessPanel.jsx',import.meta.url),'utf8');
+  assert.match(src,/read_shared_keyword_classes/);
+  assert.match(src,/publicClasses\.map\(row=><option/);
+  assert.match(src,/row\.scopeId===scope/);
+  assert.doesNotMatch(src,/categoryUid\} maxLength=/);
+  const authority=readFileSync(new URL('../workers/loc-authority/index.mjs',import.meta.url),'utf8');
+  assert.match(authority,/await assertPublicKeywordClass\(valid\.scopeid,valid\.class/);
+});
