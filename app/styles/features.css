@@ -156,7 +156,14 @@
   .scope-management-preview iframe{height:62vh}
 }
 
-.scope-import-preview{display:grid;gap:.7rem;margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)}
+.scope-import-preview{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:.7rem;
+  min-width:0;max-width:100%;
+  margin:.8rem 0;padding:.8rem;border:1px solid var(--loc-ui-hairline);
+  border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel)
+}
+.scope-import-preview>*{min-width:0;max-width:100%}
+.scope-import-preview :is(ul,li,dd){min-width:0;max-width:100%;overflow-wrap:anywhere}
 .scope-import-preview .scope-management-records{max-height:none;overflow:visible;padding-right:0}
 .scope-import-preview .loc-bubble{min-width:0;max-width:100%;overflow-wrap:anywhere}
 .scope-import-preview .loc-bubble>strong,.scope-import-preview .loc-bubble>span,.scope-import-preview .loc-bubble>p{display:block;min-width:0;overflow-wrap:anywhere}
@@ -900,7 +907,17 @@
 }
 
 /* Scope import: file reading and Galaxy saving remain distinct actions. */
-.scope-import-body{display:grid;gap:.8rem;min-width:0}
+.scope-import-body{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:.8rem;
+  width:100%;max-width:100%;min-width:0
+}
+.scope-import-body>*{min-width:0;max-width:100%}
+.scope-import-live-status{
+  min-width:0;min-height:4rem;
+  display:grid;align-content:center;
+  overflow-wrap:anywhere;font-variant-numeric:tabular-nums
+}
+.scope-import-progress{font-variant-numeric:tabular-nums}
 .scope-import-progress{display:grid;grid-template-columns:minmax(0,1fr);gap:.4rem;padding:.75rem;border:1px solid var(--loc-ui-hairline);border-radius:var(--loc-ui-radius-lg);background:var(--loc-panel);min-width:0}
 .scope-import-progress p{margin:0}
 .scope-import-progress p,.scope-import-body .scope-status{min-width:0;max-width:100%;overflow-wrap:anywhere;word-break:break-word;white-space:normal}
@@ -950,7 +967,7 @@
 }
 .scope-import-body>h3{margin:0}
 .scope-import-body label{display:grid;gap:.35rem}
-.scope-import-facts{display:grid;gap:.4rem 1rem;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));margin:0}
+.scope-import-facts{display:grid;gap:.4rem 1rem;grid-template-columns:repeat(auto-fit,minmax(min(100%,14rem),1fr));margin:0;min-width:0}
 .scope-import-facts>div{display:grid;gap:.15rem;min-width:0}
 .scope-import-facts dt{font-size:.82rem;color:var(--loc-muted)}
 .scope-import-facts dd{margin:0;overflow-wrap:anywhere}
@@ -959,7 +976,10 @@
 .scope-import-section{border-top:1px solid var(--loc-ui-hairline)}
 .scope-import-section-toggle{display:flex;justify-content:space-between;align-items:center;width:100%;padding:.8rem .2rem;border:0;background:transparent;color:var(--loc-text);font:inherit;font-weight:600;cursor:pointer;text-align:left}
 .scope-import-section-body{padding:0 .2rem .9rem}
-.scope-management-imports{display:grid;gap:1rem}
+.scope-management-imports{
+  display:grid;grid-template-columns:minmax(0,1fr);
+  gap:1rem;min-width:0;max-width:100%
+}
 
 /* Import file picker: one quiet dashed drop row instead of the raw browser control. */
 .scope-import-body input[type=file]{
@@ -974,7 +994,6 @@
 .scope-management-imports.scope-management-imports>.scope-import-format{margin:0}
 
 /* Functional pages: text boxes (.loc-card) stacked with one gap; bubbles (.loc-bubble) inside. */
-.scope-management-imports{display:grid;gap:1rem}
 .scope-management-imports>.loc-card{margin:0;display:grid;gap:.9rem}
 .scope-management-imports>.loc-card>h2{margin:0}
 .scope-management-imports .scope-import-section-toggle{padding:0;font-size:1.1rem}
