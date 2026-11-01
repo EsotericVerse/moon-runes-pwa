@@ -143,17 +143,15 @@ test('nested media descriptions preserve JSON rather than object-to-string corru
 });
 
 
-test('retired EXIF private storage never causes a partial article/media import',()=>{
+test('production archive import uses JSON URLs only; EXIF never enters media or articles',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
-  assert.doesNotMatch(panel,/\.rpc\('save_archive_media_exif'/);
-  assert.match(panel,/const exifNotSaved=archivePlan\.exif\.length/);
-  assert.match(panel,/私人 EXIF .*未寫入/);
-  // No private coordinates or camera time are redirected into public text.
-  assert.doesNotMatch(panel,/meta_tags:.*archivePlan\.exif/);
-  assert.match(panel,/prepareArchiveMedia\(/);
-  assert.match(panel,/syncImportedMedia\(/);
+  assert.doesNotMatch(panel,/onMediaMetadata\\s*:/);
+  assert.doesNotMatch(panel,/onMediaEntry\\s*:/);
+  assert.doesNotMatch(panel,/\\.rpc\\('save_archive_media_exif'/);
+  assert.doesNotMatch(panel,/meta_tags:.*archivePlan\\.exif/);
+  assert.match(panel,/prepareArchiveMedia\\(/);
+  assert.match(panel,/syncImportedMedia\\(/);
 });
-
 
 test('no-URL media may reuse an exact owner-linked record, never title alone',()=>{
   const panel=readFileSync(new URL('../app/loc/ManagementImportPanel.jsx',import.meta.url),'utf8');
