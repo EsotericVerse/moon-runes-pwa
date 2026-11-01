@@ -99,6 +99,13 @@ export function useResourceCache(){
   const {mutate,cache}=useSWRConfig();
   const inFlight=useMemo(()=>pendingReads(cache),[cache]);
   return useMemo(()=>{
+    // A write or invalidation supersedes pending loads for matching keys.
+    // A late old response must never overwrite newly saved or refetched data.
+    const supersedePending=queryKey=>{
+      for(const [cacheKey,entry] of inFlight){
+        if(keyStartsWith(entry.queryKey,queryKey))inFlight.delete(cacheKey);
+      }
+    };
     const matchingInfiniteKeys=queryKey=>[...infiniteKeysFor(cache)]
       .filter(([,entry])=>keyStartsWith(entry.queryKey,queryKey))
       .map(([serializedKey])=>serializedKey);
@@ -116,27 +123,41 @@ export function useResourceCache(){
       // Clear regular and paginated values so the next visit fetches fresh data;
       // mounted consumers revalidate now through SWR.
       invalidate:async({queryKey})=>{
+        supersedePending(queryKey);
         const regular=mutate(key=>keyStartsWith(key,queryKey),()=>undefined,{populateCache:true,revalidate:true,throwOnError:false});
         const pages=clearMatchingPages(queryKey,false);
         const infinite=matchingInfiniteKeys(queryKey).map(key=>mutate(key,undefined,{revalidate:true,throwOnError:false}));
         await Promise.all([regular,pages,...infinite]);
       },
-      revalidate:({queryKey})=>mutate(key=>keyStartsWith(key,queryKey)),
+      revalidate:({queryKey})=>{
+        supersedePending(queryKey);
+        return mutate(key=>keyStartsWith(key,queryKey));
+      },
       getOrLoad:({queryKey,queryFn})=>{
         const cached=cache.get(unstable_serialize(queryKey))?.data;
         if(cached!==undefined)return Promise.resolve(cached);
         const cacheKey=unstable_serialize(queryKey);
-        if(inFlight.has(cacheKey))return inFlight.get(cacheKey);
+        const previous=inFlight.get(cacheKey);
+        if(previous)return previous.promise;
+        const entry={queryKey,promise:null};
         const request=Promise.resolve().then(queryFn).then(
-          value=>mutate(queryKey,value,{revalidate:false}),
+          value=>inFlight.get(cacheKey)===entry
+            ?mutate(queryKey,value,{revalidate:false}):value,
           error=>{throw error}
-        ).finally(()=>inFlight.delete(cacheKey));
-        inFlight.set(cacheKey,request);
+        ).finally(()=>{
+          if(inFlight.get(cacheKey)===entry)inFlight.delete(cacheKey);
+        });
+        entry.promise=request;
+        inFlight.set(cacheKey,entry);
         return request;
       },
-      set:(key,value)=>mutate(key,typeof value==='function'?value:()=>value,{revalidate:false}),
+      set:(key,value)=>{
+        supersedePending(key);
+        return mutate(key,typeof value==='function'?value:()=>value,{revalidate:false});
+      },
       get:key=>cache.get(unstable_serialize(key))?.data,
       clear:async({queryKey})=>{
+        supersedePending(queryKey);
         const regular=mutate(key=>keyStartsWith(key,queryKey),()=>undefined,{populateCache:true,revalidate:false,throwOnError:false});
         const pages=clearMatchingPages(queryKey,false);
         const infinite=matchingInfiniteKeys(queryKey).map(key=>mutate(key,undefined,{revalidate:false,throwOnError:false}));
