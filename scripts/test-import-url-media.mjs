@@ -1,7 +1,7 @@
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
-import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl} from '../app/loc/archive-media-evidence.mjs';
+import {archiveAttachmentReferences,createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl,auditArchiveUrlAttributes} from '../app/loc/archive-media-evidence.mjs';
 import {normalizeImportMedia} from '../app/loc/import-batch.mjs';
 import {extractImportCoordinates,importMapUrlCoordinates} from '../app/loc/import-geocoordinates.mjs';
 
@@ -163,4 +163,29 @@ test('no-URL media may reuse an exact owner-linked record, never title alone',()
   assert.match(panel,/const storedEvidenceUid=evidenceKey\?existingOwnerMediaByKey\.get\(evidenceKey\):null/);
   assert.match(panel,/if\(storedEvidenceUid\)\{attach\(owner,storedEvidenceUid\);continue;\}/);
   assert.match(panel,/if\(evidenceKey\)existingOwnerMediaByKey\.set\(evidenceKey,String\(mediaId\)\)/);
+});
+
+test('nested url attribute audit counts post, media and place separately',()=>{
+  const raw={url:'https://www.facebook.com/posts/abc',data:[{
+    place:{name:'中和福和宮',coordinate:{latitude:25.001625,longitude:121.501576},
+      url:'https://www.facebook.com/pages/temple/813051948710450'}
+  },{
+    attachments:[{data:[{media:{uri:'photos/a.jpg',url:'https://cdn.test/a.jpg'}}]}]
+  }]};
+  assert.deepEqual(auditArchiveUrlAttributes(raw),
+    {total:3,article:1,media:1,place:1,other:0,truncated:false});
+});
+
+test('place url under data is not miscounted as media or article',()=>{
+  const raw={data:[{place:{name:'新馬辣',url:'https://facebook.com/100090108969407',
+    coordinate:{latitude:25.01111,longitude:121.46434}}}]};
+  assert.deepEqual(auditArchiveUrlAttributes(raw),
+    {total:1,article:0,media:0,place:1,other:0,truncated:false});
+});
+
+test('nested attribute audit reports when capped rather than pretending complete',()=>{
+  const raw={data:Array.from({length:12},(_,i)=>({url:'https://example.test/'+i}))};
+  const result=auditArchiveUrlAttributes(raw,{maxNodes:4});
+  assert.equal(result.truncated,true);
+  assert.ok(result.total<12);
 });
