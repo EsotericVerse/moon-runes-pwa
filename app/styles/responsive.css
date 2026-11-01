@@ -149,3 +149,29 @@
   .loc-next-search{flex:1 0 10rem}
   .loc-next-search input{width:100%}
 }
+
+/* Mobile Trace: keep the map, search, selected-place report and return control usable together. */
+@media(max-width:680px){
+  .loc-trace-map-shell.is-public-trace .loc-trace-float-toolbar{
+    max-height:min(42dvh,280px);
+    overflow-x:hidden;
+    overflow-y:auto;
+    overscroll-behavior:contain;
+  }
+  .loc-trace-map-shell.is-public-trace .loc-trace-floating-content{
+    bottom:calc(3.65rem + env(safe-area-inset-bottom,0px));
+    max-height:min(36dvh,calc(100% - 15rem));
+  }
+  .loc-trace-map-shell.is-public-trace .loc-trace-origin-button{
+    right:.4rem;
+    bottom:max(.4rem,env(safe-area-inset-bottom,0px));
+    min-height:44px;
+  }
+  .loc-trace-map-shell.is-public-trace .loc-trace-float-map-status{
+    top:auto;
+    left:.4rem;
+    right:auto;
+    bottom:.4rem;
+    max-width:calc(100% - 9rem);
+  }
+}
