@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {createPortal} from 'react-dom';
 import RuneArtStage from '../visual/RuneArtStage';
+import useRuneDialogFocus from '../visual/useRuneDialogFocus';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {navigationHref} from '../../modular/scope-registry.js';
 import useNativeNavigation from '../../modular/use-native-navigation';
@@ -23,15 +24,10 @@ export default function RuneDaily3D({presentationSwitcher=null}){
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
   const [details,setDetails]=useState(false);
+  const dialogRef=useRuneDialogFocus(()=>setDetails(false),details);
   const lock=useRef(false);
   const mounted=useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
-  useEffect(()=>{
-    if(!details)return;
-    const onEscape=event=>{if(event.key==='Escape')setDetails(false);};
-    window.addEventListener('keydown',onEscape);
-    return()=>window.removeEventListener('keydown',onEscape);
-  },[details]);
   async function drawDaily(){
     if(lock.current||draw)return;
     lock.current=true;setBusy(true);setError('');setDetails(false);
@@ -89,7 +85,7 @@ export default function RuneDaily3D({presentationSwitcher=null}){
     {details&&draw&&typeof document!=='undefined'?createPortal(
       <div className="rune-art-modal-backdrop rune-art-result-backdrop"
         onClick={()=>setDetails(false)} role="presentation">
-        <section className="rune-art-modal rune-art-result-modal" role="dialog"
+        <section ref={dialogRef} tabIndex={-1} className="rune-art-modal rune-art-result-modal" role="dialog"
           aria-modal="true" aria-label="每日符文指示"
           onClick={event=>event.stopPropagation()}>
           <div className="rune-art-modal-head rune-art-result-head">
