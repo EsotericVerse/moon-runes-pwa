@@ -107,11 +107,48 @@ const category=path=>{
   return 'meta';
 };
 const txt=value=>typeof value==='string'?value:null;
-const pickUrl=item=>[
-  item.post_url,item.permalink,item.string_map_data?.Permalink?.value,
-  item.url,item.link,item.string_map_data?.Link?.value
-].find(v=>typeof v==='string'&&/^https?:\/\//i.test(v.trim())&&
-  !isArchiveMediaUrl(v)&&!importMapUrlCoordinates(v))||'';
+// A ZIP post can wrap its own URL beneath data.array[] while its media and
+// check-in URLs live in *different* nested branches. Only traverse article
+// wrappers: never treat a caption hyperlink, photo, or place as the post URL.
+function pickUrl(item){
+  const valid=value=>{
+    if(typeof value!=='string')return '';
+    const url=value.trim();
+    return /^https?:\/\//i.test(url)&&!isArchiveMediaUrl(url)&&!importMapUrlCoordinates(url)?url:'';
+  };
+  const queue=[item],seen=new WeakSet();
+  let fallback='';
+  for(let cursor=0;cursor<queue.length&&cursor<240;cursor++){
+    const node=queue[cursor];
+    if(!node||typeof node!=='object'||seen.has(node))continue;
+    seen.add(node);
+    if(Array.isArray(node)){
+      for(const value of node)if(value&&typeof value==='object')queue.push(value);
+      continue;
+    }
+    const map=node.string_map_data;
+    // Source post permalinks take precedence over a generic shared-link URL.
+    for(const candidate of [
+      node.post_url,node.postUrl,node.permalink,node.permalink_url,node.permalinkUrl,
+      map?.Permalink?.value,map?.['Post URL']?.value
+    ]){
+      const url=valid(candidate);
+      if(url)return url;
+    }
+    if(!fallback)for(const candidate of [
+      node.url,node.link,map?.URL?.value,map?.Link?.value
+    ]){
+      const url=valid(candidate);
+      if(url){fallback=url;break;}
+    }
+    // These hold the SAME post, unlike attachments/media/place/location.
+    for(const key of ['data','array','post','entry','core','thread','status','post_data']){
+      const child=node[key];
+      if(child&&typeof child==='object')queue.push(child);
+    }
+  }
+  return fallback;
+}
 function chatgptConversation(row){
   if(!row||typeof row!=='object'||!row.mapping)return null;
   const messages=Object.values(row.mapping).map(node=>node?.message).filter(Boolean)
