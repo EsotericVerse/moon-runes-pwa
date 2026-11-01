@@ -1,4 +1,4 @@
-import {classifyKeywordDocumentsByUid,createKeywordUidGroupResolver} from './model/keyword-uid-analysis.mjs';
+import {createKeywordUidDocumentClassifier,createKeywordUidGroupResolver} from './model/keyword-uid-analysis.mjs';
 import {keywordClassCatalog,indexKeywordTree} from './keyword-tree.mjs';
 
 const ARTICLE_UID=/^[A-Za-z0-9]{8}$/;
@@ -20,6 +20,8 @@ export async function reanalyzeKeywordClass({
   const itemResults=new Map(catalog.map(item=>[item.uid,new Map()]));
   const groupResults=new Map(root.lists.map(uid=>[uid,new Set()]));
   const resolver=createKeywordUidGroupResolver(treeRows,classUid);
+  // Compile keyword rules once per Class, not once per 1,000-article batch.
+  const classify=createKeywordUidDocumentClassifier(treeRows,classUid);
   const seen=new Set();
   let offset=0,read=0,eligible=0,occurrences=0,itemMatches=0;
   for(;;){
@@ -36,7 +38,7 @@ export async function reanalyzeKeywordClass({
     }
     const docs=page.filter(row=>row.searchable!==false&&
       Array.from(String(row.content||'').replace(/\s/gu,'')).length>minChars);
-    const data=classifyKeywordDocumentsByUid(docs,treeRows,classUid);
+    const data=classify(docs);
     for(const result of data.classifications||[]){
       if(!ARTICLE_UID.test(result.uid)||!seen.has(result.uid))
         throw new Error('Classifier returned an unknown Galaxy UID');
