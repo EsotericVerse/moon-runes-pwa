@@ -71,15 +71,46 @@ export async function selectActiveKeywordClassName(scopeId=''){
 export async function selectAvailableKeywordClasses(scopeId='lo3rwang'){
   const id=normalizeScopeId(scopeId),scope=defaultScopeData(id);
   if(!scope)return {classes:[],currentClassUid:''};
-  const [{readSharedKeywordClasses},{rows}]=await Promise.all([
+  const [{readSharedKeywordClasses,dbAuthRelation},{rows}]=await Promise.all([
     import('./db-client.mjs'),
     selectRows(scope.config,{
       columns:'current_keyword_class_uid',
       filters:[{column:'id',operator:'eq',value:id}],limit:1
     })
   ]);
-  const classes=await readSharedKeywordClasses(id);
-  return {classes,currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
+  // Guest: public/shared classes only. Owner: the existing authenticated
+  // Keywords table's RLS (silver.can_manage_scope) permits the full tree.
+  // Never expose private Class identities through a public/anonymous query.
+  const shared=await readSharedKeywordClasses(id);
+  const classes=new Map((shared||[]).filter(row=>row.classUid)
+    .map(row=>[String(row.classUid),{...row,categoryName:''}]));
+  try{
+    const {data,error}=await dbAuthRelation(scope.keywords)
+      .select('uid,type,name,lists')
+      .in('type',['category','class']).limit(500);
+    if(!error&&Array.isArray(data)&&data.length){
+      const categories=data.filter(row=>row.type==='category');
+      const categoryOf=new Map(categories.flatMap(row=>
+        (Array.isArray(row.lists)?row.lists:[]).map(uid=>[String(uid),String(row.name||'')])));
+      for(const row of data.filter(row=>row.type==='class')){
+        const uid=String(row.uid||'');
+        if(!uid)continue;
+        classes.set(uid,{...classes.get(uid),scopeId:id,classUid:uid,
+          name:String(row.name||uid),categoryName:categoryOf.get(uid)||''});
+      }
+      for(const [uid,row] of classes){
+        if(!row.categoryName&&categoryOf.has(uid))
+          classes.set(uid,{...row,categoryName:categoryOf.get(uid)});
+      }
+    }
+  }catch{
+    // Browsing public statistics does not require a login. A failed private
+    // read is not permission to enumerate the hidden Class names.
+  }
+  return {classes:[...classes.values()].sort((a,b)=>
+    String(a.categoryName||'').localeCompare(String(b.categoryName||''),'zh-Hant')
+    ||String(a.name||'').localeCompare(String(b.name||''),'zh-Hant')),
+    currentClassUid:String(rows?.[0]?.current_keyword_class_uid||'')};
 }
 async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
   const id=normalizeScopeId(scopeId);

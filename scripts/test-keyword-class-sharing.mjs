@@ -67,3 +67,26 @@ test('shared Class directory uses authorized reader for owner and public reader 
     guest,async()=>true,id=>id);
   await assert.rejects(failing('lo3rwang'),/denied/);
 });
+
+test('music genres belong to selectable Keyword Classes, not fixed Statistics dimensions',()=>{
+  const stats=source('app/modular/features/Statistics.jsx');
+  const match=stats.match(/const STAT_TYPES=\[([^\]]+)\]/);
+  assert.ok(match,'Statistics dimensions must be present');
+  assert.doesNotMatch(match[1],/media_style/);
+  assert.match(stats,/value:'keywords',textKey:'uiExtra\.statisticsUI\.keywordClass'/);
+  assert.match(stats,/availableKeywordClasses\.map\(item=><option/);
+  assert.match(stats,/\[item\.categoryName,item\.name\]/);
+  assert.match(stats,/setSelectedKeywordClassUid\(event\.target\.value\)/);
+  assert.match(stats,/classUid:resolvedKeywordClassUid/);
+  assert.doesNotMatch(stats,/STYLE_FILTERS[^\n]*rune66/);
+});
+
+test('private Keyword Class directory is read only through existing owner RLS',()=>{
+  assert.match(analysis,/dbAuthRelation\(scope\.keywords\)/);
+  assert.match(analysis,/\.in\('type',\['category','class'\]\)/);
+  assert.match(analysis,/row\.type==='category'/);
+  assert.match(analysis,/row\.type==='class'/);
+  assert.match(analysis,/classUid:uid/);
+  assert.match(analysis,/const shared=await readSharedKeywordClasses\(id\)/);
+  assert.doesNotMatch(analysis,/dbPublicRelation\(scope\.keywords\)/);
+});
