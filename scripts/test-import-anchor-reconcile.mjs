@@ -17,7 +17,8 @@ function mockDatabase(){
   let traceIndex=4;
   const relation=table=>{
     const source=table==='silver.lo3rwang_galaxy'?galaxy:
-      table==='silver.lo3rwang_trace'?trace:time;
+      table==='silver.lo3rwang_trace'?trace:
+      table==='silver.lo3rwang_anchor'?[...time,...trace]:time;
     const selectors=[];
     const query={
       select(){return query;},
@@ -79,6 +80,10 @@ test('backfills only location articles, persists exact Galaxy.date and is idempo
   assert.equal(db.galaxy[2].place_id,null);
   assert.equal(db.time.at(-1).address,'2024-04-05');
   assert.equal(db.time.at(-1).type,'anchor');
+  // Physical Anchor PK is shared by Time and Trace. Reconciliation must
+  // never allocate the same four-character UID across the two kinds.
+  assert.equal(db.trace[0].uid,'0004');
+  assert.equal(db.time.at(-1).uid,'0005');
   const second=await reconcileExistingImportAnchors(options);
   assert.equal(second.linked,0);
   assert.equal(second.places.created,0);
