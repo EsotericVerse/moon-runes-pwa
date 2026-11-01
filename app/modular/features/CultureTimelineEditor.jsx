@@ -33,7 +33,7 @@ function normalizeDraft(row){
     anchor_ids:Array.isArray(row.anchor_ids)?row.anchor_ids:[]};
 }
 export default function CultureTimelineEditor({
-  scopeId='',timeTable:providedTimeTable='',selectedRecordId='',suggestedAnchorDate='',
+  scopeId='',timeTable:providedTimeTable='',birthday='',selectedRecordId='',suggestedAnchorDate='',
   suggestedRecordType='anchor',suggestedRequestNonce=0,defaultRecordType='anchor',onClose=null
 }){
   useUiSection('uiExtra.dataErrors');
@@ -83,8 +83,8 @@ export default function CultureTimelineEditor({
       String(a.uid).localeCompare(String(b.uid))),[anchors]);
   const anniversarySuggestions=useMemo(()=>
     !selectedId&&draft.type==='anchor'
-      ?anniversarySuggestionsForDate(day(draft.address),anchorChoices)
-      :[],[selectedId,draft.type,draft.address,anchorChoices]);
+      ?anniversarySuggestionsForDate(day(draft.address),anchorChoices,{birthday})
+      :[],[selectedId,draft.type,draft.address,anchorChoices,birthday]);
   const anchorOptions=useMemo(()=>anchorChoices.map(row=>
     ({value:row.uid,label:(day(row.address)?day(row.address)+'｜':'')+row.title})),[anchorChoices]);
   const anchorOptionOf=uid=>anchorOptions.find(option=>option.value===uid)

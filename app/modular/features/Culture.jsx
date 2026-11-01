@@ -1290,6 +1290,7 @@ export default function Culture(){
               <CultureTimelineEditor key={scopeId+':unified:'+timelineEditorRevision}
                 scopeId={scopeId}
                 timeTable={scopeData?.time||''}
+                birthday={scopeData?.birthday||''}
                 selectedRecordId={selectedTimelineRecordId}
                 suggestedAnchorDate={selectedTimelineDate}
                 suggestedRecordType={suggestedRecordType}

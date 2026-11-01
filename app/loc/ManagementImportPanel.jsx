@@ -649,6 +649,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       });
       const dates=await prepareImportTimeAnchors(candidates,{
         scopeId,timeTable:account.scopeDataFor(scopeId)?.time,relation:dbAuthRelation,
+        anniversaryRecords:candidates,birthday:account.scopeDataFor(scopeId)?.birthday,
         onProgress:p=>setProgress({stage:p.phase,completed:p.completed,total:p.total||0,
           percent:p.total?Math.round(100*p.completed/p.total):null})
       });
@@ -841,8 +842,19 @@ function UniversalImport({scopeId,format,onFormatChange}) {
             (item.mediaRefs?.length||0)))
       })&&!unique.some(record=>record.location||record.__importPlaceName||
         existingBySiteId.get(record.uid)?.location)){
+        // An unchanged source file may still supply a birthday/anniversary
+        // that was not anchored yet. No article rewrite is necessary.
+        const anniversaries=await prepareImportTimeAnchors([],{
+          scopeId,timeTable:scope?.time,relation:dbAuthRelation,
+          anniversaryRecords:unique.map(record=>({
+            ...record,date:existingBySiteId.get(record.uid)?.date||record.date||null
+          })),birthday:scope?.birthday,
+          onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
+        });
         setProgress(null);
-        setStatus(t('uiExtra.importUI.importNoChanges'));
+        setStatus(anniversaries.created
+          ?'文章沒有變更；已自動新增 '+anniversaries.created.toLocaleString()+' 筆週年／生日時間定錨。'
+          :t('uiExtra.importUI.importNoChanges'));
         setRows([]);
         setArchiveEvidence([]);
         return;
@@ -867,6 +879,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       });
       const timeAnchors=await prepareImportTimeAnchors([...anchorRecords,...geoAnchorRecords],{
         scopeId,timeTable:scope?.time,relation:dbAuthRelation,
+        anniversaryRecords:anchorRecords,birthday:scope?.birthday,
         onProgress:p=>showProgress(p.phase,p.completed,p.total||0)
       });
       const knownArticleIds=new Map();
@@ -1004,7 +1017,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆，沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(exifNotSaved?'；私人 EXIF '+exifNotSaved.toLocaleString()+' 筆因原儲存表已移除而未寫入，沒有混入公開文章／地點。':'')+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆（週年／生日符合 '+Number(timeAnchors.anniversaries||0).toLocaleString()+' 日），沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(exifNotSaved?'；私人 EXIF '+exifNotSaved.toLocaleString()+' 筆因原儲存表已移除而未寫入，沒有混入公開文章／地點。':'')+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);

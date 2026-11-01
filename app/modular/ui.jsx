@@ -272,6 +272,8 @@ function ArticleRelationNavigation({
   if(addedAnchor?.scope===scope&&addedAnchor?.day===day&&
     !activeAnchors.some(item=>item.uid===addedAnchor.anchor.uid))activeAnchors.push(addedAnchor.anchor);
   const timeAnchors=named(activeAnchors,item=>timeHref(item,'anchor'));
+  const anniversarySuggestions=activeAnchors.length?[]:
+    (Array.isArray(time.anniversarySuggestions)?time.anniversarySuggestions:[]);
   const periods=named(time.periods,item=>timeHref(item,'period'));
   const eras=named(time.eras,item=>timeHref(item,'period'));
   const locations=space.place?[space.place]:tracePlace?[tracePlace]:[];
@@ -294,8 +296,12 @@ function ArticleRelationNavigation({
       <h3>時間</h3>
       {row('定錨',<>
         {timeAnchors.length?timeAnchors:dateValid?'—':'文章尚未設定日期'}
+        {anniversarySuggestions.length?<span className="scope-status" role="status">
+          此日期符合週年／生日：{anniversarySuggestions[0].title}，可新增週年定錨。
+        </span>:null}
         {dateValid&&scope!=='loc'&&scope!=='local'?<ArticleTimeAnchorAction
-          scopeId={scope} date={day}
+          scopeId={scope} date={day} suggestions={anniversarySuggestions}
+          label={anniversarySuggestions.length?'新增週年定錨':'新增時間定錨'}
           onCreated={anchor=>setAddedAnchor({scope,day,anchor})}/>:null}
       </>)}
       {row('期間',periods.length?periods:'—')}
