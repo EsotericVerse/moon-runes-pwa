@@ -1,23 +1,28 @@
-import {classifyKeywordDocuments} from './keyword-engine.mjs';
+import {createKeywordDocumentClassifier} from './keyword-engine.mjs';
 import {keywordClassCatalog,indexKeywordTree} from '../keyword-tree.mjs';
 
 // Keep scoring rules unchanged; ephemeral ordinals only index one analysis call.
 // All externally visible references are four-character Item UIDs.
-export function classifyKeywordDocumentsByUid(documents=[],treeRows=[],classUid=''){
+export function createKeywordUidDocumentClassifier(treeRows=[],classUid=''){
   const {catalog}=keywordClassCatalog(treeRows,classUid);
   const slot=new Map(catalog.map((item,i)=>[i+1,item.uid]));
   const temp=catalog.map((item,i)=>({
     item_no:i+1,item_name:item.item_name,class_group:item.group_uid,
     keywords:item.keywords,order_no:item.order_no,class_enable:true
   }));
-  const outcome=classifyKeywordDocuments(documents,temp);
-  return {...outcome,classifications:(outcome.classifications||[]).map(row=>({
+  const classify=createKeywordDocumentClassifier(temp);
+  return documents=>{
+    const outcome=classify(documents);
+    return {...outcome,classifications:(outcome.classifications||[]).map(row=>({
     uid:row.uid,status:row.status,classification_group:row.classification_group,
     tied_groups:[...(row.tied_groups||[])],
     hits:(row.rune_counts||[]).map(hit=>({uid:slot.get(hit.rune_id),times:hit.count}))
-  }))};
+    }))};
+  };
 }
-
+export function classifyKeywordDocumentsByUid(documents=[],treeRows=[],classUid=''){
+  return createKeywordUidDocumentClassifier(treeRows,classUid)(documents);
+}
 
 // Mirror the pre-UID stateful tie resolver: previous Group allocations matter,
 // and the configured default Group is ordered after the ordinary Groups.
