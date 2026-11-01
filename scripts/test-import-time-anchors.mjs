@@ -241,3 +241,22 @@ test('existing calendar anchors always win even when imported check-ins are anni
   assert.equal(db.rows[1].title,'人工名稱');
   assert.equal(db.rows[1].description,'人工備註');
 });
+
+
+test('plain article dates never generate anniversary or birthday Time anchors',async()=>{
+  const db=memoryTime([
+    {uid:'0001',type:'anchor',title:'原始事件',address:'2020-10-16',description:'人工記載'}
+  ]);
+  const result=await prepareImportTimeAnchors([],{
+    scopeId:'lo3rwang',timeTable:'silver.lo3rwang_time',relation:db.relation,
+    anniversaryRecords:[
+      {uid:'POST1',date:'2026-10-16',title:'普通文章',location:null},
+      {uid:'POST2',date:'2026-06-23',title:'生日日期文章',location:null}
+    ],
+    birthday:'1980-06-23'
+  });
+  assert.equal(result.created,0);
+  assert.equal(result.anniversaries,0);
+  assert.equal(db.rows.length,1);
+  assert.equal(db.calls.length,0);
+});
