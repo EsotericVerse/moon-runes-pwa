@@ -7,7 +7,7 @@ const fixture=[
   {uid:'A001',source_scope:'lo3rwang',trace_type:'space_anchor'},
   {uid:'R001',source_scope:'lo3rwang',trace_type:'path',anchor_list:['A001','A002']},
   {uid:'T001',source_scope:'lo3rwang',trace_type:'trace',
-    route_list:['R001'],anchor_list:[['A002','A003']]},
+    route_list:{routes:['R001'],segments:[['A002','A003']]},anchor_list:['A002','A003']},
   {uid:'R001',source_scope:'lrunes',trace_type:'path',anchor_list:['B001','B002']},
   {uid:'X001',source_scope:'lrunes',trace_type:'space_anchor'}
 ];
@@ -18,15 +18,15 @@ test('LOC shows exactly one read-only trace union per populated source, never ra
     'lo3rwang:LOC_UNION','lrunes:LOC_UNION'
   ]);
   assert.ok(choices.every(row=>row.trace_type==='trace'&&row.read_only));
-  assert.deepEqual(choices[0].route_list,['R001']);
-  assert.deepEqual(choices[0].anchor_list,[['A002','A003']]);
-  assert.deepEqual(choices[1].route_list,['R001']);
+  assert.deepEqual(choices[0].route_list.routes,['R001']);
+  assert.deepEqual(choices[0].route_list.segments,[['A002','A003']]);
+  assert.deepEqual(choices[1].route_list.routes,['R001']);
 });
 
 test('a saved route appears in LOC even when no standalone trace group is stored',()=>{
   const rows=publicTraceMapChoices(fixture.filter(row=>row.trace_type!=='trace'),'loc');
   assert.equal(rows.length,2);
-  assert.deepEqual(rows[0].route_list,['R001']);
+  assert.deepEqual(rows[0].route_list.routes,['R001']);
   assert.deepEqual(publicTraceMapChoices([], 'loc'),[]);
 });
 
