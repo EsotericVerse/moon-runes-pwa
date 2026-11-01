@@ -15,7 +15,7 @@ import {useAccount} from './use-account';
 import {hasIrrecoverableEncoding,repairMojibakeText} from './content-policy';
 
 const blankMedia=()=>({
-  galaxy_link:'',location:'',media_type:'',title:'',
+  galaxy_link:'',location:'',type:'',title:'',
   url:'',meta_tags:'',createtime:''
 });
 
@@ -62,7 +62,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
     try{
       const galaxyLink=String(draft.galaxy_link||'').trim();
       if(galaxyLink&&galaxyLink.length!==8)throw new Error(t('uiExtra.importUI.linkUidInvalid'));
-      const mediaType=repairMojibakeText(draft.media_type).trim();
+      const mediaType=repairMojibakeText(draft.type).trim();
       if(!mediaType)throw new Error(t('uiExtra.importUI.mediaTypeRequired'));
       const metaTags=repairMojibakeText(draft.meta_tags).trim();
       const mediaTitle=repairMojibakeText(draft.title).trim();
@@ -79,7 +79,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
       const record={
         uid:mediaUid,
         location:sourcePlace||null,
-        media_type:mediaType,
+        type:mediaType,
         title:mediaTitle||null,
         url:String(draft.url||'').trim()||null,
         meta_tags:metaTags,
@@ -114,7 +114,7 @@ export default function ManagementMediaPublisher({scopeId,dockScopeId=scopeId,gl
     <h2>{UI_COPY.management.addMedia}</h2>
     <form onSubmit={save} className="scope-editor">
       <div className="scope-stat-controls">
-        <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.media_type} onChange={e=>change('media_type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
+        <label><span><UiText id="uiExtra.importUI.mediaTypeLabel"/></span><input value={draft.type} onChange={e=>change('type',e.target.value)} placeholder="ig_pic / facebook_pic / suno / video / url" required/></label>
         <label><span><UiText id="uiExtra.importUI.mediaArticleUidLabel"/></span><input value={draft.galaxy_link} onChange={e=>change('galaxy_link',e.target.value)} placeholder={t('uiExtra.importUI.mediaUidHint')}/></label>
         <label><span><UiText id="uiExtra.importUI.mediaCreatedAtLabel"/></span><input type="datetime-local" value={draft.createtime} onChange={e=>change('createtime',e.target.value)}/></label>
       </div>
