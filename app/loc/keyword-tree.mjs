@@ -17,6 +17,10 @@ export function keywordUidListData(type,value){
   if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
     if(type==='group'&&Array.isArray(raw.articles))return [...raw.articles];
     if(type==='item'&&Array.isArray(raw.hits))return [...raw.hits];
+    // New unified Anchor keeps total separately from deduplicated UID strings.
+    // Reconstruct legacy hit objects in memory only for existing consumers.
+    if(['group','item'].includes(type)&&Array.isArray(raw.uidlists))
+      return type==='item'?raw.uidlists.map(uid=>({uid,times:1})):raw.uidlists;
     if(['category','class'].includes(type)&&Object.keys(raw).length===0)return [];
   }
   throw new Error('Invalid structured Keywords uid_lists for '+type);
@@ -59,7 +63,12 @@ export function normalizeKeywordTreeRow(row){
         throw new Error('Group uid_lists require unique article UID strings');
     }else if(uid_lists.length)throw new Error('Category and Class do not store uid_lists');
   }
-  return {uid,type,name,desc,lists:[...lists],uid_lists:[...uid_lists]};
+  const compact=row?.uid_lists&&typeof row.uid_lists==='object'&&!Array.isArray(row.uid_lists)
+    &&Array.isArray(row.uid_lists.uidlists);
+  const total=compact&&Number.isSafeInteger(Number(row.uid_lists.total))
+    ?Number(row.uid_lists.total):type==='item'
+      ?uid_lists.reduce((sum,hit)=>sum+hit.times,0):uid_lists.length;
+  return {uid,type,name,desc,lists:[...lists],uid_lists:[...uid_lists],total};
 }
 export function indexKeywordTree(rows=[]){
   const index=new Map(),parent=new Map();
