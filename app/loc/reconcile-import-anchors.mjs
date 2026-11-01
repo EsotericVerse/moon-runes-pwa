@@ -15,7 +15,7 @@ export async function reconcileExistingImportAnchors({
   const candidates=[];
   for(let offset=0;;offset+=pageSize){
     const {data,error}=await relation(galaxy)
-      .select('uid,location,place_id,date,createtime')
+      .select('uid,title,location,place_id,date,createtime')
       .not('location','is',null)
       .order('uid',{ascending:true}).range(offset,offset+pageSize-1);
     if(error)throw Error('讀取既有打卡文章失敗：'+(error.message||error));
