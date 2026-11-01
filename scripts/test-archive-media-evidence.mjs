@@ -54,7 +54,7 @@ test('Only an unambiguous full relative path can associate an article with ZIP m
   assert.equal(rows.filter(v=>v.found_in_zip).length,2);
   assert.equal(rows.filter(v=>v.found_in_zip).every(v=>v.galaxy_uids.length===0),true);
 });
-test('Article-linked archive image without a public URL retains media metadata and EXIF',()=>{
+test('Article-linked archive image without a public URL retains EXIF evidence but creates no URL-less media',()=>{
   const collector=createArchiveEvidenceCollector();
   collector.onMediaEntry({path:'facebook/photos/private.jpg'});
   collector.onRecord({platform:'facebook',attachments:[{uri:'facebook/photos/private.jpg'}]},'AAAA0001');
@@ -63,12 +63,10 @@ test('Article-linked archive image without a public URL retains media metadata a
   }});
   const entries=collector.rows({scopeId:'lo3rwang',archiveName:'fb.zip',archiveSize:1024});
   const plan=prepareArchiveMedia(entries,new Set(['AAAA0001']));
-  assert.equal(plan.media.length,1);
-  assert.equal(plan.media[0].url,null);
-  assert.equal(plan.mediaLinks.length,1);
-  assert.equal(plan.mediaLinks[0].uid,'AAAA0001');
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,1);
-  assert.equal(plan.exif[0].media_uid,plan.media[0].uid);
+  assert.equal(plan.exif[0].media_uid,null);
   assert.equal(plan.exif[0].latitude,25.033);
 });
 test('ZIP images with neither URL nor EXIF are not imported as media',()=>{
@@ -103,29 +101,26 @@ test('One ZIP image shared by two articles makes one media row and two links',()
   assert.equal(plan.exif.length,1);
 });
 
-test('Threads ZIP photo linked to an authored post is retained without EXIF or public URL',()=>{
+test('Threads ZIP photo linked to an authored post without public URL is not saved as media',()=>{
   const collector=createArchiveEvidenceCollector();
   collector.onRecord({platform:'threads',attachments:[{uri:'threads/media/real.jpg'}]},'AAAA0001');
   collector.onMediaEntry({path:'threads/media/real.jpg'});
   const entries=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:526});
   const plan=prepareArchiveMedia(entries,new Set(['AAAA0001']));
   assert.equal(entries.length,1);
-  assert.equal(plan.media.length,1);
-  assert.equal(plan.media[0].url,null);
-  assert.equal(plan.mediaLinks.length,1);
+  assert.equal(plan.media.length,0);
+  assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,0);
 });
 
-test('Media-only Threads post keeps verified ZIP image even without a Galaxy article',()=>{
+test('Media-only Threads post with no JSON URL is not persisted',()=>{
   const collector=createArchiveEvidenceCollector();
   collector.onRecord({platform:'threads',attachments:[{uri:'threads/media/textless.jpg'}]},null);
   collector.onMediaEntry({path:'threads/media/textless.jpg'});
   const entries=collector.rows({scopeId:'lo3rwang',archiveName:'threads.zip',archiveSize:998});
   const plan=prepareArchiveMedia(entries,new Set());
   assert.equal(entries.length,1);
-  assert.equal(plan.media.length,1);
-  assert.equal(plan.media[0].url,null);
-  assert.equal(plan.media[0].__article_uid,null);
+  assert.equal(plan.media.length,0);
   assert.equal(plan.mediaLinks.length,0);
   assert.equal(plan.exif.length,0);
 });
@@ -133,7 +128,7 @@ test('Media-only Threads post keeps verified ZIP image even without a Galaxy art
 
 test('ZIP media imports use linked article createtime when the media has no own timestamp',()=>{
   const c=createArchiveEvidenceCollector();
-  c.onRecord({platform:'facebook',attachments:[{uri:'photos/dated.jpg'}]},'ART00001');
+  c.onRecord({platform:'facebook',attachments:[{uri:'photos/dated.jpg',url:'https://cdn.example.test/dated.jpg'}]},'ART00001');
   c.onMediaEntry({path:'photos/dated.jpg'});
   const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:12});
   const plan=prepareArchiveMedia(source,new Set(['ART00001']),
@@ -144,7 +139,7 @@ test('ZIP media imports use linked article createtime when the media has no own 
 
 test('ZIP time fallback never invents a date from EXIF or an unrelated article',()=>{
   const c=createArchiveEvidenceCollector();
-  c.onRecord({platform:'facebook',attachments:[{uri:'photos/old.jpg'}]},'ART00002');
+  c.onRecord({platform:'facebook',attachments:[{uri:'photos/old.jpg',url:'https://cdn.example.test/old.jpg'}]},'ART00002');
   c.onMediaEntry({path:'photos/old.jpg'});
   c.onExif({path:'photos/old.jpg',metadata:{cameraLocalTime:'2021:01:01 09:15:00'}});
   const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:13});
@@ -157,7 +152,7 @@ test('ZIP time fallback never invents a date from EXIF or an unrelated article',
 test('Media linked by multiple articles uses the earliest available article timestamp',()=>{
   const c=createArchiveEvidenceCollector();
   for(const uid of ['ART00003','ART00004'])
-    c.onRecord({platform:'facebook',attachments:[{uri:'photos/shared.jpg'}]},uid);
+    c.onRecord({platform:'facebook',attachments:[{uri:'photos/shared.jpg',url:'https://cdn.example.test/shared.jpg'}]},uid);
   c.onMediaEntry({path:'photos/shared.jpg'});
   const source=c.rows({scopeId:'lo3rwang',archiveName:'backup.zip',archiveSize:17});
   const plan=prepareArchiveMedia(source,new Set(['ART00003','ART00004']),new Map([

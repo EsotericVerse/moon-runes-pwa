@@ -28,7 +28,7 @@ import {prepareImportPlaceAnchors,importedPlaceId,recordImportPlaceVisits} from 
 import {prepareImportTimeAnchors} from './import-time-anchors.mjs';
 import {reconcileExistingImportAnchors} from './reconcile-import-anchors.mjs';
 import {extractImportCoordinates,importGeoKey,importMapUrlCoordinates} from './import-geocoordinates.mjs';
-import {isPublicArchiveRecord,isPrivateArchiveEntry,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
+import {isPublicArchiveRecord,filterStandalonePublicRows,assertStandaloneImportDestination} from './archive-import-safety.mjs';
 import {createArchiveEvidenceCollector,prepareArchiveMedia,isArchiveMediaUrl,auditArchiveUrlAttributes} from './archive-media-evidence.mjs';
 import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImportValue,normalizeImportMedia,parseImportCreatedTime,extractImportCreatedAt,writeImportBatches,createImportBatchSizer,estimateImportMinutes,estimateImportStageMinutes} from './import-batch.mjs';
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
@@ -520,7 +520,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         // Mixed ZIPs are classified per entry and each imported record is checked.
         // Inspect every supported source through the shared ZIP scanner.
         // Archive filename/structure picks an adapter; record content is authoritative.
-        const imported=[],issuedArticleUids=new Set(),exifSamples=[],geoPlaces=[],geoKeys=new Map();
+        const imported=[],issuedArticleUids=new Set(),geoPlaces=[],geoKeys=new Map();
         const collector=createArchiveEvidenceCollector();
         const urlAudit={total:0,article:0,media:0,place:0,other:0,truncated:0};
         let ignored=0,privateSkipped=0;
@@ -571,23 +571,13 @@ function UniversalImport({scopeId,format,onFormatChange}) {
               throw Error('備份文字紀錄超過本次 100,000 筆安全上限，未匯入。');
             imported.push({raw:article,import_uid:article.uid});
           }
-        },onMediaMetadata:item=>{
-          if(!nativeLocal&&isPrivateArchiveEntry(item.path))return;
-          collector.onExif(item);
-          if(exifSamples.length<5)exifSamples.push(item);
-        },onMediaEntry:item=>{
-          if(!nativeLocal&&isPrivateArchiveEntry(item.path))return;
-          collector.onMediaEntry(item);
         }});
-        // On a public Scope, EXIF must be traceable to an approved public post.
-        // A loose photo in the ZIP can belong to a private chat even if its
-        // path does not contain "messages".
         const mediaEvidence=collector.rows({scopeId,archiveName:file.name,archiveSize:file.size})
           .filter(item=>nativeLocal||item.referenced_by_post||(imported.length>0&&item.galaxy_uids?.some(uid=>issuedArticleUids.has(uid))));
         const mediaPlan=prepareArchiveMedia(mediaEvidence,issuedArticleUids);
         setArchiveEvidence(mediaEvidence);
         setGeoPlaceCandidates(geoPlaces);
-        setArchiveSummary({...summary,exifSamples,urlAudit,
+        setArchiveSummary({...summary,urlAudit,
           mediaEvidenceCount:mediaEvidence.length,
           mediaImportable:mediaPlan.media.length,
           mediaWithUrl:mediaPlan.media.filter(item=>Boolean(item.url)).length,
@@ -1029,16 +1019,11 @@ function UniversalImport({scopeId,format,onFormatChange}) {
         knownArticleIds,galaxy,galaxyMedia,t,
         onProgress:p=>showProgress(p.stage,p.completed,p.total||0)
       });
-      // The legacy private archive EXIF table was retired. A ZIP image's
-      // private GPS/time cannot be written to public Galaxy or Trace merely
-      // to work around the missing private destination. Keep importing the
-      // articles and media, and explicitly report unsaved private evidence.
-      const exifNotSaved=archivePlan.exif.length;
       const skipped=analyzed.invalid.length+analyzed.skippedByRange+duplicateCount;
       showProgress('匯入完成',1,1);
       setStatus(t('uiExtra.importUI.importLinkedComplete',{articles:result.inserted,media:mediaSummary.created,linked:mediaSummary.connected,skipped})+
         (result.conflicts?'；UID 衝突未建立文章／媒體關聯 '+result.conflicts.toLocaleString()+' 筆。':'')+
-        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆（週年／生日符合 '+Number(timeAnchors.anniversaries||0).toLocaleString()+' 日），沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+(exifNotSaved?'；私人 EXIF '+exifNotSaved.toLocaleString()+' 筆因原儲存表已移除而未寫入，沒有混入公開文章／地點。':'')+
+        '；已更新既有文章 '+updated.toLocaleString()+' 筆，沿用空間定錨點 '+placeAnchors.reused.toLocaleString()+' 筆，新增空間定錨點 '+placeAnchors.created.toLocaleString()+' 筆，新增日期定錨 '+timeAnchors.created.toLocaleString()+' 筆（週年／生日符合 '+Number(timeAnchors.anniversaries||0).toLocaleString()+' 日），沿用日期定錨 '+timeAnchors.reused.toLocaleString()+' 筆，補入打卡時間 '+recordedVisits.toLocaleString()+' 筆，未匹配地點 '+placeAnchors.unmatchedCoordinates.toLocaleString()+' 組。'+
         (ambiguousGroups.length?'；同一網站同一發文時間有多篇文章、無法唯一比對而未匯入 '+ambiguousGroups.length.toLocaleString()+' 筆，需人工確認後重新匯入：'+
           ambiguousGroups.slice(0,5).map(group=>group.site+' / '+group.createtime).join('、')+(ambiguousGroups.length>5?' 等':'')+'。':''));
       setRows([]);setArchiveEvidence([]);setGeoPlaceCandidates([]);
@@ -1186,7 +1171,7 @@ function UniversalImport({scopeId,format,onFormatChange}) {
       這是來源欄位出現次數，不等於已保存的公開 URL。
       {archiveSummary.urlAudit.truncated?' 有 '+archiveSummary.urlAudit.truncated.toLocaleString()+' 筆超過掃描上限；數量為下限。':''}
     </p>:null}
-    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。嘗試讀取 EXIF {archiveSummary.exifImages.toLocaleString()} 張，GPS {archiveSummary.exifWithGps.toLocaleString()} 筆，拍攝時間 {archiveSummary.exifWithTime.toLocaleString()} 筆，略過 {archiveSummary.exifSkipped.toLocaleString()} 張。沒有 EXIF 不影響已確認關聯的媒體；沒有公開網址的媒體只保留資料與關聯，不會顯示可開啟的圖片連結。</p>:null}
+    {archiveSummary?<p className="scope-status" role="status">已檢查 {archiveSummary.mediaFiles.toLocaleString()} 個媒體檔；與文章關聯 {archiveSummary.mediaLinked.toLocaleString()} 筆，可寫入作品儲存資料庫 {archiveSummary.mediaImportable.toLocaleString()} 筆（具公開網址 {archiveSummary.mediaWithUrl.toLocaleString()} 筆、無文章關聯 {archiveSummary.mediaUnlinked.toLocaleString()} 筆）。不會解壓或解析 ZIP 內圖片；只從 JSON 匯入真正的媒體 URL。沒有公開網址的附件不建立媒體資料。</p>:null}
     {archiveSummary?.geoPlaceObjects?<section className="scope-import-preview" aria-label="Facebook 地點候選">
       <p className="scope-status">Facebook 原始地點物件 {archiveSummary.geoPlaceObjects.toLocaleString()} 筆。匯入時會按原始地名建立缺少的空間定錨與日期定錨；已有的沿用，經緯度不足時不推測。獨立打卡不會轉成 Galaxy 文章。</p>
       {geoPlaceCandidates.length?<ul>{geoPlaceCandidates.slice(0,12).map((place,index)=>
