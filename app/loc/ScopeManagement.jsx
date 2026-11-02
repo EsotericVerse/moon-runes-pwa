@@ -8,10 +8,17 @@ import {FeaturePage} from '../modular/ui';
 import ManagementSectionNav,{useManagementSection} from '../modular/ManagementSectionNav';
 import PanelLoading from './PanelLoading';
 import {recoverChunkOnce} from './chunk-recovery.mjs';
-import {PLACE_OPTIONS} from './PlaceManagement';
 
 const TraceManagementPanel=dynamic(()=>import('./TraceManagement'),{loading:PanelLoading});
 const PlaceManagement=dynamic(()=>import('./PlaceManagement').catch(recoverChunkOnce),{loading:PanelLoading});
+
+// These are first-level Spatial Management tabs, not nested Place Management options.
+const PLACE_OPTIONS=Object.freeze([
+  {value:'anchor',label:'空間定錨點',description:'新增或編輯地點、座標、隱藏權限'},
+  {value:'names',label:'名稱整理',description:'同位置名稱校正、別名、熱門地點'},
+  {value:'timeline',label:'Timeline 地點整理',description:'匯入路線 JSON、審查糾紛點'},
+  {value:'quickFill',label:'快速補打卡',description:'原有 location 日期批次補寫'}
+]);
 
 const TRACE_OPTION={value:'traceMap',label:'痕跡圖管理',shortLabel:'痕跡圖',
   description:'從已有地點自動完成選點，組合有序 Frame。'};
