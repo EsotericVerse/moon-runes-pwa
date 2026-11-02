@@ -127,14 +127,14 @@ export function toAnchorRow(spec,row){
  }else if(spec.kind==='media'){
    if(Object.hasOwn(data,'url'))out.label=data.url;
    if(Object.hasOwn(data,'meta_tags'))out.description=data.meta_tags;
-   if(data.type==='播放清單')out.attr={media_kind:'playlist'};
+   // Suno playlist/song is recognized by its URL, never a duplicate JSON flag.
  }
  if(Object.hasOwn(data,'label'))out.label=data.label;
  if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
  if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
  // Time never stores derived interval snapshots. A Keyword node owns only
  // its compact numeric total and unique article UIDs; no per-document times.
- if(spec.kind==='time')out.attr={};
+ if(spec.kind==='time'||spec.kind==='media')out.attr={};
  if(spec.kind==='keywords'){
    if(type==='group'||type==='item'){
      if(hasOwn(out,'attr'))out.attr=compactKeywordAnalysis(type,out.attr.uid_lists??out.attr);
@@ -172,7 +172,9 @@ export function fromAnchorRow(spec,row){
  }else if(spec.kind==='media'){
    out.url=row.label??null;out.meta_tags=row.description??null;
    out.createtime=null;out.location=null;
-   if(row.type==='suno'&&row.attr?.media_kind==='playlist')out.type='播放清單';
+   // A playlist is self-describing from the stable external URL path.
+   if(row.type==='suno'&&/^https?:\/\/(?:www\.)?suno\.com\/playlist\//i.test(String(row.label||'')))
+     out.type='播放清單';
  }
  return out;
 }
