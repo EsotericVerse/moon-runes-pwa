@@ -135,7 +135,7 @@ test('statistics uses one flat source selector and no retired classification tab
   assert.match(code,/const activeSourceSelection=styleFilter==='rune66'/);
   assert.match(code,/作品／個人分類/);
   assert.doesNotMatch(code,/sourceSubgroup|statistics_scope_others_groups|statistics_scope_others_aliases/);
-  assert.match(editor,/update\(\{DefaultArticleClass:names\}\)/);
+  assert.match(editor,/update\(\{\[scopeTagColumn\(scopeId\)\]:names\}\)/);
   assert.doesNotMatch(editor,/group_code|category_code|source_key/);
 });
 
@@ -459,7 +459,7 @@ test('Admin and Scope classification forms share direct one-level DefaultArticle
   assert.match(css,/@container classification-inline \(max-width:720px\)/);
   assert.match(css,/@container classification-inline \(max-width:420px\)/);
   assert.match(editor,/type="submit"/);
-  assert.match(editor,/\.update\(\{DefaultArticleClass:names\}\)/);
+  assert.match(editor,/\.update\(\{\[scopeTagColumn\(scopeId\)\]:names\}\)/);
   assert.match(editor,/canManageGroupSync\('loc'\)/);
   assert.match(editor,/update_group_default_article_class/);
   assert.match(editor,/canManageScopeSync\(scopeId\)/);
