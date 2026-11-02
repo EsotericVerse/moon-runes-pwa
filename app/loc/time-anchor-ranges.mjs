@@ -2,7 +2,7 @@
 // anchor.address DATE -> period.anchor_ids [startUID, optional endUID]
 // -> era.anchor_ids [period UID, ...].
 // A missing endpoint leaves a genuine surviving point; no '0' or now() anchor.
-const UID=/^[0-9A-F]{4}$/;
+const UID=/^[A-Za-z0-9]{4}(?:[A-Za-z0-9]{4})?$/;
 const dateOf=value=>{
   const date=String(value||'').slice(0,10);
   return /^\d{4}-\d{2}-\d{2}$/.test(date)?date:'';
@@ -17,8 +17,17 @@ export function storedTimeRange(value){
   return {ranges:doc.segments,invalidPeriodUids:Array.isArray(doc.invalid_period_uids)?doc.invalid_period_uids:[]};
 }
 export function isTimeUid(value){return UID.test(String(value||''));}
-export function allocateTimeUid(rows=[]){
+export function allocateTimeUid(rows=[],length=4){
   const occupied=new Set((Array.isArray(rows)?rows:[]).map(row=>String(row?.uid||'')));
+  if(length===8){
+    const alphabet='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    for(let attempt=0;attempt<128;attempt++){
+      const bytes=globalThis.crypto.getRandomValues(new Uint8Array(16));
+      const uid=[...bytes].filter(byte=>byte<248).slice(0,8).map(byte=>alphabet[byte%62]).join('');
+      if(uid.length===8&&!occupied.has(uid))return uid;
+    }
+    throw new Error('無法產生不重複的時間 UID');
+  }
   for(let i=1;i<=65535;i++){
     const uid=i.toString(16).toUpperCase().padStart(4,'0');
     if(!occupied.has(uid))return uid;
