@@ -11,6 +11,7 @@ import {duplicateDomainLabelError} from '../../../modular/scope-registry';
 import {THEME_SLOTS} from '../../../modular/theme-registry';
 const ObjectEditor=dynamic(()=>import('../../BlockNoteEditor').then(mod=>mod.ObjectEditor),{loading:()=>null});
 import {ScopeFeatureToggles} from '../../../modular/ui';
+import {isJsonbScope,scopeConfigColumns,scopeFeaturePatch,scopeFeatureKeys} from '../../scope-config-fields.mjs';
 import {
   deleteScope,dbAuthClient,dbAuthRelation,manageScopeRegistry,provisionScope,updateRows
 } from '../../db-client.mjs';
@@ -35,7 +36,7 @@ async function readAdminScopeConfig(scopeId,{attempts=7}={}){
   for(let attempt=0;attempt<attempts;attempt++){
     if(attempt>0)await waitForScopeSchema(Math.min(2000,350*attempt));
     const {data,error}=await dbAuthRelation('silver.'+scopeId)
-      .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
+      .select(scopeConfigColumns(scopeId))
       .eq('id',scopeId).limit(1);
     if(!error)return data?.[0]||null;
     if(!scopeSchemaCachePending(error)||attempt===attempts-1){
@@ -324,7 +325,10 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
   });
   const patchConfig=(key,value)=>setEditDraft(draft=>{
     const base=draft?.scopeId===selectedId?draft:draftFromSelected();
-    return {...base,config:{...(base.config||config),[key]:value}};
+    const previous=base.config||config;
+    return {...base,config:isJsonbScope(selectedId)&&scopeFeatureKeys.includes(key)
+      ?{...previous,abilities:{...(previous?.abilities||{}),[key]:value}}
+      :{...previous,[key]:value}};
   });
   const patchPageCopy=(key,value)=>setEditDraft(draft=>{
     const base=draft?.scopeId===selectedId?draft:draftFromSelected();
@@ -383,9 +387,7 @@ function RegistryNodePanel({data,selectedId,onDeleted,onDeleteNode,dirtyRef}){
           search_aliases:normalizeAliases(currentConfig.search_aliases),
           theme:String(currentConfig.theme||'system-default'),
           locale:normalizeUiLocale(currentConfig.locale),
-          search_able:currentConfig.search_able!==false,
-          statistics_able:currentConfig.statistics_able!==false,
-          culture_able:currentConfig.culture_able!==false,
+          ...scopeFeaturePatch(current.scope_id,currentConfig),
           updated_at:new Date().toISOString()
         },{filters:[{column:'id',operator:'eq',value:current.scope_id}]});
       }

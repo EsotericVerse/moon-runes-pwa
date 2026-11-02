@@ -2,6 +2,7 @@
 
 
 import {DB_QUERY_BATCH_SIZE,selectRows} from './db-query.mjs';
+import {scopeConfigColumns,scopeFeatureEnabled} from './scope-config-fields.mjs';
 import {dbPublicClient} from './db-client.mjs';
 import {Capacitor} from '@capacitor/core';
 import {SCOPE_ROUTE_INDEX} from '../modular/scope-route-index.js';
@@ -174,7 +175,7 @@ export async function selectLocSearchScopes(){
     .filter(row=>row.active&&row.scope_id!=='admin')
     .map(async row=>{
       const config=await selectScopeConfig(row.scope_id);
-      if(config?.search_able!==true)return null;
+      if(!config||!scopeFeatureEnabled(config,'search_able'))return null;
       const scope=defaultScopeData(row.scope_id);
       return scope?{...scope,display_name:String(config.display_name||row.display_name||row.scope_id).trim()}:null;
     }));
@@ -228,7 +229,7 @@ export function selectScopeConfig(scopeId){
   if(existing)return existing;
   // The published route entry also holds its public Config, one shared JS source.
   const live=()=>selectRows(scope.config,{
-    columns:'id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able',
+    columns:scopeConfigColumns(scope.id),
     filters:[{column:'id',operator:'eq',value:scope.id}],limit:1,offset:0
   }).then(({rows})=>rows[0]||null);
   const request=scope.id==='local'||editedPublicMetadata?live():

@@ -14,6 +14,7 @@ registerDefaultSection('uiExtra.dataErrors',dataErrorsZh);
 registerDefaultSection('uiExtra.pagination',paginationZh);
 
 import {useEffect,useMemo,useRef,useState} from 'react';
+import {scopeTagColumn,scopeTagNames} from '../../loc/scope-config-fields.mjs';
 import dynamic from 'next/dynamic';
 import {usePathname,useSearchParams} from 'next/navigation';
 import {useAsyncResource,useAsyncInfiniteResource,useResourceCache} from '../../loc/use-async-resource';
@@ -415,10 +416,10 @@ export default function Culture(){
     queryFn:async()=>{
       const scopes=scopeId==='loc'?['loc']:['loc',scopeId];
       const [global,personal]=await Promise.all(scopes.map(id=>selectRows('silver.'+id,{
-        columns:'DefaultArticleClass',filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
+        columns:scopeTagColumn(id),filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
       })));
-      return sourceTaxonomyFromArrays(global.rows?.[0]?.DefaultArticleClass||[],
-        scopeId==='loc'?[]:personal?.rows?.[0]?.DefaultArticleClass||[]);
+      return sourceTaxonomyFromArrays(scopeTagNames('loc',global.rows?.[0]),
+        scopeId==='loc'?[]:scopeTagNames(scopeId,personal?.rows?.[0]));
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
