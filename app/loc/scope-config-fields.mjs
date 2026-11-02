@@ -1,15 +1,29 @@
-// lo3rwang uses its compact JSONB config; other Scopes retain their existing schema.
+// The author's Scope uses a compact numeric JSONB switch map; all other Scopes
+// keep their existing independent boolean columns.
 export const isJsonbScope=id=>String(id)==='lo3rwang';
-export const scopeFeatureKeys=Object.freeze(['search_able','statistics_able','culture_able']);
-export const scopeFeatureColumns=id=>isJsonbScope(id)?'abilities':scopeFeatureKeys.join(',');
+const authorFeatureNames=Object.freeze({
+  search_able:'search',statistics_able:'statics',culture_able:'culture',trace:'trace'
+});
+export const scopeFeatureKeys=Object.freeze(Object.keys(authorFeatureNames));
+export const scopeFeatureName=key=>authorFeatureNames[key]||'';
+export const scopeFeatureColumns=id=>isJsonbScope(id)?'able':'search_able,statistics_able,culture_able';
 export const scopeConfigColumns=id=>'id,display_name,search_intro,search_aliases,theme,locale,'+scopeFeatureColumns(id);
 export function scopeFeatureEnabled(config,key){
-  if(!scopeFeatureKeys.includes(key))return false;
-  return (config?.abilities?.[key]??config?.[key])!==false;
+  const name=scopeFeatureName(key);
+  if(!name)return false;
+  const raw=config?.able?.[name];
+  if(raw!==undefined&&raw!==null)return raw===1||raw===true;
+  // The published route snapshot may lag an authorized configuration publish.
+  return config?.[key]!==false;
 }
 export function scopeFeaturePatch(id,config){
-  const values=Object.fromEntries(scopeFeatureKeys.map(key=>[key,scopeFeatureEnabled(config,key)]));
-  return isJsonbScope(id)?{abilities:values}:values;
+  if(isJsonbScope(id)){
+    return {able:Object.fromEntries(scopeFeatureKeys.map(key=>[
+      scopeFeatureName(key),scopeFeatureEnabled(config,key)?1:0
+    ]))};
+  }
+  return Object.fromEntries(scopeFeatureKeys.filter(key=>key!=='trace')
+    .map(key=>[key,scopeFeatureEnabled(config,key)]));
 }
 export const scopeTagColumn=id=>isJsonbScope(id)?'ArticleTag':String(id)==='lrunes'?'txt_class':'DefaultArticleClass';
 export function scopeTagNames(id,row){

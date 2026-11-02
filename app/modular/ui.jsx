@@ -525,12 +525,13 @@ export function IncrementalList({
 }
 
 /** One feature-availability control shared by Scope settings and Admin drafts. */
-export function ScopeFeatureToggles({value={},onChange,className='scope-editor-options'}){
+export function ScopeFeatureToggles({value={},onChange,className='scope-editor-options',scopeId=''}){
   return <div className={className}>
     {[
       ['search_able','features.search.title'],
       ['statistics_able','features.statics.title'],
-      ['culture_able','features.culture.title']
+      ['culture_able','features.culture.title'],
+      ...(scopeId==='lo3rwang'?[['trace','features.trace.title']]:[])
     ].map(([key,label])=><label key={key}>
       <input type="checkbox" checked={scopeFeatureEnabled(value,key)}
         onChange={event=>onChange?.(key,event.target.checked)}/><UiText id={label}/>
