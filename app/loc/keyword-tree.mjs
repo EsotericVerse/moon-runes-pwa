@@ -17,8 +17,9 @@ export function keywordUidListData(type,value){
   if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
     if(type==='group'&&Array.isArray(raw.articles))return [...raw.articles];
     if(type==='item'&&Array.isArray(raw.hits))return [...raw.hits];
-    // New unified Anchor keeps total separately from deduplicated UID strings.
-    // Reconstruct legacy hit objects in memory only for existing consumers.
+    // Unified Anchor caches only total; the article IDs are never persisted.
+    if(['group','item'].includes(type)&&Number.isSafeInteger(raw.total)&&raw.total>=0&&!Array.isArray(raw.uidlists))return [];
+    // Legacy compact records can still be read during a staged cutover.
     if(['group','item'].includes(type)&&Array.isArray(raw.uidlists))
       return type==='item'?raw.uidlists.map(uid=>({uid,times:1})):raw.uidlists;
     if(['category','class'].includes(type)&&Object.keys(raw).length===0)return [];
@@ -64,7 +65,7 @@ export function normalizeKeywordTreeRow(row){
     }else if(uid_lists.length)throw new Error('Category and Class do not store uid_lists');
   }
   const compact=row?.uid_lists&&typeof row.uid_lists==='object'&&!Array.isArray(row.uid_lists)
-    &&Array.isArray(row.uid_lists.uidlists);
+    &&Number.isSafeInteger(row.uid_lists.total)&&row.uid_lists.total>=0;
   const total=compact&&Number.isSafeInteger(Number(row.uid_lists.total))
     ?Number(row.uid_lists.total):type==='item'
       ?uid_lists.reduce((sum,hit)=>sum+hit.times,0):uid_lists.length;
