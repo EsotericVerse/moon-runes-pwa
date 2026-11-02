@@ -114,7 +114,7 @@ async function scopeAndConfig(scopeId='lo3rwang',{publicRead=false}={}){
 export async function runKeywordAnalysisBatch(scopeId='lo3rwang',{classUid:requestedClassUid='',onProgress}={}){
   const id=normalizeScopeId(scopeId),{scope,config}=await scopeAndConfig(id);
   const classUid=String(requestedClassUid||config.current_keyword_class_uid||'');
-  if(!/^[0-9A-Za-z]{4}$/.test(classUid))throw new Error('尚未指定 Keywords Class');
+  if(!/^[0-9A-Za-z]{4}(?:[0-9A-Za-z]{4})?$/.test(classUid))throw new Error('尚未指定 Keywords Class');
   // Keywords rules are private unless explicitly shared. Reanalysis always
   // reads with the authenticated Scope-owner client, never anonymous RLS.
   const treeRows=[];
