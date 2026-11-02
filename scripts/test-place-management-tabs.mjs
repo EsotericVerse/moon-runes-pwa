@@ -7,7 +7,7 @@ test('Four spatial tasks live in first-level management; no nested classificatio
   const source=read('app/loc/PlaceManagement.jsx');
   const parent=read('app/loc/ScopeManagement.jsx');
   for(const label of ['空間定錨點','名稱整理','Timeline 地點整理','快速補打卡'])
-    assert.ok(source.includes(label),label);
+    assert.ok(parent.includes(label),label);
   assert.match(parent,/\.\.\.PLACE_OPTIONS\.filter/);
   assert.match(parent,/:PLACE_OPTIONS;/);
   assert.match(parent,/PLACE_KEYS\.has\(section\)\?<PlaceManagement scopeId=\{routeScopeId\} section=\{section\}/);
@@ -16,6 +16,7 @@ test('Four spatial tasks live in first-level management; no nested classificatio
   assert.match(source,/section==='timeline'\?<TimelinePlaceManager/);
   assert.match(source,/section==='quickFill'\?<PlaceBatchFill/);
   assert.doesNotMatch(source,/ManagementSectionNav|useState|<details/);
+  assert.doesNotMatch(parent,/^import \{PLACE_OPTIONS\} from '\.\/PlaceManagement';/m);
   assert.doesNotMatch(parent,/value:'placeManage'/);
 });
 test('Spatial task switching protects pending edits via the existing dock',()=>{
