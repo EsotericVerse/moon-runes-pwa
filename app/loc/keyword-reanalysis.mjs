@@ -14,8 +14,8 @@ export function hasKeywordMinimumContent(content,minChars=0){
   return false;
 }
 
-// Aggregate one page at a time. Memory scales with the actual stored Keyword
-// hits, never with a second full copy of per-article classification records.
+// Compact-mode reanalysis retains only in-memory counters per Item/Group.
+// Galaxy article UIDs are validated transiently but never written to Keywords.
 export async function reanalyzeKeywordClass({
   classUid,treeRows=[],minChars=0,pageSize=1000,expectedCount=null,readPage,writeNode,finalize,compactResults=false,
   onProgress=()=>{}
@@ -28,8 +28,8 @@ export async function reanalyzeKeywordClass({
   const root=tree.index.get(classUid);
   if(!root||root.type!=='class')throw new Error('Unknown Class UID');
   const {catalog}=keywordClassCatalog(treeRows,classUid);
-  const itemResults=new Map(catalog.map(item=>[item.uid,new Map()]));
-  const groupResults=new Map(root.lists.map(uid=>[uid,new Set()]));
+  const itemResults=new Map(catalog.map(item=>[item.uid,compactResults?0:new Map()]));
+  const groupResults=new Map(root.lists.map(uid=>[uid,compactResults?0:new Set()]));
   const resolver=createKeywordUidGroupResolver(treeRows,classUid);
   // Compile keyword rules once per Class, not once per 1,000-article batch.
   const classify=createKeywordUidDocumentClassifier(treeRows,classUid);
@@ -58,7 +58,8 @@ export async function reanalyzeKeywordClass({
         const output=itemResults.get(hit.uid);
         if(!output||itemSeen.has(hit.uid)||!Number.isSafeInteger(hit.times)||hit.times<0)
           throw new Error('Invalid Keyword Item hit');
-        output.set(result.uid,hit.times);
+        if(compactResults)itemResults.set(hit.uid,output+1);
+        else output.set(result.uid,hit.times);
         itemSeen.add(hit.uid);
         occurrences+=hit.times;
         itemMatches++;
@@ -67,7 +68,10 @@ export async function reanalyzeKeywordClass({
       // Stateful resolution must run in article/page order, not afterwards:
       // equal-scoring articles are distributed to the least populated Group.
       const groupUid=resolver.resolve(result);
-      if(groupUid)groupResults.get(groupUid).add(result.uid);
+      if(groupUid){
+        if(compactResults)groupResults.set(groupUid,groupResults.get(groupUid)+1);
+        else groupResults.get(groupUid).add(result.uid);
+      }
     }
     offset+=page.length;read+=page.length;eligible+=docs.length;
     onProgress({phase:'reading',completed:read,eligible});
@@ -86,29 +90,32 @@ export async function reanalyzeKeywordClass({
   const changes=[
     ...root.lists.map(uid=>({
       uid,type:'group',uid_lists:compactResults
-        ?{total:groupResults.get(uid).size,uidlists:[...groupResults.get(uid)].sort()}
+        ?{total:groupResults.get(uid)}
         :[...groupResults.get(uid)].sort()
     })),
     ...catalog.map(item=>({
       uid:item.uid,type:'item',
       uid_lists:compactResults
-        ?{total:[...itemResults.get(item.uid).values()].reduce((a,b)=>a+b,0),uidlists:[...itemResults.get(item.uid).keys()].sort()}
+        ?{total:itemResults.get(item.uid)}
         :[...itemResults.get(item.uid)].sort(([a],[b])=>a.localeCompare(b))
           .map(([uid,times])=>({uid,times}))
     }))
   ];
-  const matched=new Set();
-  for(const group of changes.filter(row=>row.type==='group'))
-    for(const uid of (compactResults?group.uid_lists.uidlists:group.uid_lists)){
-      if(matched.has(uid))throw new Error('Multiple winning Groups for one article');
-      matched.add(uid);
-    }
+  const matched=compactResults
+    ?changes.filter(row=>row.type==='group').reduce((sum,row)=>sum+row.uid_lists.total,0)
+    :new Set();
+  if(!compactResults)
+    for(const group of changes.filter(row=>row.type==='group'))
+      for(const uid of group.uid_lists){
+        if(matched.has(uid))throw new Error('Multiple winning Groups for one article');
+        matched.add(uid);
+      }
   for(let i=0;i<changes.length;i++){
     const node=changes[i];
     await writeNode(node);
     onProgress({phase:'writing',completed:i+1,total:changes.length});
   }
-  const stats={classUid,analyzedDocuments:eligible,matchedDocuments:matched.size,
+  const stats={classUid,analyzedDocuments:eligible,matchedDocuments:compactResults?matched:matched.size,
     itemMatches,occurrences,groupCount:root.lists.length,itemCount:catalog.length};
   await finalize(stats);
   onProgress({phase:'completed',completed:eligible,total:eligible});
