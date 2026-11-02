@@ -11,7 +11,7 @@ const aliases={
  time:{address:'attr',anchor_ids:'attr',range:'attr'},
  trace:{trace_type:'type',anchor_list:'attr',address:'attr',times:'attr',route_list:'attr'},
  keywords:{name:'title',desc:'description',lists:'attr',uid_lists:'attr'},
- galaxy_media:{url:'attr',meta_tags:'description'}
+ galaxy_media:{url:'attr',createtime:'attr',meta_tags:'description'}
 };
 const realTypes={anchor:'date',space_anchor:'point','音樂':'suno','播放清單':'suno',runes:'rune'};
 const physicalType=value=>realTypes[String(value)]||String(value);
@@ -183,7 +183,7 @@ function fieldsForSelect(spec,columns){
    const name=raw.trim().split(':').at(-1).trim(),mapped=readColumn(spec,name);
    // A few old media readers still request these removed fields. They are
    // nullable compatibility projections, not aliases to UID or other data.
-   if(spec.kind==='media'&&['createtime','location'].includes(name))continue;
+   if(spec.kind==='media'&&name==='location')continue;
    if(spec.kind==='time'&&name==='range')continue;
    if(!physicalColumns.includes(mapped))throw Error('Unknown unified anchor column: '+name);
    fields.add(mapped);
@@ -285,7 +285,7 @@ class UnifiedQuery{
       const mapped=readColumn(spec,filter.column);
       if(mapped==='attr'){jsonFilters.push(filter);continue}
       // A timestamp filter cannot be silently converted into a UID filter.
-      if(spec.kind==='media'&&['createtime','location'].includes(filter.column))
+      if(spec.kind==='media'&&filter.column==='location')
         throw Error('Media '+filter.column+' filtering requires article Galaxy.date/media_link');
       if(!physicalColumns.includes(mapped))throw Error('Unmapped anchor filter: '+filter.column);
       physical=applyFilter(physical,{...filter,column:mapped,
