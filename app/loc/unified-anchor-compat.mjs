@@ -28,27 +28,19 @@ const parseLabelList=value=>{
 };
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
-const uniqueArticleIds=list=>[...new Set((Array.isArray(list)?list:[])
- .map(uid=>String(uid||'')).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))].sort();
+// Keyword analysis saves only one cached count; never save Galaxy UIDs.
 function compactKeywordAnalysis(type,value){
  if(type!=='group'&&type!=='item')return {};
  const input=value&&typeof value==='object'?value:{};
- if(Array.isArray(input.uidlists)){
-   const list=uniqueArticleIds(input.uidlists),n=Number(input.total);
-   return {total:Number.isSafeInteger(n)&&n>=0?n:list.length,uidlists:list};
- }
+ const number=Number(input.total);
+ if(Number.isSafeInteger(number)&&number>=0)return {total:number};
  if(type==='group'){
-   const list=uniqueArticleIds(Array.isArray(input)?input:input.articles);
-   return {total:list.length,uidlists:list};
+   const old=Array.isArray(input)?input:input.uidlists??input.articles??[];
+   return {total:new Set(old).size};
  }
- const hits=Array.isArray(input)?input:Array.isArray(input.hits)?input.hits:[];
- const byUid=new Map();
- for(const hit of hits){
-   const uid=String(hit?.uid||''),times=Number(hit?.times);
-   if(!/^[A-Za-z0-9]{8}$/.test(uid)||!Number.isSafeInteger(times)||times<0)continue;
-   byUid.set(uid,Math.max(byUid.get(uid)||0,times));
- }
- return {total:[...byUid.values()].reduce((a,b)=>a+b,0),uidlists:[...byUid.keys()].sort()};
+ const hits=Array.isArray(input)?input:input.hits??input.uidlists??[];
+ return {total:Array.isArray(hits)?new Set(hits.map(hit=>typeof hit==='string'?hit:hit?.uid)
+   .filter(Boolean)).size:0};
 }
 
 // Four kinds share one case-sensitive UID key. Trace/Media used to depend
@@ -132,8 +124,7 @@ export function toAnchorRow(spec,row){
  if(Object.hasOwn(data,'label'))out.label=data.label;
  if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
  if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
- // Time never stores derived interval snapshots. A Keyword node owns only
- // its compact numeric total and unique article UIDs; no per-document times.
+ // Time is derived from label. Keyword attr caches only its numeric total.
  if(spec.kind==='time')out.attr={};
  if(spec.kind==='keywords'){
    if(type==='group'||type==='item'){
@@ -168,7 +159,7 @@ export function fromAnchorRow(spec,row){
    }
  }else if(spec.kind==='keywords'){
    out.name=row.title;out.desc=row.description;out.lists=parseLabelList(row.label);
-   out.uid_lists=row.attr?.uid_lists??(row.attr?.uidlists?row.attr:{});
+   out.uid_lists=row.attr?.uid_lists??(row.type==='group'||row.type==='item'?{total:Number(row.attr?.total)||0}:{});
  }else if(spec.kind==='media'){
    out.url=row.label??null;out.meta_tags=row.description??null;
    out.createtime=null;out.location=null;
