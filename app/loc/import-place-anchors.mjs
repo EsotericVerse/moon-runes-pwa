@@ -2,7 +2,7 @@ import {importGeoKey} from './import-geocoordinates.mjs';
 
 // An exact coordinate identifies an existing Trace location even if the
 // original place label differs. Without GPS, only unambiguous names are used.
-const VALID_UID=/^[A-Za-z0-9]{4}$/;
+const VALID_UID=/^[A-Za-z0-9]{4}(?:[A-Za-z0-9]{4})?$/;
 const normalizedPlaceText=value=>String(value??'').normalize('NFKC')
   .replace(/[\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim();
 const nameKey=value=>normalizedPlaceText(value).toLocaleLowerCase('und');
