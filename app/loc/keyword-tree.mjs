@@ -17,8 +17,9 @@ export function keywordUidListData(type,value){
   if(raw&&typeof raw==='object'&&!Array.isArray(raw)){
     if(type==='group'&&Array.isArray(raw.articles))return [...raw.articles];
     if(type==='item'&&Array.isArray(raw.hits))return [...raw.hits];
-    // Unified Anchor caches only total; the article IDs are never persisted.
-    if(['group','item'].includes(type)&&Number.isSafeInteger(raw.total)&&raw.total>=0&&!Array.isArray(raw.uidlists))return [];
+    // Unified Anchor: only Class UID -> count, no article membership.
+    if(['group','item'].includes(type)&&Object.keys(raw).every(uid=>
+      /^[A-Za-z0-9]{4}$/.test(uid)&&Number.isSafeInteger(raw[uid])&&raw[uid]>=0))return [];
     // Legacy compact records can still be read during a staged cutover.
     if(['group','item'].includes(type)&&Array.isArray(raw.uidlists))
       return type==='item'?raw.uidlists.map(uid=>({uid,times:1})):raw.uidlists;
@@ -64,12 +65,12 @@ export function normalizeKeywordTreeRow(row){
         throw new Error('Group uid_lists require unique article UID strings');
     }else if(uid_lists.length)throw new Error('Category and Class do not store uid_lists');
   }
-  const compact=row?.uid_lists&&typeof row.uid_lists==='object'&&!Array.isArray(row.uid_lists)
-    &&Number.isSafeInteger(row.uid_lists.total)&&row.uid_lists.total>=0;
-  const total=compact&&Number.isSafeInteger(Number(row.uid_lists.total))
-    ?Number(row.uid_lists.total):type==='item'
-      ?uid_lists.reduce((sum,hit)=>sum+hit.times,0):uid_lists.length;
-  return {uid,type,name,desc,lists:[...lists],uid_lists:[...uid_lists],total};
+  const counts=row?.uid_lists&&typeof row.uid_lists==='object'&&!Array.isArray(row.uid_lists)
+    ?Object.fromEntries(Object.entries(row.uid_lists).filter(([uid,count])=>
+      UID.test(uid)&&Number.isSafeInteger(count)&&count>=0)):{};
+  const total=Object.keys(counts).length?Object.values(counts).reduce((sum,n)=>sum+n,0)
+    :type==='item'?uid_lists.reduce((sum,hit)=>sum+hit.times,0):uid_lists.length;
+  return {uid,type,name,desc,lists:[...lists],uid_lists:[...uid_lists],counts,total};
 }
 export function indexKeywordTree(rows=[]){
   const index=new Map(),parent=new Map();
