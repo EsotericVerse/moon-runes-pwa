@@ -15,6 +15,7 @@ import {useScopeRuntime} from '../modular/use-scope-runtime';
 import {getScope} from '../modular/scope-registry';
 import ManagementAccess from './ManagementAccess';
 import {useAppBootstrap} from './app-bootstrap';
+import {scopeFeatureEnabled} from './scope-config-fields.mjs';
 import {FeaturePage} from '../modular/ui';
 const loading=()=> <div className="loc-loading"><UiText id="uiExtra.feature.moduleLoading"/></div>;
 // Heavy visualizations and editors should load only when their own page opens.
@@ -95,7 +96,7 @@ function FeatureGate({scopeId,scopeMeta=null,view,children}){
       <p className="scope-status" role="status"><UiText id="uiExtra.feature.settingsLoading"/></p>
     </section>
   </FeaturePage>;
-  if(query.data?.[flag]===false)return <main className="scope-main"><section className="scope-page"><section className="loc-card"><p className="scope-status"><UiText id="uiExtra.feature.unpublished"/></p></section></section></main>;
+  if(!scopeFeatureEnabled(query.data,flag))return <main className="scope-main"><section className="scope-page"><section className="loc-card"><p className="scope-status"><UiText id="uiExtra.feature.unpublished"/></p></section></section></main>;
   return children;
 }
 
