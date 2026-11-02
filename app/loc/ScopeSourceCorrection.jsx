@@ -25,9 +25,9 @@ export default function ScopeSourceCorrection({scopeId}){
     queryKey:['scope-source-rename-lists',scopeId],enabled:allowed,
     queryFn:async()=>{
       const lists=await Promise.all(['loc',scopeId].map(async id=>{
-        const {data,error}=await dbAuthRelation('silver.'+id).select('txt_class').eq('id',id).maybeSingle();
+        const {data,error}=await dbAuthRelation('silver.'+id).select('DefaultArticleClass').eq('id',id).maybeSingle();
         if(error)throw new Error(error.message);
-        return Array.isArray(data?.txt_class)?data.txt_class:[];
+        return Array.isArray(data?.DefaultArticleClass)?data.DefaultArticleClass:[];
       }));
       const totals=await readScopeCategoryTotals(scopeId);
       return {system:lists[0],personal:lists[1],observed:(totals||[]).filter(row=>row.kind==='source').map(row=>row.category)};
