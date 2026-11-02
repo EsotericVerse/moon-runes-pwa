@@ -203,9 +203,9 @@ async function readPersonalSourceClasses(scopeId){
   if(published)return {groups:published.groups||[],aliases:published.groupAliases||[]};
   const {sourceTaxonomyFromArrays}=await import('../../loc/source-classification.mjs');
   const {rows}=await selectRows('silver.'+scopeId,{
-    columns:'txt_class',filters:[{column:'id',operator:'eq',value:scopeId}],limit:1
+    columns:'DefaultArticleClass',filters:[{column:'id',operator:'eq',value:scopeId}],limit:1
   });
-  const mapped=sourceTaxonomyFromArrays([],rows[0]?.txt_class||[]);
+  const mapped=sourceTaxonomyFromArrays([],rows[0]?.DefaultArticleClass||[]);
   return {groups:mapped.groups,aliases:mapped.groupAliases};
 }
 function SummaryList({rankingType,summary,scope,range,filteredSource=false}){
@@ -398,7 +398,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     data:overview.data?.rows,dataUpdatedAt:overview.dataUpdatedAt};
   // Public Scopes have a published JS category snapshot. Reuse it in Culture
   // and Statistics; never schedule a separate classification request to draw
-  // an already ISR-cached chart. Only an unknown Scope falls back to txt_class.
+  // an already ISR-cached chart. Only an unknown Scope falls back to DefaultArticleClass.
   const publishedCatalog=useMemo(()=>publishedSourceCategoryCatalog(scopeId),[scopeId]);
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
