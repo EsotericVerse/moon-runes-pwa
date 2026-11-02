@@ -86,20 +86,20 @@ export async function reanalyzeKeywordClass({
   const changes=[
     ...root.lists.map(uid=>({
       uid,type:'group',uid_lists:compactResults
-        ?{total:groupResults.get(uid).size,uidlists:[...groupResults.get(uid)].sort()}
+        ?{total:groupResults.get(uid).size}
         :[...groupResults.get(uid)].sort()
     })),
     ...catalog.map(item=>({
       uid:item.uid,type:'item',
       uid_lists:compactResults
-        ?{total:[...itemResults.get(item.uid).values()].reduce((a,b)=>a+b,0),uidlists:[...itemResults.get(item.uid).keys()].sort()}
+        ?{total:[...itemResults.get(item.uid).values()].reduce((a,b)=>a+b,0)}
         :[...itemResults.get(item.uid)].sort(([a],[b])=>a.localeCompare(b))
           .map(([uid,times])=>({uid,times}))
     }))
   ];
   const matched=new Set();
   for(const group of changes.filter(row=>row.type==='group'))
-    for(const uid of (compactResults?group.uid_lists.uidlists:group.uid_lists)){
+    for(const uid of (compactResults?[...groupResults.get(group.uid)]:group.uid_lists)){
       if(matched.has(uid))throw new Error('Multiple winning Groups for one article');
       matched.add(uid);
     }
