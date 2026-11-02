@@ -21,7 +21,7 @@ test('Culture and Statistics share Group membership and Item hits',()=>{
 test('Trace filters UID membership without parsing article content',()=>{
  const s=keywordTreeMetrics(rows,'CL01',{articleUids:['Ab12Cd34']});
  assert.deepEqual(s.groups.map(x=>x.document_count),[1,0]);
- assert.deepEqual(s.items.map(x=>x.hit_count),[3,2,0]);
+ assert.deepEqual(s.items.map(x=>x.hit_count),[1,1,0]); // No per-article times retained for filtered selections
 });
 test('Multiple Classes in one Category remain distinct',()=>{
  const s=keywordTreeMetrics(rows,'CL02');

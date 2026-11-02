@@ -11,9 +11,9 @@ export function keywordTreeCatalog(rows,classUid){
       items:node.lists.map(childUid=>{
         const item=tree.index.get(childUid);
         return {uid:item.uid,name:item.name,desc:item.desc,
-          keywords:[...item.lists],uid_lists:item.uid_lists};
+          keywords:[...item.lists],uid_lists:item.uid_lists,total:item.total};
       }),
-      uid_lists:node.uid_lists};
+      uid_lists:node.uid_lists,total:node.total};
   });
   return {uid:root.uid,name:root.name,groups};
 }
@@ -34,7 +34,7 @@ export function keywordTreeMetrics(rows,classUid,{articleUids=null}={}){
     let itemMatches=0,occurrences=0;
     for(const item of group.items){
       const hits=item.uid_lists.filter(hit=>matching(hit.uid));
-      const count=hits.reduce((sum,hit)=>sum+hit.times,0);
+      const count=selected?hits.length:Number(item.total??hits.reduce((sum,hit)=>sum+hit.times,0));
       itemMatches+=hits.length;occurrences+=count;
       items.push({uid:item.uid,name:item.name,group_uid:group.uid,group_name:group.name,
         document_count:hits.length,hit_count:count});

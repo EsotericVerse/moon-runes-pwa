@@ -171,3 +171,22 @@ test('prepared Keyword Class returns the same UID hits across pages and can be r
  for(const docs of pages)
    assert.deepEqual(create(docs),classifyKeywordDocumentsByUid(docs,source,'CL01'));
 });
+
+test('unified Anchor analysis emits aggregate total and deduplicated UID strings only',async()=>{
+ const docs=[
+  {uid:'Ab12Cd34',content:'心情心情'},
+  {uid:'aB12Cd34',content:'心情'}
+ ];
+ const saved=[];
+ const stats=await reanalyzeKeywordClass({
+  classUid:'CL01',treeRows:source,pageSize:1,compactResults:true,
+  readPage:async({offset,limit})=>docs.slice(offset,offset+limit),
+  writeNode:async row=>saved.push(row),finalize:async()=>{}
+ });
+ const item=saved.find(x=>x.type==='item'),group=saved.find(x=>x.type==='group');
+ assert.deepEqual(item.uid_lists.uidlists,['Ab12Cd34','aB12Cd34']);
+ assert.equal(item.uid_lists.total,2);
+ assert.deepEqual(group.uid_lists,{total:2,uidlists:['Ab12Cd34','aB12Cd34']});
+ assert.equal(stats.matchedDocuments,2);
+ assert.equal(JSON.stringify(saved).includes('"times"'),false);
+});
