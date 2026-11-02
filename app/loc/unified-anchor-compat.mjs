@@ -383,7 +383,14 @@ class UnifiedQuery{
         const mapped=toAnchorRow(spec,{type:read.data.type,...this.values});
         // Trace may have independent optional attributes. Never merge stale
         // Time/Keywords JSON, or cleanup would be undone on the next save.
-        if(spec.kind==='trace')mapped.attr={...(read.data.attr||{}),...(mapped.attr||{})};
+        if(spec.kind==='trace'){
+          const merged={...(read.data.attr||{}),...(mapped.attr||{})};
+          // Explicitly clearing a route or time list must erase old JSON,
+          // rather than merging an empty value back into stale associations.
+          for(const key of ['route_list','times'])
+            if(hasOwn(this.values,key)&&!hasOwn(mapped.attr||{},key))delete merged[key];
+          mapped.attr=merged;
+        }
         let q=this.schema.from(spec.table).update(mapped);
         const {physical}=this.build(q,false);
         const res=await physical.select(fieldsForSelect(spec,this.fields));

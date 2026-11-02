@@ -156,3 +156,24 @@ test('Trace omits only empty JSON, retaining meaningful map relationships',()=>{
   route_list:{routes:['R001'],segments:[['P001','P002']]}});
  assert.deepEqual(trace.attr,{route_list:{routes:['R001'],segments:[['P001','P002']]}});
 });
+
+test('Trace update can clear stale route JSON without dropping separate times',async()=>{
+ let saved;
+ const schema={from:()=>({
+  select:()=>({
+   eq(){return this},in(){return this},
+   maybeSingle:async()=>({data:{uid:'P001',type:'point',attr:{
+    route_list:{postal_address:'舊地址'},times:['2026-01-01']
+   }},error:null})
+  }),
+  update(value){
+   saved=value;
+   return {eq(){return this},in(){return this},
+    select:async()=>({data:[{uid:'P001',type:'point',label:'[121,25]',attr:value.attr}],error:null})};
+  }
+ })};
+ await unifiedAnchorRelation(schema,spec('trace'))
+  .update({route_list:{routes:[],segments:[],postal_address:''}})
+  .eq('uid','P001').select('uid,route_list');
+ assert.deepEqual(saved.attr,{times:['2026-01-01']});
+});
