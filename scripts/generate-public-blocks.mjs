@@ -21,9 +21,9 @@ if(!routes.length||routes.some(x=>!validScope.test(x.scope_id)))throw Error('Inv
 // Public source classifications are flat text[] in each Scope's config;
 // management identity and group routing reside only in silver.manage.
 const {data:globalList,error:globalError}=await db.from('loc')
-  .select('txt_class').eq('id','loc').maybeSingle();
-if(globalError||!globalList)throw Error('Cannot publish LOC txt_class');
-const systemNames=classNames(globalList.txt_class);
+  .select('DefaultArticleClass').eq('id','loc').maybeSingle();
+if(globalError||!globalList)throw Error('Cannot publish LOC DefaultArticleClass');
+const systemNames=classNames(globalList.DefaultArticleClass);
 const publishedSourceLists={};
 const allBlocks=new Map(),routeConfigs=[];
 const cols='uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,block_order,block_entity,block_image';
@@ -35,9 +35,9 @@ for(const row of routes){
   if(configError||!config)throw Error('Missing published Scope Config for '+id);
   routeConfigs.push({scope_id:id,domain:row.domain||null,directory:row.directory||null,active:true,config});
   const {data:scopeList,error:scopeListError}=await db.from(id)
-    .select('txt_class').eq('id',id).maybeSingle();
-  if(scopeListError||!scopeList)throw Error('Cannot publish txt_class for '+id);
-  publishedSourceLists[id]={system:systemNames,personal:id==='loc'?[]:classNames(scopeList.txt_class)};
+    .select('DefaultArticleClass').eq('id',id).maybeSingle();
+  if(scopeListError||!scopeList)throw Error('Cannot publish DefaultArticleClass for '+id);
+  publishedSourceLists[id]={system:systemNames,personal:id==='loc'?[]:classNames(scopeList.DefaultArticleClass)};
   const {data:blocks,error:blocksError}=await db.from(id+'_blocks').select(cols).order('block_order').range(0,65534);
   if(blocksError)throw Error('Blocks unavailable for '+id+': '+blocksError.message);
   for(const block of blocks||[]){

@@ -30,11 +30,11 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const listRef=useRef(null);
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
-  const query=useAsyncResource(['txt-class-list',scopeId],async()=>{
-    const {data,error}=await dbAuthRelation('silver.'+scopeId).select('txt_class').eq('id',scopeId).maybeSingle();
+  const query=useAsyncResource(['default-article-class-list',scopeId],async()=>{
+    const {data,error}=await dbAuthRelation('silver.'+scopeId).select('DefaultArticleClass').eq('id',scopeId).maybeSingle();
     if(error)throw new Error(error.message||l.readError);
     if(!data)throw new Error(l.notFound);
-    return Array.isArray(data.txt_class)?data.txt_class:[];
+    return Array.isArray(data.DefaultArticleClass)?data.DefaultArticleClass:[];
   },{enabled:allowed});
   const original=query.data||[];
   const rows=draft===null?original:draft;
@@ -75,12 +75,12 @@ export default function FlatClassificationEditor({scopeId='loc'}){
     setBusy(true);setNotice('');
     try{
       if(global){
-        const {data,error}=await dbAuthClient.schema('silver').rpc('update_group_txt_class',{
+        const {data,error}=await dbAuthClient.schema('silver').rpc('update_group_default_article_class',{
           p_group_id:'loc',p_names:names
         });
         if(error||data!==true)throw new Error(error?.message||l.noPermission);
       }else{
-        const {data,error}=await dbAuthRelation('silver.'+scopeId).update({txt_class:names})
+        const {data,error}=await dbAuthRelation('silver.'+scopeId).update({DefaultArticleClass:names})
           .eq('id',scopeId).select('id');
         if(error||!data?.length)throw new Error(error?.message||l.noPermission);
       }
