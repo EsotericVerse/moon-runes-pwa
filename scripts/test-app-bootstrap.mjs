@@ -135,7 +135,7 @@ test('statistics uses one flat source selector and no retired classification tab
   assert.match(code,/const activeSourceSelection=styleFilter==='rune66'/);
   assert.match(code,/作品／個人分類/);
   assert.doesNotMatch(code,/sourceSubgroup|statistics_scope_others_groups|statistics_scope_others_aliases/);
-  assert.match(editor,/update\(\{txt_class:names\}\)/);
+  assert.match(editor,/update\(\{DefaultArticleClass:names\}\)/);
   assert.doesNotMatch(editor,/group_code|category_code|source_key/);
 });
 
@@ -439,7 +439,7 @@ test('Culture loads management permissions only after authorized homepage editin
   assert.doesNotMatch(culture,/useAccount\(\{enabled:false\}\)/);
 });
 
-test('Admin and Scope classification forms share direct one-level txt_class editor',()=>{
+test('Admin and Scope classification forms share direct one-level DefaultArticleClass editor',()=>{
   const work=readFileSync(new URL('../app/loc/WorkClassificationPage.jsx',import.meta.url),'utf8');
   const personal=readFileSync(new URL('../app/loc/ScopeOthersSources.jsx',import.meta.url),'utf8');
   const editor=readFileSync(new URL('../app/loc/FlatClassificationEditor.jsx',import.meta.url),'utf8');
@@ -459,9 +459,9 @@ test('Admin and Scope classification forms share direct one-level txt_class edit
   assert.match(css,/@container classification-inline \(max-width:720px\)/);
   assert.match(css,/@container classification-inline \(max-width:420px\)/);
   assert.match(editor,/type="submit"/);
-  assert.match(editor,/\.update\(\{txt_class:names\}\)/);
+  assert.match(editor,/\.update\(\{DefaultArticleClass:names\}\)/);
   assert.match(editor,/canManageGroupSync\('loc'\)/);
-  assert.match(editor,/update_group_txt_class/);
+  assert.match(editor,/update_group_default_article_class/);
   assert.match(editor,/canManageScopeSync\(scopeId\)/);
   assert.match(editor,/作品分類/);
   assert.match(editor,/個人分類/);
