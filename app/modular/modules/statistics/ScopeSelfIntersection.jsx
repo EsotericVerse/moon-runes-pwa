@@ -105,9 +105,9 @@ export default function ScopeSelfIntersection({scope,range,classUid='',zoomLevel
       const {selectRows}=await import('../../../loc/db-query.mjs');
       const {sourceTaxonomyFromArrays}=await import('../../../loc/source-classification.mjs');
       const {rows}=await selectRows('silver.'+scope.id,{
-        columns:'txt_class',filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
+        columns:'DefaultArticleClass',filters:[{column:'id',operator:'eq',value:scope.id}],limit:1
       });
-      const list=sourceTaxonomyFromArrays([],rows[0]?.txt_class||[]);
+      const list=sourceTaxonomyFromArrays([],rows[0]?.DefaultArticleClass||[]);
       return {groups:list.groups,aliases:list.groupAliases};
     }
   });
