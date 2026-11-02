@@ -55,8 +55,8 @@ function canonicalAttr(type,value){
  const result={};
  const allowed={
   date:['date'],period:['date','uid'],era:['date','period'],
-  point:['location'],path:['point'],trace:['point','path'],
-  image:['url'],video:['url'],rune:['url'],suno:['url'],
+  point:['longitude','latitude','location'],path:['point'],trace:['point','path'],
+  image:['url','date'],video:['url','date'],rune:['url','date'],suno:['url','date'],
   category:['uid'],class:['uid'],group:['uid','total'],item:['keyword','total']
  }[type]||[];
  for(const key of allowed)if(hasOwn(obj,key)&&obj[key]!=null)result[key]=obj[key];
@@ -94,10 +94,21 @@ export function toAnchorRow(spec,row){
    else attr[type==='era'?'period':'uid']=toArray(d.label);
   }
  }else if(spec.kind==='trace'){
-  if(hasOwn(d,'address')&&(type==='point'||!type))attr.location=toArray(d.address);
+  if(hasOwn(d,'address')&&(type==='point'||!type)){
+   const coords=toArray(d.address);
+   if(coords.length===2&&coords.every(x=>Number.isFinite(Number(x)))){
+    attr.longitude=Number(coords[0]);attr.latitude=Number(coords[1]);
+   }
+  }
+  if(hasOwn(d,'location')&&type==='point')attr.location=toArray(d.location);
   if(hasOwn(d,'anchor_list')&&type!=='point')attr.point=toArray(d.anchor_list);
   if(hasOwn(d,'label')&&!hasOwn(d,'address')&&!hasOwn(d,'anchor_list'))
-   attr[type==='point'?'location':'point']=toArray(d.label);
+   if(type==='point'){
+    const coords=toArray(d.label);
+    if(coords.length===2&&coords.every(x=>Number.isFinite(Number(x)))){
+      attr.longitude=Number(coords[0]);attr.latitude=Number(coords[1]);
+    }
+   }else attr.point=toArray(d.label);
   if(type==='trace'&&d.route_list){
    const route=d.route_list;
    if(Array.isArray(route.routes))attr.path=[...route.routes];
@@ -111,8 +122,9 @@ export function toAnchorRow(spec,row){
    if(hasOwn(compact,'total'))attr.total=compact.total;
   }
  }else if(spec.kind==='media'){
-  if(hasOwn(d,'url'))attr.url=d.url;
-  if(hasOwn(d,'label')&&!hasOwn(d,'url'))attr.url=d.label;
+  if(hasOwn(d,'url')&&d.url)attr.url=d.url;
+  if(hasOwn(d,'label')&&!hasOwn(d,'url')&&d.label)attr.url=d.label;
+  if(hasOwn(d,'createtime')&&d.createtime)attr.date=String(d.createtime).slice(0,10);
  }
  if(hasOwn(d,'attrs'))attr={...attr,...canonicalAttr(type,d.attrs)};
  if(spec.kind==='keywords'&&(type==='group'||type==='item')&&hasOwn(d,'attr')){
@@ -144,7 +156,8 @@ export function fromAnchorRow(spec,row){
  }else if(spec.kind==='trace'){
   out.trace_type=legacyType(row.type);
   out.anchor_list=row.type==='point'?[]:toArray(a.point??legacy);
-  out.address=row.type==='point'?toArray(a.location??legacy):null;
+  out.address=row.type==='point'&&Number.isFinite(a.longitude)&&Number.isFinite(a.latitude)?[a.longitude,a.latitude]:
+   row.type==='point'?toArray(legacy):null;
   out.times=[];
   out.route_list=row.type==='trace'?{routes:toArray(a.path),segments:toArray(a.point)}:
    {routes:[],segments:[],postal_address:''};
@@ -157,7 +170,7 @@ export function fromAnchorRow(spec,row){
   out.uid_lists=['item','group'].includes(row.type)?{total:Number(a.total)||0}:[];
  }else if(spec.kind==='media'){
   out.url=a.url??legacy??null;out.meta_tags=row.description??null;
-  out.createtime=null;out.location=null;
+  out.createtime=a.date??null;out.location=null;
   if(row.type==='suno'&&/^https?:\/\/(?:www\.)?suno\.com\/playlist\//i.test(String(out.url||'')))out.type='播放清單';
  }
  return out;
