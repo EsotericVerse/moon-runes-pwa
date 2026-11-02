@@ -1,5 +1,6 @@
 import {parseImportCreatedTime} from './import-batch.mjs';
 import {readUnifiedAnchorUids} from './unified-anchor-uids.mjs';
+import {allocateTimeUid} from './time-anchor-ranges.mjs';
 
 // Importing a known check-in creates its calendar-day Time anchor independently
 // from the spatial anchor's full-precision visit timestamps.
@@ -127,6 +128,10 @@ export async function prepareImportTimeAnchors(records,{
     onProgress?.({phase:'補齊舊日期定錨標題',completed:repaired,total:dates.length});
   }
   const nextUid=()=>{
+    if(table==='silver.lo3rwang_time'){
+      const uid=allocateTimeUid([...occupied].map(uid=>({uid})),8);
+      occupied.add(uid);return uid;
+    }
     while(cursor<=65535){
       const uid=cursor.toString(16).toUpperCase().padStart(4,'0');
       cursor++;
