@@ -1,6 +1,6 @@
 // Resolve only explicitly stored Trace relationships for bulk visibility edits.
 // The plan is an operation, not a persisted hierarchy or depth flag.
-const VALID_ID=/^[A-Za-z0-9]{4}$/;
+const VALID_ID=/^[A-Za-z0-9]{4}(?:[A-Za-z0-9]{4})?$/;
 const normalizeIds=list=>[...new Set((Array.isArray(list)?list:[]).flat(Infinity)
   .map(value=>String(value||'').trim()).filter(value=>VALID_ID.test(value)))];
 
