@@ -14,9 +14,9 @@ const TYPES=['class','group','item'];
 const LABEL={category:'關鍵字目錄',class:'關鍵字群組科目',group:'關鍵字分類群組',item:'關鍵詞分類'};
 const onlyWords=value=>[...new Set(String(value||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean))];
 const emptyTree={index:new Map(),parent:new Map(),roots:[]};
-const uidFor=rows=>generateKeywordClassUid(rows.map(row=>row.uid));
-function freshNode(type,rows){
-  return {uid:uidFor(rows),type,name:'',desc:'',lists:[],uid_lists:[]};
+const uidFor=(rows,scopeId)=>generateKeywordClassUid(rows.map(row=>row.uid),undefined,scopeId==='lo3rwang'?8:4);
+function freshNode(type,rows,scopeId){
+  return {uid:uidFor(rows,scopeId),type,name:'',desc:'',lists:[],uid_lists:[]};
 }
 function childrenOf(tree,uid){
   const parent=tree.index.get(uid);
@@ -151,7 +151,7 @@ export default function KeywordLibraryPanel({scopeId='lo3rwang',account}){
   };
   const create=(type,parentUid='')=>{
     if(!TYPES.includes(type))return;
-    const node=freshNode(type,rows);
+    const node=freshNode(type,rows,scopeId);
     setEditor({node});setPendingParent(parentUid);
     setKeywordText('');setNotice('');
   };
