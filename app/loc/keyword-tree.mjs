@@ -1,7 +1,7 @@
 // Same six-column, UID-linked hierarchy as the Scope's anchor records.
 // category -> class -> group -> item -> literal keyword strings.
 // Parent lists contain child UIDs, not names. No class_id, group_id, item_no.
-const UID=/^[0-9A-Za-z]{4}$/;
+const UID=/^[0-9A-Za-z]{4}(?:[0-9A-Za-z]{4})?$/;
 const ARTICLE_UID=/^[0-9A-Za-z]{8}$/;
 const NEXT={category:'class',class:'group',group:'item'};
 const TYPES=new Set(['category','class','group','item']);
@@ -22,6 +22,7 @@ export function keywordUidListData(type,value){
     if(['group','item'].includes(type)&&Array.isArray(raw.uidlists))
       return type==='item'?raw.uidlists.map(uid=>({uid,times:1})):raw.uidlists;
     if(['category','class'].includes(type)&&Object.keys(raw).length===0)return [];
+    if(['group','item'].includes(type)&&Number.isSafeInteger(raw.total)&&raw.total>=0)return [];
   }
   throw new Error('Invalid structured Keywords uid_lists for '+type);
 }
@@ -36,7 +37,7 @@ export function keywordUidListRecord(type,value){
   throw new Error('Unknown Keywords node type');
 }
 const cleanUid=value=>{
-  if(typeof value!=='string'||!UID.test(value))throw new Error('Keywords UID must be four case-sensitive Base62 characters');
+  if(typeof value!=='string'||!UID.test(value))throw new Error('Keywords UID must be four or eight case-sensitive Base62 characters');
   return value;
 };
 export function normalizeKeywordTreeRow(row){
@@ -64,7 +65,7 @@ export function normalizeKeywordTreeRow(row){
     }else if(uid_lists.length)throw new Error('Category and Class do not store uid_lists');
   }
   const compact=row?.uid_lists&&typeof row.uid_lists==='object'&&!Array.isArray(row.uid_lists)
-    &&Array.isArray(row.uid_lists.uidlists);
+    &&Number.isSafeInteger(Number(row.uid_lists.total))&&Number(row.uid_lists.total)>=0;
   const total=compact&&Number.isSafeInteger(Number(row.uid_lists.total))
     ?Number(row.uid_lists.total):type==='item'
       ?uid_lists.reduce((sum,hit)=>sum+hit.times,0):uid_lists.length;
