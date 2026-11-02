@@ -1,5 +1,6 @@
 'use client';
 import {useState} from 'react';
+import {scopeTagColumn,scopeTagNames} from './scope-config-fields.mjs';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthClient,dbAuthRelation,readScopeCategoryTotals} from './db-client.mjs';
 import {useAccount} from './use-account';
@@ -25,9 +26,9 @@ export default function ScopeSourceCorrection({scopeId}){
     queryKey:['scope-source-rename-lists',scopeId],enabled:allowed,
     queryFn:async()=>{
       const lists=await Promise.all(['loc',scopeId].map(async id=>{
-        const {data,error}=await dbAuthRelation('silver.'+id).select('DefaultArticleClass').eq('id',id).maybeSingle();
+        const {data,error}=await dbAuthRelation('silver.'+id).select(scopeTagColumn(id)).eq('id',id).maybeSingle();
         if(error)throw new Error(error.message);
-        return Array.isArray(data?.DefaultArticleClass)?data.DefaultArticleClass:[];
+        return scopeTagNames(id,data);
       }));
       const totals=await readScopeCategoryTotals(scopeId);
       return {system:lists[0],personal:lists[1],observed:(totals||[]).filter(row=>row.kind==='source').map(row=>row.category)};
