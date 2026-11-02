@@ -78,7 +78,9 @@ const HOME_PRELOADERS={
 const FEATURE_FLAGS=Object.freeze({
   statics:'statistics_able',
   keywords:'statistics_able',
-  culture:'culture_able'
+  culture:'culture_able',
+  search:'search_able',
+  trace:'trace'
 });
 
 function FeatureGate({scopeId,scopeMeta=null,view,children}){
