@@ -34,6 +34,7 @@ import {ARCHIVE_MAX_BYTES,IMPORT_FIELD_ALIASES,UNIVERSAL_IMPORT_ACCEPT,mappedImp
 import {MAX_ROWS,urlSafeInBatches} from './query-batch-size.mjs';
 import {hasIrrecoverableEncoding,isPureUrlContent,normalizeGalaxyContent,normalizeRelationIds,repairMojibakeText,resolveGalaxyTitle} from './content-policy';
 import {touchEditorSession} from './edit-session-ttl.mjs';
+import {scopeTagColumn,scopeTagNames} from './scope-config-fields.mjs';
 const ZIP_LAYOUT_KEYS=Object.freeze({
   'conversation-tree':'conversationTree','message-list':'messageList','post-list':'postList',
   activity:'activity',media:'media',table:'table','structured-records':'records',document:'document'
@@ -428,9 +429,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     enabled:!nativeLocal&&Boolean(account.user)&&account.canManageScopeSync(scopeId),
     queryFn:async()=>{
       const lists=await Promise.all(['loc',scopeId].map(async id=>{
-        const {data,error}=await dbAuthRelation('silver.'+id).select('DefaultArticleClass').eq('id',id).maybeSingle();
+        const {data,error}=await dbAuthRelation('silver.'+id).select(scopeTagColumn(id)).eq('id',id).maybeSingle();
         if(error)throw new Error(error.message);
-        return Array.isArray(data?.DefaultArticleClass)?data.DefaultArticleClass:[];
+        return scopeTagNames(id,data);
       }));
       return {system:lists[0],personal:lists[1]};
     }
