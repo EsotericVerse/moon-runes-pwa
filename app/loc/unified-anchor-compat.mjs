@@ -28,21 +28,19 @@ const parseLabelList=value=>{
 };
 const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
-// Keyword analysis saves only one cached count; never save Galaxy UIDs.
+// Each Keyword Item/Group caches numeric counts keyed by the four-character
+// Class Anchor UID. No Galaxy article UID belongs in this object.
 function compactKeywordAnalysis(type,value){
  if(type!=='group'&&type!=='item')return {};
- const input=value&&typeof value==='object'?value:{};
- const number=Number(input.total);
- if(Number.isSafeInteger(number)&&number>=0)return {total:number};
- if(type==='group'){
-   const old=Array.isArray(input)?input:input.uidlists??input.articles??[];
-   return {total:new Set(old).size};
+ const source=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+ const map={};
+ for(const [uid,count] of Object.entries(source)){
+   if(!/^[0-9A-Za-z]{4}$/.test(uid))continue;
+   if(!Number.isSafeInteger(count)||count<0)throw Error('Invalid Class keyword count');
+   map[uid]=count;
  }
- const hits=Array.isArray(input)?input:input.hits??input.uidlists??[];
- return {total:Array.isArray(hits)?new Set(hits.map(hit=>typeof hit==='string'?hit:hit?.uid)
-   .filter(Boolean)).size:0};
+ return map;
 }
-
 // Four kinds share one case-sensitive UID key. Trace/Media used to depend
 // on database-generated UIDs; the unified Anchor table has no such default.
 const UID_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -159,7 +157,7 @@ export function fromAnchorRow(spec,row){
    }
  }else if(spec.kind==='keywords'){
    out.name=row.title;out.desc=row.description;out.lists=parseLabelList(row.label);
-   out.uid_lists=row.attr?.uid_lists??(row.type==='group'||row.type==='item'?{total:Number(row.attr?.total)||0}:{});
+   out.uid_lists=row.attr?.uid_lists??(row.type==='group'||row.type==='item'?compactKeywordAnalysis(row.type,row.attr):{});
  }else if(spec.kind==='media'){
    out.url=row.label??null;out.meta_tags=row.description??null;
    out.createtime=null;out.location=null;
@@ -372,8 +370,10 @@ class UnifiedQuery{
         if(read.error)return read;
         if(!read.data)return {data:[],error:null,count:0};
         const mapped=toAnchorRow(spec,{type:read.data.type,...this.values});
-        // Trace may have independent optional attributes. Never merge stale
-        // Time/Keywords JSON, or cleanup would be undone on the next save.
+        // Keyword Class counts are independent: update one Class without
+        // clobbering counts written by other concurrent Class analyses.
+        if(spec.kind==='keywords'&&(read.data.type==='group'||read.data.type==='item'))
+          mapped.attr={...compactKeywordAnalysis(read.data.type,read.data.attr),...(mapped.attr||{})};
         if(spec.kind==='trace'){
           const merged={...(read.data.attr||{}),...(mapped.attr||{})};
           // Explicitly clearing a route or time list must erase old JSON,
