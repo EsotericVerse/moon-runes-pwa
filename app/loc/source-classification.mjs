@@ -1,4 +1,4 @@
-// Source classification is two independent flat text[] lists. No category IDs,
+// Source classification is two independent flat JSONB string arrays. No category IDs,
 // aliases, folders or grouping rows are persisted anywhere.
 export const classNames=values=>[...new Set((Array.isArray(values)?values:[])
   .map(value=>String(value??'').trim()).filter(Boolean))];
