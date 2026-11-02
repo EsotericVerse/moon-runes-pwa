@@ -20,7 +20,8 @@ const normalizeType=value=>({event:'period'}[value]||value);
 const displayType={anchor:'定錨點',period:'期間',era:'時代'};
 const blank=(type='anchor')=>({uid:'',type:normalizeType(type),title:'',description:'',address:'',anchor_ids:[],invisible:false});
 const day=value=>value?String(value).slice(0,10):'';
-function nextTimeUid(rows){
+function nextTimeUid(rows,scopeId){
+  if(scopeId==='lo3rwang')return allocateTimeUid(rows,8);
   const taken=new Set(rows.map(row=>String(row.uid||'')));
   for(let i=1;i<=65535;i++){
     const candidate=i.toString(16).toUpperCase().padStart(4,'0');
@@ -273,7 +274,7 @@ export default function CultureTimelineEditor({
           for(const pair of tracePairs){
             const existingUid=existingPeriodByPair.get(periodKeyOf(pair));
             if(existingUid){pairPeriodUids.push(existingUid);continue;}
-            const uid=allocateTimeUid([...all,...globalUids,...extraPeriodRows]);
+            const uid=allocateTimeUid([...all,...globalUids,...extraPeriodRows],scopeId==='lo3rwang'?8:4);
             taken.add(uid);
             const [a,b]=pair;
             const titleA=anchors.get(a)?.title||a,titleB=anchors.get(b)?.title||b;
@@ -290,7 +291,7 @@ export default function CultureTimelineEditor({
       if(selectedId){
         await updateRows(timeTable,payload,{filters:[{column:'uid',operator:'eq',value:selectedId}]});
       }else{
-        await insertRows(timeTable,[{uid:nextTimeUid([...all,...globalUids,...extraPeriodRows]),...payload}]);
+        await insertRows(timeTable,[{uid:nextTimeUid([...all,...globalUids,...extraPeriodRows],scopeId),...payload}]);
       }
       refresh();reset();setMessage('已儲存。');return true;
     }catch(error){setMessage(error?.message||'儲存失敗');editDock?.setNotice?.(error?.message||'儲存失敗');return false;}
