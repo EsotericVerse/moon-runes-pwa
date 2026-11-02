@@ -7,6 +7,7 @@ import {publicNumericSources} from '../app/api/loc/_server.js';
 import {readPublishedBootstrap} from '../app/api/loc/_numeric-failover.mjs';
 import {THEME_TOKEN_KEYS} from '../app/modular/theme-registry.js';
 import {classNames} from '../app/loc/source-classification.mjs';
+import {scopeConfigColumns,scopeTagColumn,scopeTagNames} from '../app/loc/scope-config-fields.mjs';
 import {publishPublicFiles} from './publish-public-files.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -30,14 +31,14 @@ const cols='uid,page_name,block_eyebrow,block_title,block_subtitle,block_text,bl
 for(const row of routes){
   const id=row.scope_id,table=id;
   const {data:config,error:configError}=await db.from(table)
-    .select('id,display_name,search_intro,search_aliases,theme,locale,search_able,statistics_able,culture_able')
+    .select(scopeConfigColumns(id))
     .eq('id',id).limit(1).maybeSingle();
   if(configError||!config)throw Error('Missing published Scope Config for '+id);
   routeConfigs.push({scope_id:id,domain:row.domain||null,directory:row.directory||null,active:true,config});
   const {data:scopeList,error:scopeListError}=await db.from(id)
-    .select('DefaultArticleClass').eq('id',id).maybeSingle();
+    .select(scopeTagColumn(id)).eq('id',id).maybeSingle();
   if(scopeListError||!scopeList)throw Error('Cannot publish DefaultArticleClass for '+id);
-  publishedSourceLists[id]={system:systemNames,personal:id==='loc'?[]:classNames(scopeList.DefaultArticleClass)};
+  publishedSourceLists[id]={system:systemNames,personal:id==='loc'?[]:classNames(scopeTagNames(id,scopeList))};
   const {data:blocks,error:blocksError}=await db.from(id+'_blocks').select(cols).order('block_order').range(0,65534);
   if(blocksError)throw Error('Blocks unavailable for '+id+': '+blocksError.message);
   for(const block of blocks||[]){
