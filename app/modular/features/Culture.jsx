@@ -1126,7 +1126,7 @@ export default function Culture(){
       });
       for(const row of globalUids)used.add(row.uid);
       const payload=dates.map(date=>{
-        const uid=allocateTimeUid([...used].map(uid=>({uid})));
+        const uid=allocateTimeUid([...used].map(uid=>({uid})),scopeId==='lo3rwang'?8:4);
         used.add(uid);
         return {uid,type:'anchor',title:'建議定錨 '+date,description:null,address:date,anchor_ids:null};
       });
