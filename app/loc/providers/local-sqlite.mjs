@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS local (
   search_able INTEGER NOT NULL DEFAULT 1,
   statistics_able INTEGER NOT NULL DEFAULT 1,
   culture_able INTEGER NOT NULL DEFAULT 1,
-  txt_class TEXT NOT NULL DEFAULT '[]',
+  DefaultArticleClass TEXT NOT NULL DEFAULT '[]',
   updated_at TEXT NOT NULL,
   keyword_min_chars INTEGER NOT NULL DEFAULT 32,
   keyword_min_documents INTEGER NOT NULL DEFAULT 100,
@@ -565,8 +565,12 @@ async function webDatabase(){
     upgradeWebLocalArchiveExif(db);
     upgradeWebLocalMedia(db);
     upgradeWebKeywordSchema(db);
-    if(!rowsOf(db,'PRAGMA table_info(local)').some(row=>row.name==='txt_class'))
-      db.run("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
+    const classColumns=rowsOf(db,'PRAGMA table_info(local)');
+    if(!classColumns.some(row=>row.name==='DefaultArticleClass')){
+      if(classColumns.some(row=>row.name==='txt_class'))
+        db.run('ALTER TABLE local RENAME COLUMN txt_class TO "DefaultArticleClass"');
+      else db.run("ALTER TABLE local ADD COLUMN DefaultArticleClass TEXT NOT NULL DEFAULT '[]'");
+    }
     db.run(SCHEMA_MARKER_SQL,[MARKER]);
     db.run(SEED_LOCAL_ROW_SQL,[new Date().toISOString()]);
     return db;
@@ -591,8 +595,11 @@ async function nativeDatabase(){
     await upgradeNativeLocalMedia(conn);
     await upgradeNativeKeywordSchema(conn);
     const columns=(await conn.query('PRAGMA table_info(local)')).values||[];
-    if(!columns.some(row=>row.name==='txt_class'))
-      await conn.execute("ALTER TABLE local ADD COLUMN txt_class TEXT NOT NULL DEFAULT '[]'");
+    if(!columns.some(row=>row.name==='DefaultArticleClass')){
+      if(columns.some(row=>row.name==='txt_class'))
+        await conn.execute('ALTER TABLE local RENAME COLUMN txt_class TO "DefaultArticleClass"');
+      else await conn.execute("ALTER TABLE local ADD COLUMN DefaultArticleClass TEXT NOT NULL DEFAULT '[]'");
+    }
     await conn.run(SCHEMA_MARKER_SQL,[MARKER],false);
     await conn.run(SEED_LOCAL_ROW_SQL,[new Date().toISOString()],false);
     return conn;
@@ -797,7 +804,7 @@ function queryBuilder(table){
 // JSON/boolean columns round-trip through TEXT/INTEGER in SQLite; decode the
 // handful of columns that are arrays/objects/booleans in the real Postgres
 // schema so callers see the same shapes they'd get from Supabase.
-const JSON_COLUMNS=new Set(['txt_class','keyword_meta','search_aliases','block_entity','block_image',
+const JSON_COLUMNS=new Set(['DefaultArticleClass','keyword_meta','search_aliases','block_entity','block_image',
   'target_id','media_link','anchor_ids','range','lists','uid_lists','runeslist']);
 const BOOL_COLUMNS=new Set(['search_able','statistics_able','culture_able','keyword_class_share_enabled',
   'searchable','class_enable']);
@@ -913,10 +920,10 @@ async function readScopeOverviewLocal({p_start,p_end}){
   const [stats,earliest,settings]=await Promise.all([
     readScopeStatisticsLocal({p_start,p_end,p_include_undated:false}),
     readScopeEarliestLocal(),
-    selectLocal("SELECT txt_class FROM local WHERE id='local' LIMIT 1")
+    selectLocal("SELECT DefaultArticleClass FROM local WHERE id='local' LIMIT 1")
   ]);
   let values=[];
-  try{values=JSON.parse(settings[0]?.txt_class||'[]');}catch{/* Default to an empty list. */}
+  try{values=JSON.parse(settings[0]?.DefaultArticleClass||'[]');}catch{/* Default to an empty list. */}
   const taxonomy=sourceTaxonomyFromArrays(values);
   return {data:{earliest:earliest.data,rows:stats.data,
     categories:taxonomy.categories,aliases:taxonomy.aliases},error:null};
