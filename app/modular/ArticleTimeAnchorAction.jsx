@@ -36,7 +36,7 @@ async function allocateScopedTimeUid(table){
       orders:[{column:'uid',ascending:true}],limit,offset,authenticated:true});
     return rows;
   });
-  return allocateTimeUid([...occupied,...shared]);
+  return allocateTimeUid([...occupied,...shared],String(table).includes('lo3rwang')?8:4);
 }
 
 export default function ArticleTimeAnchorAction({
