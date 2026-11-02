@@ -1,178 +1,164 @@
-// Virtual legacy relation names, backed exclusively by <scope>_anchor.
-// Only the lo3rwang content Scope is cut over. Preserve Rune/Suno/local
-// providers and other Scopes until their own anchor store exists.
-// No SQL, DDL, table creation, migration or old-data synchronization here.
+// One shared Anchor table. attr contains only the value or relation needed
+// for each type; never cache Galaxy article UIDs or derived interval objects.
 const legacyName=/^([a-z][a-z0-9]{0,14})_(time|trace|keywords|galaxy_media)$/;
-const physicalColumns=['uid','type','title','description','label','invisible','attr'];
+const physicalColumns=['uid','type','title','description','invisible','attr'];
 const legacyKinds={time:'time',trace:'trace',keywords:'keywords',galaxy_media:'media'};
 const scopeTypes={
  time:['date','period','era'],trace:['point','path','trace'],
  keywords:['category','class','group','item'],media:['image','video','rune','suno']
 };
 const aliases={
- time:{address:'label',anchor_ids:'label',range:'attr'},
- trace:{trace_type:'type',anchor_list:'label',address:'label',times:'attr',route_list:'attr'},
- keywords:{name:'title',desc:'description',lists:'label',uid_lists:'attr'},
- galaxy_media:{url:'label',meta_tags:'description'}
+ time:{address:'attr',anchor_ids:'attr',range:'attr'},
+ trace:{trace_type:'type',anchor_list:'attr',address:'attr',times:'attr',route_list:'attr'},
+ keywords:{name:'title',desc:'description',lists:'attr',uid_lists:'attr'},
+ galaxy_media:{url:'attr',meta_tags:'description'}
 };
-const attrColumns=new Set(['range','times','route_list','uid_lists']);
 const realTypes={anchor:'date',space_anchor:'point','音樂':'suno','播放清單':'suno',runes:'rune'};
 const physicalType=value=>realTypes[String(value)]||String(value);
 const legacyType=value=>({date:'anchor',point:'space_anchor'})[value]||value;
-const labelList=value=>Array.isArray(value)?JSON.stringify(value):value==null?null:
- typeof value==='string'?value:JSON.stringify(value);
-const parseLabelList=value=>{
- if(Array.isArray(value))return value;
- if(typeof value!=='string'||!value.trim())return [];
- try{const parsed=JSON.parse(value);return Array.isArray(parsed)?parsed:[];}catch{return [];}
-};
-const simpleFilters=new Set(['eq','neq','gte','lte','gt','lt','like','ilike','is','in']);
 const hasOwn=(obj,key)=>Object.prototype.hasOwnProperty.call(obj,key);
-const uniqueArticleIds=list=>[...new Set((Array.isArray(list)?list:[])
- .map(uid=>String(uid||'')).filter(uid=>/^[A-Za-z0-9]{8}$/.test(uid)))].sort();
+const toArray=value=>{
+ if(Array.isArray(value))return value;
+ if(typeof value==='string'){try{const decoded=JSON.parse(value);return Array.isArray(decoded)?decoded:[]}catch{return []}}
+ return [];
+};
+const articleUid=/^[A-Za-z0-9]{8}$/;
+const anchorUid=/^[A-Za-z0-9]{8}$/;
+const UID_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+function newAnchorUid(length=8,assigned=new Set()){
+ const random=globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
+ if(!random)throw Error('Secure UID generator unavailable');
+ for(let attempt=0;attempt<128;attempt++){
+  const bytes=random(new Uint8Array(length*2));
+  let id='';
+  for(const byte of bytes){if(byte>=248)continue;id+=UID_ALPHABET[byte%62];if(id.length===length)break;}
+  if(id.length===length&&!assigned.has(id))return id;
+ }
+ throw Error('Cannot allocate unique Anchor UID');
+}
 function compactKeywordAnalysis(type,value){
  if(type!=='group'&&type!=='item')return {};
- const input=value&&typeof value==='object'?value:{};
- if(Array.isArray(input.uidlists)){
-   const list=uniqueArticleIds(input.uidlists),n=Number(input.total);
-   return {total:Number.isSafeInteger(n)&&n>=0?n:list.length,uidlists:list};
- }
- if(type==='group'){
-   const list=uniqueArticleIds(Array.isArray(input)?input:input.articles);
-   return {total:list.length,uidlists:list};
- }
- const hits=Array.isArray(input)?input:Array.isArray(input.hits)?input.hits:[];
- const byUid=new Map();
- for(const hit of hits){
-   const uid=String(hit?.uid||''),times=Number(hit?.times);
-   if(!/^[A-Za-z0-9]{8}$/.test(uid)||!Number.isSafeInteger(times)||times<0)continue;
-   byUid.set(uid,Math.max(byUid.get(uid)||0,times));
- }
- return {total:[...byUid.values()].reduce((a,b)=>a+b,0),uidlists:[...byUid.keys()].sort()};
-}
-
-// Four kinds share one case-sensitive UID key. Trace/Media used to depend
-// on database-generated UIDs; the unified Anchor table has no such default.
-const UID_ALPHABET='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-function newAnchorUid(length,assigned){
-  const random=globalThis.crypto?.getRandomValues?.bind(globalThis.crypto);
-  if(!random)throw Error('Secure UID generator unavailable');
-  for(let attempt=0;attempt<128;attempt++){
-    const bytes=random(new Uint8Array(length*2));
-    let id='';
-    for(const byte of bytes){
-      if(byte>=248)continue;
-      id+=UID_ALPHABET[byte%62];
-      if(id.length===length)break;
-    }
-    if(id.length===length&&!assigned.has(id))return id;
+ const obj=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+ let total=Number(obj.total);
+ if(!Number.isSafeInteger(total)||total<0){
+  if(type==='group'){
+   total=new Set(toArray(Array.isArray(value)?value:obj.articles??obj.uidlists)).size;
+  }else{
+   const hits=toArray(Array.isArray(value)?value:obj.hits);
+   total=hits.reduce((n,h)=>n+(Number.isSafeInteger(h?.times)&&h.times>0?h.times:0),0);
   }
-  throw Error('Cannot allocate a unique unified anchor UID');
+ }
+ return Number.isSafeInteger(total)&&total>=0?{total}:{};
+}
+function canonicalAttr(type,value){
+ const obj=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+ const result={};
+ const allowed={
+  date:['date'],period:['date','uid'],era:['date','period'],
+  point:['location'],path:['point'],trace:['point','path'],
+  image:['url'],video:['url'],rune:['url'],suno:['url'],
+  category:['uid'],class:['uid'],group:['uid','total'],item:['keyword','total']
+ }[type]||[];
+ for(const key of allowed)if(hasOwn(obj,key)&&obj[key]!=null)result[key]=obj[key];
+ return result;
 }
 function prepareAnchorInsert(spec,row,assigned){
-  if(!row||typeof row!=='object'||Array.isArray(row))
-    throw Error('Invalid unified insert row');
-  const value={...row},length=spec.kind==='media'?8:4;
-  if(value.uid==null||value.uid===''){
-    if(spec.kind!=='trace'&&spec.kind!=='media')
-      throw Error('Time and Keywords require an allocated UID');
-    value.uid=newAnchorUid(length,assigned);
-  }
-  if(typeof value.uid!=='string'||!new RegExp('^[A-Za-z0-9]{'+length+'}$').test(value.uid))
-    throw Error('Invalid unified anchor UID');
-  if(assigned.has(value.uid))throw Error('Repeated unified anchor UID in one batch');
-  assigned.add(value.uid);
-  if(spec.kind==='trace'&&!hasOwn(value,'address'))value.address=null;
-  const mapped=toAnchorRow(spec,value);
-  return mapped;
+ if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Invalid unified insert row');
+ const value={...row};
+ if(value.uid==null||value.uid==='')value.uid=newAnchorUid(8,assigned);
+ if(typeof value.uid!=='string'||!anchorUid.test(value.uid))throw Error('Anchor UID must be exactly eight case-sensitive characters');
+ if(assigned.has(value.uid))throw Error('Repeated Anchor UID in batch');
+ assigned.add(value.uid);
+ return toAnchorRow(spec,value);
 }
 export function unifiedAnchorSpec(schema,table){
-  const matched=String(table||'').match(legacyName);
-  if(schema!=='silver'||!matched||matched[1]!=='lo3rwang')return null;
-  return {table:matched[1]+'_anchor',kind:legacyKinds[matched[2]],legacy:matched[2]};
+ const matched=String(table||'').match(legacyName);
+ if(schema!=='silver'||!matched||matched[1]!=='lo3rwang')return null;
+ return {table:matched[1]+'_anchor',kind:legacyKinds[matched[2]],legacy:matched[2]};
 }
 export function toAnchorRow(spec,row){
- if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Invalid unified anchor row');
- const data={...row},out={};
- const type=physicalType(data.trace_type||data.type||'');
+ if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Invalid unified Anchor row');
+ const d={...row},out={},type=physicalType(d.trace_type||d.type||'');
  if(type)out.type=type;
- if(Object.hasOwn(data,'uid'))out.uid=data.uid;
- if(Object.hasOwn(data,'title'))out.title=data.title;
- if(Object.hasOwn(data,'name'))out.title=data.name;
- if(Object.hasOwn(data,'invisible'))out.invisible=data.invisible;
- if(Object.hasOwn(data,'description'))out.description=
-   spec.kind==='trace'&&data.description&&typeof data.description==='object'
-     ?JSON.stringify(data.description):data.description;
- if(Object.hasOwn(data,'desc'))out.description=data.desc;
+ for(const key of ['uid','title','invisible'])if(hasOwn(d,key))out[key]=d[key];
+ if(hasOwn(d,'name'))out.title=d.name;
+ if(hasOwn(d,'description'))out.description=spec.kind==='trace'&&d.description&&typeof d.description==='object'?JSON.stringify(d.description):d.description;
+ if(hasOwn(d,'desc'))out.description=d.desc;
+ if(hasOwn(d,'meta_tags'))out.description=d.meta_tags;
+ let attr=canonicalAttr(type,d.attr);
  if(spec.kind==='time'){
-   if(Object.hasOwn(data,'address')&&(type==='date'||!type))out.label=data.address==null?null:String(data.address).slice(0,10);
-   if(Object.hasOwn(data,'anchor_ids')&&type!=='date')out.label=labelList(data.anchor_ids);
-   // Date is a single label; period/era labels retain their chosen UID links.
+  if(hasOwn(d,'address')&&(type==='date'||!type))attr.date=String(d.address??'').slice(0,10);
+  if(hasOwn(d,'anchor_ids')&&type!=='date')attr[type==='era'?'period':'uid']=toArray(d.anchor_ids);
+  if(hasOwn(d,'label')&&!hasOwn(d,'address')&&!hasOwn(d,'anchor_ids')){
+   if(type==='date')attr.date=String(d.label??'').slice(0,10);
+   else attr[type==='era'?'period':'uid']=toArray(d.label);
+  }
  }else if(spec.kind==='trace'){
-   if(Object.hasOwn(data,'address')&&(type==='point'||!type))out.label=labelList(data.address);
-   if(Object.hasOwn(data,'anchor_list')&&type!=='point')out.label=labelList(data.anchor_list);
-   const extra={};
-   if(Array.isArray(data.times)&&data.times.length)extra.times=data.times;
-   if(data.route_list&&typeof data.route_list==='object'){
-     const route={};
-     if(Array.isArray(data.route_list.routes)&&data.route_list.routes.length)route.routes=data.route_list.routes;
-     if(Array.isArray(data.route_list.segments)&&data.route_list.segments.length)route.segments=data.route_list.segments;
-     if(String(data.route_list.postal_address||'').trim())route.postal_address=data.route_list.postal_address;
-     if(Object.keys(route).length)extra.route_list=route;
-   }
-   if(Object.keys(extra).length)out.attr=extra;
+  if(hasOwn(d,'address')&&(type==='point'||!type))attr.location=toArray(d.address);
+  if(hasOwn(d,'anchor_list')&&type!=='point')attr.point=toArray(d.anchor_list);
+  if(hasOwn(d,'label')&&!hasOwn(d,'address')&&!hasOwn(d,'anchor_list'))
+   attr[type==='point'?'location':'point']=toArray(d.label);
+  if(type==='trace'&&d.route_list){
+   const route=d.route_list;
+   if(Array.isArray(route.routes))attr.path=[...route.routes];
+   if(Array.isArray(route.segments))attr.point=route.segments.map(pair=>[...pair]);
+  }
  }else if(spec.kind==='keywords'){
-   if(Object.hasOwn(data,'lists'))out.label=labelList(data.lists);
-   if(Object.hasOwn(data,'uid_lists'))out.attr=compactKeywordAnalysis(type,data.uid_lists);
+  if(hasOwn(d,'lists'))attr[type==='item'?'keyword':'uid']=toArray(d.lists);
+  if(hasOwn(d,'label')&&!hasOwn(d,'lists'))attr[type==='item'?'keyword':'uid']=toArray(d.label);
+  if(hasOwn(d,'uid_lists')){
+   const compact=compactKeywordAnalysis(type,d.uid_lists);
+   if(hasOwn(compact,'total'))attr.total=compact.total;
+  }
  }else if(spec.kind==='media'){
-   if(Object.hasOwn(data,'url'))out.label=data.url;
-   if(Object.hasOwn(data,'meta_tags'))out.description=data.meta_tags;
-   if(data.type==='播放清單')out.attr={media_kind:'playlist'};
+  if(hasOwn(d,'url'))attr.url=d.url;
+  if(hasOwn(d,'label')&&!hasOwn(d,'url'))attr.url=d.label;
  }
- if(Object.hasOwn(data,'label'))out.label=data.label;
- if(Object.hasOwn(data,'attr'))out.attr={...(out.attr||{}),...(data.attr||{})};
- if(Object.hasOwn(data,'attrs'))out.attr={...(out.attr||{}),...(data.attrs||{})};
- // Time never stores derived interval snapshots. A Keyword node owns only
- // its compact numeric total and unique article UIDs; no per-document times.
- if(spec.kind==='time')out.attr={};
- if(spec.kind==='keywords'){
-   if(type==='group'||type==='item'){
-     if(hasOwn(out,'attr'))out.attr=compactKeywordAnalysis(type,out.attr.uid_lists??out.attr);
-   }else if(type==='class'||type==='category')out.attr={};
+ if(hasOwn(d,'attrs'))attr={...attr,...canonicalAttr(type,d.attrs)};
+ if(spec.kind==='keywords'&&(type==='group'||type==='item')&&hasOwn(d,'attr')){
+  const compact=compactKeywordAnalysis(type,d.attr);
+  if(hasOwn(compact,'total')&&!hasOwn(attr,'total'))attr.total=compact.total;
  }
- for(const key of Object.keys(data)){
-   if(['uid','type','trace_type','title','name','invisible','description','desc',
-     'address','anchor_ids','range','anchor_list','times','route_list','lists',
-     'uid_lists','url','meta_tags','createtime','location','label','attr','attrs'].includes(key))continue;
-   throw Error('Unsupported legacy anchor column: '+key);
+ attr=canonicalAttr(type,attr);
+ // No stale uidlists, routes, segments, version, index, or article UID caches.
+ if(Object.keys(attr).length||hasOwn(d,'attr')||hasOwn(d,'attrs')||
+    ['address','anchor_ids','anchor_list','lists','uid_lists','url','label','route_list'].some(k=>hasOwn(d,k)))out.attr=attr;
+ for(const key of Object.keys(d)){
+  if(['uid','type','trace_type','title','name','invisible','description','desc',
+   'address','anchor_ids','range','anchor_list','times','route_list','lists',
+   'uid_lists','url','meta_tags','createtime','location','label','attr','attrs'].includes(key))continue;
+  throw Error('Unsupported legacy Anchor column: '+key);
  }
  return out;
 }
 export function fromAnchorRow(spec,row){
  if(!row)return row;
  const out={};
- for(const key of ['uid','title','invisible','description'])if(Object.hasOwn(row,key))out[key]=row[key];
- if(Object.hasOwn(row,'type'))out.type=legacyType(row.type);
+ for(const key of ['uid','title','invisible','description'])if(hasOwn(row,key))out[key]=row[key];
+ if(hasOwn(row,'type'))out.type=legacyType(row.type);
+ const a=canonicalAttr(row.type,row.attr),legacy=row.label;
  if(spec.kind==='time'){
-   out.address=row.type==='date'?(row.label??null):null;
-   out.anchor_ids=row.type==='date'?[]:parseLabelList(row.label);
-   out.range=null;
+  out.address=row.type==='date'?(a.date??legacy??null):null;
+  out.anchor_ids=row.type==='date'?[]:toArray(a[row.type==='era'?'period':'uid']??legacy);
+  out.range=null;
  }else if(spec.kind==='trace'){
-   out.trace_type=legacyType(row.type);
-   out.anchor_list=row.type==='point'?[]:parseLabelList(row.label);
-   out.address=row.type==='point'?parseLabelList(row.label):null;
-   out.times=row.attr?.times??[];
-   out.route_list=row.attr?.route_list??[];
-   if(typeof out.description==='string'&&out.description.startsWith('{')){
-     try{const doc=JSON.parse(out.description);if(doc&&typeof doc==='object'&&!Array.isArray(doc))out.description=doc;}catch{}
-   }
+  out.trace_type=legacyType(row.type);
+  out.anchor_list=row.type==='point'?[]:toArray(a.point??legacy);
+  out.address=row.type==='point'?toArray(a.location??legacy):null;
+  out.times=[];
+  out.route_list=row.type==='trace'?{routes:toArray(a.path),segments:toArray(a.point)}:
+   {routes:[],segments:[],postal_address:''};
+  if(typeof out.description==='string'&&out.description.startsWith('{')){
+   try{const parsed=JSON.parse(out.description);if(parsed&&typeof parsed==='object'&&!Array.isArray(parsed))out.description=parsed}catch{}
+  }
  }else if(spec.kind==='keywords'){
-   out.name=row.title;out.desc=row.description;out.lists=parseLabelList(row.label);
-   out.uid_lists=row.attr?.uid_lists??(row.attr?.uidlists?row.attr:{});
+  out.name=row.title;out.desc=row.description;
+  out.lists=toArray(a[row.type==='item'?'keyword':'uid']??legacy);
+  out.uid_lists=['item','group'].includes(row.type)?{total:Number(a.total)||0}:[];
  }else if(spec.kind==='media'){
-   out.url=row.label??null;out.meta_tags=row.description??null;
-   out.createtime=null;out.location=null;
-   if(row.type==='suno'&&row.attr?.media_kind==='playlist')out.type='播放清單';
+  out.url=a.url??legacy??null;out.meta_tags=row.description??null;
+  out.createtime=null;out.location=null;
+  if(row.type==='suno'&&/^https?:\/\/(?:www\.)?suno\.com\/playlist\//i.test(String(out.url||'')))out.type='播放清單';
  }
  return out;
 }
@@ -383,14 +369,9 @@ class UnifiedQuery{
         const mapped=toAnchorRow(spec,{type:read.data.type,...this.values});
         // Trace may have independent optional attributes. Never merge stale
         // Time/Keywords JSON, or cleanup would be undone on the next save.
-        if(spec.kind==='trace'){
-          const merged={...(read.data.attr||{}),...(mapped.attr||{})};
-          // Explicitly clearing a route or time list must erase old JSON,
-          // rather than merging an empty value back into stale associations.
-          for(const key of ['route_list','times'])
-            if(hasOwn(this.values,key)&&!hasOwn(mapped.attr||{},key))delete merged[key];
-          mapped.attr=merged;
-        }
+        if(mapped.attr) mapped.attr=canonicalAttr(read.data.type,{
+          ...canonicalAttr(read.data.type,read.data.attr),...mapped.attr
+        });
         let q=this.schema.from(spec.table).update(mapped);
         const {physical}=this.build(q,false);
         const res=await physical.select(fieldsForSelect(spec,this.fields));
