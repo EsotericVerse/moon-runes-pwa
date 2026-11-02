@@ -258,7 +258,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       columns:'current_keyword_class_uid,keyword_meta,staticstime'
     });
     const classUid=String(requestedClassUid||config?.current_keyword_class_uid||'');
-    if(!/^[A-Za-z0-9]{4}$/.test(classUid))throw new Error('尚未選取 Keywords Class');
+    if(!/^[A-Za-z0-9]{4}(?:[A-Za-z0-9]{4})?$/.test(classUid))throw new Error('尚未選取 Keywords Class');
     const all=await readOwnedKeywordNodes(table);
     const {descendantsOfKeyword,keywordUidListRecord}=await import('./keyword-tree.mjs');
     const children=descendantsOfKeyword(all,classUid)
@@ -273,7 +273,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     let completed=0;
     for(const row of children){
       const {data,error}=await dbAuthRelation(table)
-        .update({uid_lists:keywordUidListRecord(row.type,[])}).eq('uid',row.uid).select('uid');
+        .update({uid_lists:scope==='lo3rwang'?{total:0}:keywordUidListRecord(row.type,[])}).eq('uid',row.uid).select('uid');
       if(error||data?.length!==1)throw new Error(error?.message||'清空 '+row.uid+' 失敗');
       completed++;
       onProgress?.({phase:'resetting',completed,total:children.length});
@@ -481,7 +481,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
   async function copyKeywordLibraryClass(scopeId,sourceClassUid,targetClassName){
     const scope=normalizeScopeId(scopeId),source=String(sourceClassUid||''),
       target=String(targetClassName||'').trim();
-    if(!/^[0-9A-Za-z]{4}$/.test(source)||!target)throw new Error('Keywords Class 識別或名稱不正確');
+    if(!/^[0-9A-Za-z]{4}(?:[0-9A-Za-z]{4})?$/.test(source)||!target)throw new Error('Keywords Class 識別或名稱不正確');
     const table='silver.'+scope+'_keywords';
     preflightWrite(table);
     const data=await readOwnedKeywordNodes(table);
@@ -506,7 +506,7 @@ export function createDatabaseClient({publicClient,authClient,auth}){
       }
     }
     for(const node of descendants){
-      const uid=generateKeywordClassUid(occupied);
+      const uid=generateKeywordClassUid(occupied,undefined,scope==='lo3rwang'?8:4);
       occupied.push(uid);mapping.set(node.uid,uid);
     }
     const saved=[];
