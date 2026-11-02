@@ -2,11 +2,11 @@
 // article uidlist. A Class has a separate four-character Base62 class_uid.
 // Neither Class nor Item identity depends on Rune66 numbering or fixed groups.
 const DIGITS='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-const CLASS=/^[A-Za-z0-9]{4}$/;
+const CLASS=/^[A-Za-z0-9]{4}(?:[A-Za-z0-9]{4})?$/;
 const ARTICLE=/^[A-Za-z0-9]{8}$/;
 const ITEM=/^[1-9][0-9]*$/;
 export function isKeywordClassUid(uid){return typeof uid==='string'&&CLASS.test(uid);}
-export function generateKeywordClassUid(existing=[],random=buffer=>globalThis.crypto.getRandomValues(buffer)){
+export function generateKeywordClassUid(existing=[],random=buffer=>globalThis.crypto.getRandomValues(buffer),length=4){
   const used=new Set(existing);
   for(let attempt=0;attempt<128;attempt++){
     const bytes=random(new Uint8Array(16));
@@ -15,9 +15,9 @@ export function generateKeywordClassUid(existing=[],random=buffer=>globalThis.cr
     for(const n of bytes){
       if(n>=248)continue;
       id+=DIGITS[n%62];
-      if(id.length===4)break;
+      if(id.length===length)break;
     }
-    if(id.length===4&&!used.has(id))return id;
+    if(id.length===length&&!used.has(id))return id;
   }
   throw new Error('Cannot allocate a unique Keywords Class UID');
 }
@@ -35,7 +35,7 @@ function times(value){
   return value;
 }
 function indexes(catalogRows,classUid){
-  if(!isKeywordClassUid(classUid))throw new Error('Class UID must have four Base62 characters');
+  if(!isKeywordClassUid(classUid))throw new Error('Class UID must have four or eight Base62 characters');
   const rows=new Map();
   for(const item of catalogRows){
     if(item.class_uid&&item.class_uid!==classUid)throw new Error('Mixed Keyword Classes');
