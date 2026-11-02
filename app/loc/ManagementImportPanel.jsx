@@ -428,9 +428,9 @@ function UniversalImport({scopeId,format,onFormatChange}) {
     enabled:!nativeLocal&&Boolean(account.user)&&account.canManageScopeSync(scopeId),
     queryFn:async()=>{
       const lists=await Promise.all(['loc',scopeId].map(async id=>{
-        const {data,error}=await dbAuthRelation('silver.'+id).select('txt_class').eq('id',id).maybeSingle();
+        const {data,error}=await dbAuthRelation('silver.'+id).select('DefaultArticleClass').eq('id',id).maybeSingle();
         if(error)throw new Error(error.message);
-        return Array.isArray(data?.txt_class)?data.txt_class:[];
+        return Array.isArray(data?.DefaultArticleClass)?data.DefaultArticleClass:[];
       }));
       return {system:lists[0],personal:lists[1]};
     }
