@@ -1,6 +1,7 @@
 'use client';
 
 import {useEffect,useRef,useState} from 'react';
+import {scopeTagColumn,scopeTagNames} from './scope-config-fields.mjs';
 import {useSWRConfig} from 'swr';
 import {useAsyncResource} from './use-async-resource';
 import {dbAuthRelation,dbAuthClient} from './db-client.mjs';
@@ -31,10 +32,10 @@ export default function FlatClassificationEditor({scopeId='loc'}){
   const [busy,setBusy]=useState(false);
   const [notice,setNotice]=useState('');
   const query=useAsyncResource(['default-article-class-list',scopeId],async()=>{
-    const {data,error}=await dbAuthRelation('silver.'+scopeId).select('DefaultArticleClass').eq('id',scopeId).maybeSingle();
+    const {data,error}=await dbAuthRelation('silver.'+scopeId).select(scopeTagColumn(scopeId)).eq('id',scopeId).maybeSingle();
     if(error)throw new Error(error.message||l.readError);
     if(!data)throw new Error(l.notFound);
-    return Array.isArray(data.DefaultArticleClass)?data.DefaultArticleClass:[];
+    return scopeTagNames(scopeId,data);
   },{enabled:allowed});
   const original=query.data||[];
   const rows=draft===null?original:draft;
@@ -80,7 +81,7 @@ export default function FlatClassificationEditor({scopeId='loc'}){
         });
         if(error||data!==true)throw new Error(error?.message||l.noPermission);
       }else{
-        const {data,error}=await dbAuthRelation('silver.'+scopeId).update({DefaultArticleClass:names})
+        const {data,error}=await dbAuthRelation('silver.'+scopeId).update({[scopeTagColumn(scopeId)]:names})
           .eq('id',scopeId).select('id');
         if(error||!data?.length)throw new Error(error?.message||l.noPermission);
       }
