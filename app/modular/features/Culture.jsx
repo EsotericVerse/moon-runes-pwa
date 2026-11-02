@@ -415,10 +415,10 @@ export default function Culture(){
     queryFn:async()=>{
       const scopes=scopeId==='loc'?['loc']:['loc',scopeId];
       const [global,personal]=await Promise.all(scopes.map(id=>selectRows('silver.'+id,{
-        columns:'txt_class',filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
+        columns:'DefaultArticleClass',filters:[{column:'id',operator:'eq',value:id}],limit:1,source:'primary'
       })));
-      return sourceTaxonomyFromArrays(global.rows?.[0]?.txt_class||[],
-        scopeId==='loc'?[]:personal?.rows?.[0]?.txt_class||[]);
+      return sourceTaxonomyFromArrays(global.rows?.[0]?.DefaultArticleClass||[],
+        scopeId==='loc'?[]:personal?.rows?.[0]?.DefaultArticleClass||[]);
     },
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
