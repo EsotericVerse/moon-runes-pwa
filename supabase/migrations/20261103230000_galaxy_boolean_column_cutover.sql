@@ -29,6 +29,44 @@ UPDATE silver.lo3rwang_galaxy SET
   "extract"=COALESCE("extract",(able->>'extract')::boolean,TRUE)
 WHERE "statics" IS NULL OR "culture" IS NULL OR "search" IS NULL OR "trace" IS NULL OR "list" IS NULL OR "keyword" IS NULL OR "others" IS NULL OR "extract" IS NULL;
 
+-- Preserve the previous all-true Galaxy default; import and MCP writers provide
+-- explicit FALSE where visibility must be denied. No NULL is a valid feature flag.
+ALTER TABLE silver.lo3rwang_galaxy
+  ALTER COLUMN "statics" SET DEFAULT TRUE,
+  ALTER COLUMN "statics" SET NOT NULL,
+  ALTER COLUMN "culture" SET DEFAULT TRUE,
+  ALTER COLUMN "culture" SET NOT NULL,
+  ALTER COLUMN "search" SET DEFAULT TRUE,
+  ALTER COLUMN "search" SET NOT NULL,
+  ALTER COLUMN "trace" SET DEFAULT TRUE,
+  ALTER COLUMN "trace" SET NOT NULL,
+  ALTER COLUMN "list" SET DEFAULT TRUE,
+  ALTER COLUMN "list" SET NOT NULL,
+  ALTER COLUMN "keyword" SET DEFAULT TRUE,
+  ALTER COLUMN "keyword" SET NOT NULL,
+  ALTER COLUMN "others" SET DEFAULT TRUE,
+  ALTER COLUMN "others" SET NOT NULL,
+  ALTER COLUMN "extract" SET DEFAULT TRUE,
+  ALTER COLUMN "extract" SET NOT NULL;
+
+ALTER TABLE silver.lrunes_galaxy
+  ALTER COLUMN "statics" SET DEFAULT TRUE,
+  ALTER COLUMN "statics" SET NOT NULL,
+  ALTER COLUMN "culture" SET DEFAULT TRUE,
+  ALTER COLUMN "culture" SET NOT NULL,
+  ALTER COLUMN "search" SET DEFAULT TRUE,
+  ALTER COLUMN "search" SET NOT NULL,
+  ALTER COLUMN "trace" SET DEFAULT TRUE,
+  ALTER COLUMN "trace" SET NOT NULL,
+  ALTER COLUMN "list" SET DEFAULT TRUE,
+  ALTER COLUMN "list" SET NOT NULL,
+  ALTER COLUMN "keyword" SET DEFAULT TRUE,
+  ALTER COLUMN "keyword" SET NOT NULL,
+  ALTER COLUMN "others" SET DEFAULT TRUE,
+  ALTER COLUMN "others" SET NOT NULL,
+  ALTER COLUMN "extract" SET DEFAULT TRUE,
+  ALTER COLUMN "extract" SET NOT NULL;
+
 -- Patch the CURRENT function definitions in-place, rather than restoring an
 -- old snapshot while concurrent RPC consolidation is underway.
 DO $galaxy_cutover$
