@@ -4,12 +4,12 @@ import {DB_QUERY_BATCH_SIZE} from '../query-batch-size.mjs';
 const identifier=/^[a-z][a-z0-9_]*$/i;
 const schemas=new Set(['silver','api']);
 const operators={eq:'=',neq:'!=',gt:'>',gte:'>=',lt:'<',lte:'<=',like:'like',ilike:'ilike',is:'is',in:'in'};
-const GALAXY_ABLE_FILTER_KEYS=new Set(['statics','culture','search','trace','list','keywords','game','extract']);
+const GALAXY_FEATURE_COLUMNS=Object.freeze({statics:'statics',culture:'culture',search:'search',trace:'trace',list:'list',keywords:'keyword',game:'others',extract:'extract'});
 function checkedFilterColumn(value){
   if(identifier.test(String(value||'')))return value;
   const match=String(value||'').match(/^able->>([a-z]+)$/);
-  if(!match||!GALAXY_ABLE_FILTER_KEYS.has(match[1]))throw new Error('Invalid filter column');
-  return sql`(${sql.ref('able')} ->> ${match[1]})`;
+  if(!match||!Object.hasOwn(GALAXY_FEATURE_COLUMNS,match[1]))throw new Error('Invalid filter column');
+  return GALAXY_FEATURE_COLUMNS[match[1]];
 }
 
 // Existing application RPCs only. Keep SQL identifiers fixed and bind all values.
