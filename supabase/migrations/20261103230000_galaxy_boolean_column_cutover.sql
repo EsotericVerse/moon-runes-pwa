@@ -448,3 +448,28 @@ BEGIN
   RETURN jsonb_build_object('scope_id',v_id)||v_snapshot;
 END;
 $function$;
+
+-- Preserve existing public/authorized visibility predicates while replacing only
+-- their obsolete Galaxy JSONB lookup with the native BOOLEAN search column.
+ALTER POLICY "lo3rwang_galaxy_authenticated_read" ON silver."lo3rwang_galaxy" USING ((( SELECT COALESCE(( SELECT manage.allowed
+           FROM silver.manage('scope'::text, 'lo3rwang'::text) manage(id, email, role, galaxy, anchor, birthday, allowed)), false) AS can_manage_scope) OR ((((search))::boolean IS TRUE) AND (lower(COALESCE(site, ''::text)) <> ALL (ARRAY['messenger'::text, 'chatgpt'::text, 'claude'::text, 'gemini'::text, 'msn'::text, 'whatsapp'::text, 'telegram'::text, 'discord'::text, 'line'::text, 'wechat'::text, 'teams'::text, 'copilot'::text, 'grok'::text, 'perplexity'::text, 'meta ai'::text, 'meta-ai'::text])))));
+
+ALTER POLICY "lo3rwang_galaxy_public_read" ON silver."lo3rwang_galaxy" USING (((((search))::boolean IS TRUE) AND (lower(COALESCE(site, ''::text)) <> ALL (ARRAY['messenger'::text, 'chatgpt'::text, 'claude'::text, 'gemini'::text, 'msn'::text, 'whatsapp'::text, 'telegram'::text, 'discord'::text, 'line'::text, 'wechat'::text, 'teams'::text, 'copilot'::text, 'grok'::text, 'perplexity'::text, 'meta ai'::text, 'meta-ai'::text]))));
+
+ALTER POLICY "lrunes_galaxy_authenticated_read" ON silver."lrunes_galaxy" USING (((((search))::boolean IS TRUE) OR ( SELECT COALESCE(( SELECT manage.allowed
+           FROM silver.manage('scope'::text, 'lrunes'::text) manage(id, email, role, galaxy, anchor, birthday, allowed)), false) AS can_manage_scope)));
+
+ALTER POLICY "lrunes_galaxy_public_read" ON silver."lrunes_galaxy" USING ((((search))::boolean IS TRUE));
+
+-- Both existing trigger definitions watch the removed `able` column.
+DROP TRIGGER IF EXISTS lo3rwang_galaxy_content_validity ON silver.lo3rwang_galaxy;
+CREATE TRIGGER lo3rwang_galaxy_content_validity
+BEFORE INSERT OR UPDATE OF content, search, "list", site
+ON silver.lo3rwang_galaxy
+FOR EACH ROW EXECUTE FUNCTION silver.normalize_galaxy_content_validity();
+
+DROP TRIGGER IF EXISTS lrunes_galaxy_content_validity ON silver.lrunes_galaxy;
+CREATE TRIGGER lrunes_galaxy_content_validity
+BEFORE INSERT OR UPDATE OF content, search, "list", site
+ON silver.lrunes_galaxy
+FOR EACH ROW EXECUTE FUNCTION silver.normalize_galaxy_content_validity();
