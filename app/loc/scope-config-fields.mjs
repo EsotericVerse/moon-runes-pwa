@@ -11,7 +11,7 @@ export const scopeConfigColumns=id=>id==='loc'?'id,display_name,locale':'id,disp
 export function scopeFeatureEnabled(config,key){
   const name=scopeFeatureName(key);
   if(!name)return false;
-  // lrunes no longer has three Scope-level *_able columns; articles use Galaxy.able.
+  // lrunes Scope configuration differs; articles use eight Galaxy BOOLEAN flags, not Galaxy.able.
   if(config?.id==='lrunes')return true;
   const raw=config?.able?.[name];
   if(raw!==undefined&&raw!==null)return raw===1||raw===true;
