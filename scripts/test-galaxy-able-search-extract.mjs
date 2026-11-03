@@ -27,6 +27,9 @@ test('Galaxy writes eight independent BOOLEAN feature columns, not JSONB able',(
   const restored=restoreGalaxyPresentation('silver.lo3rwang_galaxy',[row],'uid,able')[0];
   assert.equal(restored.able.game,false);
   assert.equal(restored.able.list,false);
+  assert.deepEqual(prepareGalaxyInsertRows('silver.local_galaxy',[legacy]),[legacy],
+    'offline local SQLite retains its separate legacy storage format');
+  assert.equal(galaxySelectColumns('silver.local_galaxy','uid,able'),'uid,able');
 });
 test('search excerpt shows exactly the hit with approximately ten surrounding characters',()=>{
   const text='天涯海角的深處星光照耀我們的混沌之月漸漸走向黎明朝陽';
