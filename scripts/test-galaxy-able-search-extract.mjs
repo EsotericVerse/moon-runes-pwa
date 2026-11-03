@@ -1,18 +1,32 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {GALAXY_ABLE_KEYS,galaxyAble,prepareGalaxyInsertRows} from '../app/loc/galaxy-able.mjs';
+import {GALAXY_ABLE_KEYS,galaxyAble,prepareGalaxyInsertRows,prepareGalaxyUpdateValues,galaxySelectColumns,galaxyFilterColumns,restoreGalaxyPresentation} from '../app/loc/galaxy-able.mjs';
 import {extractSearchContext} from '../app/loc/search-extract.mjs';
 
-test('Galaxy stores eight independent feature flags, even when an article is hidden',()=>{
-  assert.deepEqual(GALAXY_ABLE_KEYS,['statics','culture','search','trace','list','keywords','game','extract']);
-  const features=galaxyAble({searchable:false,statistics_able:false,
-    able:{statics:true,culture:false,search:true,trace:false,list:false,keywords:true,game:true,extract:true}});
-  assert.equal(features.statics,true);
-  assert.equal(features.list,false);
-  assert.equal(features.search,true);
-  assert.equal(features.extract,true);
-  assert.equal(prepareGalaxyInsertRows('silver.lo3rwang_galaxy',[{uid:'0123aBCD'}])[0].able.game,true);
+test('Galaxy writes eight independent BOOLEAN feature columns, not JSONB able',()=>{
+  assert.deepEqual(GALAXY_ABLE_KEYS,['statics','culture','search','trace','list','keyword','others','extract']);
+  const legacy={uid:'0123aBCD',able:{statics:true,culture:false,search:true,trace:false,
+    list:false,keywords:true,game:false,extract:true}};
+  const row=prepareGalaxyInsertRows('silver.lo3rwang_galaxy',[legacy])[0];
+  assert.equal(Object.hasOwn(row,'able'),false);
+  assert.equal(row.keyword,true);
+  assert.equal(row.others,false);
+  assert.equal(row.list,false);
+  const current=galaxyAble({...row,able:{list:true}});
+  assert.equal(current.list,false,'authoritative BOOLEAN value wins over old JSONB');
+  assert.equal(current.keywords,true);
+  const updated=prepareGalaxyUpdateValues('silver.lrunes_galaxy',{able:{list:false,keywords:false,game:false}});
+  assert.deepEqual(updated,{list:false,keyword:false,others:false});
+  assert.deepEqual(prepareGalaxyUpdateValues('silver.lrunes_galaxy',{title:'hello'}),{title:'hello'});
+  assert.equal(galaxySelectColumns('silver.lo3rwang_galaxy','uid,title,able'),
+    'uid,title,statics,culture,search,trace,list,keyword,others,extract');
+  assert.deepEqual(galaxyFilterColumns('silver.lo3rwang_galaxy',
+    [{column:'able->>keywords',operator:'eq',value:'true'}]),
+    [{column:'keyword',operator:'eq',value:true}]);
+  const restored=restoreGalaxyPresentation('silver.lo3rwang_galaxy',[row],'uid,able')[0];
+  assert.equal(restored.able.game,false);
+  assert.equal(restored.able.list,false);
 });
 test('search excerpt shows exactly the hit with approximately ten surrounding characters',()=>{
   const text='天涯海角的深處星光照耀我們的混沌之月漸漸走向黎明朝陽';
