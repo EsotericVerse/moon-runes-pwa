@@ -83,8 +83,9 @@ export function createDatabaseClient({publicClient,authClient,auth}){
     // Galaxy's former `able` JSONB must never be written to the database.
     if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='insert')
       payload={...payload,p_rows:prepareGalaxyInsertRows(payload.p_table,payload.p_rows||[])};
-    if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='update'&&
-      Object.hasOwn(payload.p_values||{},'able'))
+    if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='update_batch')
+      payload={...payload,p_rows:(payload.p_rows||[]).map(row=>prepareGalaxyUpdateValues(payload.p_table,row))};
+    if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='update')
       payload={...payload,p_values:prepareGalaxyUpdateValues(payload.p_table,payload.p_values)};
     // The unified anchor store is already governed by the Clerk-verified
     // authenticated Kysely client and its database RLS. Legacy management
