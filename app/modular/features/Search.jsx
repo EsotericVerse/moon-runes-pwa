@@ -56,6 +56,7 @@ const MEDIA_ATTR_ORDER=['uid','location','type','url','meta_tags','createtime'];
 const MEDIA_ATTR_FIELDS=MEDIA_ATTR_ORDER.map(key=>({key,readOnly:key==='uid',kind:key==='createtime'?'date':'text'}));
 
 const GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,UpdateTime,url,source_id,target_id,ref_id,site,media_link,statics,culture,search,trace,list,keyword,others,extract';
+const LOCAL_GALAXY_EDITOR_COLUMNS='uid,title,content,createtime,location,place_id,UpdateTime,url,source_id,target_id,ref_id,site,media_link,able';
 
 const GALAXY_ATTR_ORDER=Object.freeze([
   'uid','title','content','createtime','location','place_id',
@@ -744,13 +745,15 @@ export default function Search({managementMode:legacyManagementRoute=false}){
         result.editableTable,
         result.editableIdColumn,
         result.editResourceId||result.resourceId,
-        result.resourceType==='galaxy'?GALAXY_EDITOR_COLUMNS:MEDIA_EDITOR_COLUMNS,
+        result.resourceType==='galaxy'
+          ?(result.scopeId==='local'?LOCAL_GALAXY_EDITOR_COLUMNS:GALAXY_EDITOR_COLUMNS)
+          :MEDIA_EDITOR_COLUMNS,
         {authenticated:result.resourceType==='galaxy'}
       );
       if(!fullRow)throw new Error(UI_COPY.search.editNotFound);
       const {SearchEditDraft}=await import('./search-edit-draft');
       editTargetRef.current=result;
-      setEditDraft(SearchEditDraft.fromRow(result.resourceType,fullRow,result.title));
+      setEditDraft(SearchEditDraft.fromRow(result.resourceType,fullRow,result.title,result.scopeId==='local'));
       if(managementMode)editDock?.begin(scopeId);
     }catch(exception){
       setEditingKey('');
