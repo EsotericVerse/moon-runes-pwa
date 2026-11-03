@@ -507,7 +507,14 @@ export class LocAuthorityState extends DurableObject {
       statics:false,culture:false,search:false,trace:false,list:false,keyword:false,others:false,extract:false,
       createtime:validTimestamp(input.created_at||requestedTime),
       UpdateTime:requestedTime};
-    if(profile)await postgrest(profile,{body:row,params:{on_conflict:'uid'}});
+    if(profile){
+      // External Scope tables can still be on the old Galaxy schema until
+      // their owner migrates them. Keep that connector's original write shape.
+      const {statics,culture,search,trace,list,keyword,others,extract,...base}=row;
+      await postgrest(profile,{body:{...base,able:{
+        statics,culture,search,trace,list,keywords:keyword,game:others,extract
+      }},params:{on_conflict:'uid'}});
+    }
     else await managedMcpInsert(scopeid,row,Boolean(status.uid),oauthToken);
     const saved_at=new Date().toISOString();
     this.mcpSearchCache?.clear();
