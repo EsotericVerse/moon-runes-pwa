@@ -27,7 +27,7 @@ function isoOrNull(value,t){
   if(Number.isNaN(date.getTime()))throw new Error(t('uiExtra.searchUI.articleDateInvalid'));
   return date.toISOString();
 }
-function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
+function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks,isLocal=false){
   const attrs={
     uid:String(row.uid||'').trim(),
     createtime:datetimeLocalValue(row.createtime),
@@ -51,7 +51,8 @@ function galaxyDraftFromRow(row={},fallbackTitle='',plainTextToBlocks){
     bodyHtml:body,
     bodyBlocks:plainTextToBlocks(body),
     editorKey:String(row.uid||''),
-    hidden:row.able?.list===false,
+    hidden:isLocal?row.able?.list===false:row.list===false,
+    local:isLocal,
     attrs,
     originalAttrs:{...attrs}
   };
@@ -82,7 +83,14 @@ function changedGalaxyAttributes(draft,t){
   const changed={};
   const differs=key=>JSON.stringify(current[key])!==JSON.stringify(initial[key]);
   const features=['statics','culture','search','trace','list','keyword','others','extract'];
-  for(const key of features)if(differs('able_'+key))changed[key]=current['able_'+key]!==false;
+  if(draft.local){
+    if(features.some(key=>differs('able_'+key)))
+      changed.able=Object.fromEntries(features.map(key=>[
+        key==='keyword'?'keywords':key==='others'?'game':key,current['able_'+key]!==false
+      ]));
+  }else{
+    for(const key of features)if(differs('able_'+key))changed[key]=current['able_'+key]!==false;
+  }
   if(differs('createtime'))changed.createtime=isoOrNull(current.createtime,t);
   if(differs('place_id')){
     const next=String(current.place_id||'').trim();
@@ -100,9 +108,9 @@ function changedGalaxyAttributes(draft,t){
 export class SearchEditDraft{
   static nullableText(value){return nullableText(value);}
   // Builds the editable draft for a Galaxy (article) or Galaxy Media row.
-  static fromRow(resourceType,row,fallbackTitle=''){
+  static fromRow(resourceType,row,fallbackTitle='',isLocal=false){
     return resourceType==='galaxy'
-      ?galaxyDraftFromRow(row,fallbackTitle,plainTextToBlocks)
+      ?galaxyDraftFromRow(row,fallbackTitle,plainTextToBlocks,isLocal)
       :mediaDraftFromRow(row,fallbackTitle,plainTextToBlocks);
   }
   // Only the attributes the author actually changed; throws a localized error on invalid input.
