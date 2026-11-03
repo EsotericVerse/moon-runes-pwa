@@ -44,7 +44,9 @@ test('search excerpt shows exactly the hit with approximately ten surrounding ch
 test('search is primary, excerpt is optional and never loads in regular browse',()=>{
   const ui=readFileSync(new URL('../app/modular/features/Search.jsx',import.meta.url),'utf8');
   const query=readFileSync(new URL('../app/loc/galaxy-query.js',import.meta.url),'utf8');
-  assert.match(query,/able->>search/);
+  const boundary=readFileSync(new URL('../app/loc/db-query.mjs',import.meta.url),'utf8');
+  assert.match(boundary,/galaxyFilterColumns\(table,filters\)/);
+  assert.match(boundary,/galaxySelectColumns\(table,columns\)/);
   assert.match(ui,/row\.able\?\.search===false\|\|row\.able\?\.extract===false/);
   assert.match(ui,/if\(q&&!options\.browse&&!options\.placeOnly&&!options\.mediaOnly/);
   assert.match(ui,/extractSearchContext\(article\.content,query,10\)/);
