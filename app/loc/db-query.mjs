@@ -3,6 +3,7 @@
 import {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 import {coalescePendingPublicRead} from './inflight-public-read.mjs';
 import {mapBounded} from './bounded-parallel.mjs';
+import {galaxyFilterColumns,galaxySelectColumns,restoreGalaxyPresentation} from './galaxy-able.mjs';
 export {DB_QUERY_BATCH_SIZE,queryBatchSize} from './db-contract.mjs';
 
 import {dbAuthClient,dbBackupPublicClient,dbConfiguredPublicClient,dbPublicClient} from './db-client.mjs';
@@ -176,6 +177,7 @@ export function applyOrders(query,orders=[]){
 
 export async function selectCount(table,{idColumn,filters=[],orFilter='',source='auto'}={}){
   if(!/^[a-z][a-z0-9_]*$/i.test(String(idColumn||'')))throw new Error('DB COUNT requires an explicit ID column');
+  filters=galaxyFilterColumns(table,filters);
   // HEAD returns a SQL count without loading rows, including tables without uid.
   const request=async()=>{
     const {count}=await executePublicRead(table,relation=>{
@@ -205,6 +207,9 @@ export async function selectRows(table,{
   signal=null
 }={}){
   if(!String(columns||'').trim()||String(columns).trim()==='*')throw new Error('DB SELECT requires explicit columns');
+  const requestedColumns=columns;
+  columns=galaxySelectColumns(table,columns);
+  filters=galaxyFilterColumns(table,filters);
   const safeMaximum=Math.max(1,Math.min(queryBatchSize(columns),Math.floor(Number(maxLimit)||DB_QUERY_BATCH_SIZE)));
   const safeLimit=Math.max(1,Math.min(safeMaximum,Math.floor(Number(limit)||20)));
   const safeOffset=Math.max(0,Math.floor(Number(offset)||0));
@@ -217,7 +222,7 @@ export async function selectRows(table,{
       query=applyOrders(query,orders);
       return query.range(safeOffset,safeOffset+safeLimit-1);
     },{source,authenticated,signal});
-    return {rows:data||[],count:total,dataSource:__dataSource};
+    return {rows:restoreGalaxyPresentation(table,data||[],requestedColumns),count:total,dataSource:__dataSource};
   };
   // Never combine signed-in, cancellable or local-device reads. Successful
   // public results are not cached: an editor's next query sees new data.
