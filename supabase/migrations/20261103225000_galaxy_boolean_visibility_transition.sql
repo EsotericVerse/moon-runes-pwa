@@ -14,7 +14,7 @@ BEGIN
   LOOP
     next_qual:=replace(p.qual,
       $old$((able ->> 'search'::text))::boolean IS TRUE$old$,
-      $new$(((able ->> 'search'::text))::boolean IS TRUE AND search IS TRUE)$new$);
+      $new$(((able ->> 'search'::text))::boolean IS TRUE AND search IS NOT FALSE)$new$);
     IF next_qual=p.qual THEN
       RAISE EXCEPTION 'Unexpected legacy Galaxy visibility predicate: %',p.policyname;
     END IF;
