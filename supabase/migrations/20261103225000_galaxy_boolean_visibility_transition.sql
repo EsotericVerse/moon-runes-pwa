@@ -12,6 +12,7 @@ BEGIN
       AND cmd='SELECT'
       AND qual LIKE '%able%'
   LOOP
+    IF p.qual LIKE '%search IS NOT FALSE%' THEN CONTINUE; END IF;
     next_qual:=replace(p.qual,
       $old$((able ->> 'search'::text))::boolean IS TRUE$old$,
       $new$(((able ->> 'search'::text))::boolean IS TRUE AND search IS NOT FALSE)$new$);
