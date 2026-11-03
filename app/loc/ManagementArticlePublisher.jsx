@@ -34,7 +34,8 @@ const recordDraft=row=>({
   editorKey:createUid8(),source:String(row.site||''),url:String(row.url||''),
   source_id:String(row.source_id||''),
   target_id:Array.isArray(row.target_id)?row.target_id.join(', '):String(row.target_id||''),
-  ref_id:String(row.ref_id||''),createtime:datetimeLocal(row.createtime),hidden:row.list===false
+  ref_id:String(row.ref_id||''),createtime:datetimeLocal(row.createtime),
+  hidden:row.list===false||row.able?.list===false,able:row.able||null
 });
 
 const blank=()=>({
@@ -100,7 +101,9 @@ export default function ManagementArticlePublisher({scopeId}){
       if(!galaxy)throw new Error(t('uiExtra.publisher.scopeUnavailable'));
       // Exact, authenticated UID lookup: no public-search index or searchable filter.
       const {rows}=await selectRows(galaxy,{
-        columns:'uid,title,content,site,createtime,list,url,source_id,target_id,ref_id',
+        columns:scopeId==='local'
+          ?'uid,title,content,site,createtime,able,url,source_id,target_id,ref_id'
+          :'uid,title,content,site,createtime,list,url,source_id,target_id,ref_id',
         filters:[{column:'uid',operator:'eq',value:uid}],limit:1,authenticated:true
       });
       if(!rows?.length)throw new Error(t('uiExtra.publisher.uidNotFound'));
@@ -130,7 +133,11 @@ export default function ManagementArticlePublisher({scopeId}){
         target_id:normalizeRelationIds(draft.target_id),
         ref_id:draft.ref_id.trim()||null,
         url:draft.url.trim()||null,
-        statics:true,culture:true,search:!draft.hidden,trace:true,list:!draft.hidden,keyword:true,others:true,extract:true,
+        ...(scopeId==='local'
+          ?{able:{statics:true,culture:true,search:!draft.hidden,trace:true,
+              list:!draft.hidden,keywords:true,game:true,extract:true}}
+          :{statics:true,culture:true,search:!draft.hidden,trace:true,
+              list:!draft.hidden,keyword:true,others:true,extract:true}),
         createtime:draft.createtime?new Date(draft.createtime).toISOString():now,
         site:draft.source.trim()
       };
@@ -148,7 +155,10 @@ export default function ManagementArticlePublisher({scopeId}){
         if(draft.target_id!==original.target_id)changed.target_id=values.target_id;
         if(draft.ref_id!==original.ref_id)changed.ref_id=values.ref_id;
         if(draft.createtime!==original.createtime)changed.createtime=values.createtime;
-        if(draft.hidden!==original.hidden){changed.search=!draft.hidden;changed.list=!draft.hidden;}
+        if(draft.hidden!==original.hidden){
+          if(scopeId==='local')changed.able={...(original.able||values.able),search:!draft.hidden,list:!draft.hidden};
+          else{changed.search=!draft.hidden;changed.list=!draft.hidden;}
+        }
         if(Object.keys(changed).length){
           await updateRows(galaxy,{...changed,UpdateTime:now},{
             filters:[{column:'uid',operator:'eq',value:editingUid}]
