@@ -28,7 +28,9 @@ export function galaxyAble(row={}){
   ]));
 }
 export function isScopedGalaxy(table){
-  return /^silver\.[a-z][a-z0-9]{0,14}_galaxy$/.test(String(table||''));
+  // Device-local SQLite keeps its own legacy layout; only remote Scope Galaxy is split.
+  return /^silver\.[a-z][a-z0-9]{0,14}_galaxy$/.test(String(table||''))&&
+    String(table).toLowerCase()!=='silver.local_galaxy';
 }
 function splitGalaxyFeatures(row={},includeDefaults=false){
   const {able,searchable,statistics_able,...fields}=row;
