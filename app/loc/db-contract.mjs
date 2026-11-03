@@ -79,8 +79,8 @@ export function createDatabaseClient({publicClient,authClient,auth}){
 
   async function managementWriteUnchecked(payload){
     preflightWrite(payload?.p_table);
-    // Every standard insert/import goes through this boundary; newer builds
-    // dual-write Galaxy.able while legacy columns remain for older deployments.
+    // Every standard insert/import maps old editor payloads to eight BOOLEAN columns.
+    // Galaxy's former `able` JSONB must never be written to the database.
     if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='insert')
       payload={...payload,p_rows:prepareGalaxyInsertRows(payload.p_table,payload.p_rows||[])};
     if(isScopedGalaxy(payload?.p_table)&&payload?.p_operation==='update'&&
