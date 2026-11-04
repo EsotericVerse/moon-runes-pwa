@@ -97,44 +97,6 @@ const routing = resolveDatabaseRouting();
 
 const controlTarget={provider:"supabase",engine:"postgres",connection_alias:"supabase_current",connection_mode:"pooler"};
 
-// Temporary, capped instrumentation of actual LOC management permission lookups.
-// No timer, PostgreSQL log, additional table, or scheduled activity.
-// One atomic UPDATE per cold permission snapshot; stop entirely at 1000.
-let permissionTraceFinished=false;
-function permissionCheckContext(body:Record<string,unknown>){
-  const payload=(body.payload||{}) as Record<string,unknown>;
-  const attr=(body.attr||{}) as Record<string,unknown>;
-  const parts=body.kind==="managed-write"
-    ?[body.kind,payload.p_operation,payload.p_table]
-    :body.kind==="managed-action"
-      ?[body.kind,body.name]
-      :body.kind==="anchor"
-        ?[body.kind,body.scopeid,body.type,attr.op||"read"]
-        :[body.kind,body.operation||body.name||"access"];
-  return parts.map(part=>String(part||"")).join(":")
-    .replace(/[^a-zA-Z0-9._:-]/g,"").slice(0,100);
-}
-async function recordLocPermissionCheck(context:string){
-  if(permissionTraceFinished)return;
-  const control=await databaseForTarget(controlTarget);
-  const recorded=await sql<{count:number}>`
-    update silver.lo3rwang set
-      "count"=coalesce("count",0)+1,
-      status=jsonb_set(coalesce(status,'{}'::jsonb),
-        '{permission_check_events}',
-        coalesce(status->'permission_check_events','[]'::jsonb) ||
-          jsonb_build_array(jsonb_build_array(
-            floor(extract(epoch from clock_timestamp())*1000)::bigint,
-            ${String(context||"unknown").slice(0,100)}
-          )),true)
-    where id='lo3rwang' and coalesce("count",0)<1000
-    returning "count"
-  `.execute(control);
-  if(!recorded.rows.length||Number(recorded.rows[0].count)>=1000)
-    permissionTraceFinished=true;
-}
-
-
 function isSupabaseControlTarget(target:Record<string,unknown>){
   if(target.provider!=="supabase"||target.engine!=="postgres"||target.connection_alias!=="supabase_current")return false;
   const link=String(target.project_url||"").replace(/\/$/,"");
@@ -160,8 +122,7 @@ async function checkAdminRole(claims:Record<string,unknown>){
     await sql`set local role authenticated`.execute(trx);
     await sql`select set_config('request.jwt.claims',${JSON.stringify(claims)},true)`.execute(trx);
     await sql`select set_config('request.jwt.claim.sub',${String(claims.sub||"")},true)`.execute(trx);
-    bindLocAuthorization(trx,{role:'authenticated',claims,
-      onPermissionQuery:recordLocPermissionCheck,context:'admin:check'});
+    bindLocAuthorization(trx,{role:'authenticated',claims});
     return await canManageLoc(trx,'global');
   });
   if(!valid)throw Object.assign(new Error("Administrator permission required"),{httpStatus:403});
@@ -280,8 +241,7 @@ async function executeRequest(trx: any, target: Record<string,any>, role: string
   claims: Record<string, unknown>, body: Record<string, unknown>,
   snapshot:any=null) {
   const executionPort=resolveSqlExecutionPort(target);
-  bindLocAuthorization(trx,{role,claims,snapshot,
-    onPermissionQuery:recordLocPermissionCheck,context:permissionCheckContext(body)});
+  bindLocAuthorization(trx,{role,claims,snapshot});
   if(target.provider==="custom"||executionPort.session!=="postgres-rls"){
     // No PostgreSQL RLS on other engines. Authorize each request against
     // the target Scope Registry using the already verified Clerk identity.
@@ -711,9 +671,7 @@ Deno.serve(async (request) => {
       const control=await databaseForTarget(controlTarget);
       permissionSnapshot=await control.transaction().execute(async trx=>{
         await sql`set local role authenticated`.execute(trx);
-        bindLocAuthorization(trx,{role,claims,
-          onPermissionQuery:recordLocPermissionCheck,
-          context:'portable:'+permissionCheckContext(body)});
+        bindLocAuthorization(trx,{role,claims});
         return await locPermissions(trx);
       });
     }
