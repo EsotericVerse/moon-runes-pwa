@@ -7,7 +7,8 @@ const SCOPE=/^[a-z][a-z0-9]{0,14}$/;
 function deny(message='LOC management permission denied'){
   throw Object.assign(new Error(message),{httpStatus:403});
 }
-export function bindLocAuthorization(db,{role='anon',claims={},snapshot=null}={}){
+export function bindLocAuthorization(db,{role='anon',claims={},snapshot=null,
+  onPermissionQuery=null,context='unknown'}={}){
   if(!db||typeof db.selectFrom!=='function')throw new Error('Invalid Kysely transaction');
   if(role==='authenticated'&&(
     claims?.provider!=='clerk'||!USER.test(String(claims?.sub||''))||
@@ -16,12 +17,17 @@ export function bindLocAuthorization(db,{role='anon',claims={},snapshot=null}={}
   // External Scope DBs hold only their own tables. The trusted Gateway
   // may reuse a verified permission snapshot from the LOC control DB.
   sessions.set(db,{role,claims,email:String(claims?.email||'').trim().toLowerCase(),
-    pending:snapshot?Promise.resolve(snapshot):null});
+    onPermissionQuery,context,pending:snapshot?Promise.resolve(snapshot):null});
 }
 export async function locPermissions(db){
   const state=sessions.get(db);
   if(!state||state.role!=='authenticated')return {blocked:true,rows:[]};
   if(!state.pending)state.pending=(async()=>{
+    // Diagnostic only: invoked once for a real permission lookup, never for
+    // a reused transaction snapshot. Logging failure cannot grant or deny rights.
+    if(typeof state.onPermissionQuery==='function'){
+      try{await state.onPermissionQuery(state.context)}catch{/* best effort */}
+    }
     // Both reads are Kysely-native. The source of truth is the active
     // registry and blacklist, not an old silver.manage() stored function.
     const config=await db.selectFrom('silver.loc').select('blacklist')
