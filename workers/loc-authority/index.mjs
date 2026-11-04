@@ -728,7 +728,7 @@ export class LocAuthorityState extends DurableObject {
         ?prior:{started:now,count:0};
       const leases=(await tx.get('mcp-quota-leases')||[]).filter(item=>item.expires>now);
       if(bucket.count>=maximum)throw fail('MCP request limit exceeded',429);
-      if(leases.length>=64)throw fail('MCP concurrency limit exceeded',429);
+      if(leases.length>=1000)throw fail('MCP concurrency limit exceeded',429);
       const lease=crypto.randomUUID();
       leases.push({lease,subject,expires:now+leaseTtl});
       await tx.put(key,{started:bucket.started,count:bucket.count+1});
