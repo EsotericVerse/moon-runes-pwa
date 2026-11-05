@@ -926,14 +926,17 @@ async function handleMcpAuthorityInner(request,env,url,origin,principal){
       return json(await scoped(scopeid).putMcpScope(scopeid,await mcpJsonBody(request,9000)),200,origin);
     }
   }
-  if(parts[0]==='authorize-write'&&parts.length===2&&request.method==='GET'){
+  // Verified OAuth read and write claims remain independently authorized.
+  // The two endpoints preserve root-only managed private-Galaxy access.
+  if(['authorize-read','authorize-write'].includes(parts[0])&&parts.length===2&&request.method==='GET'){
     const scopeid=validScope(parts[1]);
-    if(!isRoot||!await allowed(scopeid,'write'))throw fail('Managed Scope write denied',403);
+    const permission=parts[0]==='authorize-read'?'read':'write';
+    if(!isRoot||!await allowed(scopeid,permission))throw fail('Managed Scope '+permission+' denied',403);
     if(!Object.hasOwn(MANAGED_SCOPE_TABLES,scopeid))throw fail('Managed Scope is not supported',404);
     const email=String(env.LOC_ROOT_MANAGEMENT_EMAIL||'').trim().toLowerCase();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       throw fail('Trusted root email mapping is unavailable',503);
-    return json({provider:'clerk',subject:principal.subject,scopeid,email,authorized:true},200,origin);
+    return json({provider:'clerk',subject:principal.subject,scopeid,email,permission,authorized:true},200,origin);
   }
   if(parts[0]==='checkpoint'&&parts.length===3&&request.method==='GET'){
     const scopeid=validScope(parts[1]);
