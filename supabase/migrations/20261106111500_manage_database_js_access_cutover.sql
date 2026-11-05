@@ -147,7 +147,7 @@ END;
  THEN RAISE EXCEPTION 'LOC Email List is missing'; END IF;
  IF p_operation='read' THEN RETURN old_rows; END IF;
  k:=lower(k);
- IF k !~ '^[^[:space:]@]+@[^[:space:]@]+\\.[^[:space:]@]+$'
+ IF k !~ '^[^[:space:]@]+@[^[:space:]@]+\.[^[:space:]@]+$'
    OR p_operation NOT IN ('add','remove')
  THEN RAISE EXCEPTION 'Invalid email action'; END IF;
  IF p_operation='add' AND k=silver.current_auth_email()
