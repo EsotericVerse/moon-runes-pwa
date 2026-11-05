@@ -904,8 +904,9 @@ async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
   if(usesNumericIsr(current.id)){
     try{
       const snapshot=await readNumericIsr(current.id,'statistics',{startDate,endDate});
-      // Older ISR snapshots have no linked-media total. Do not display a false zero.
-      if(snapshot?.mediaCount!=null&&Number.isFinite(Number(snapshot.mediaCount)))return snapshot;
+      // Media statistics belong to Keyword Class analytics, not media_link counts.
+      // Accept numeric ISR results without requiring the retired mediaCount.
+      if(snapshot&&Array.isArray(snapshot.rows))return snapshot;
     }catch{ /* Optional ISR failure: existing overview RPC. */ }
   }
   try{
@@ -918,7 +919,7 @@ async function selectScopeOverviewRaw(scope,{startDate='',endDate=''}={}){
     selectScopeSourceBreakdownRows(current,{startDate,endDate}),
     selectSourceTaxonomy()
   ]);
-  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases,mediaCount:null};
+  return {earliest,rows,categories:catalog.categories,aliases:catalog.aliases};
 }
 async function selectScopeEarliestRaw(scope){
   const current=scopeOf(scope);
