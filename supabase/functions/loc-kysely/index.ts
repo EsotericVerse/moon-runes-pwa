@@ -130,12 +130,20 @@ async function checkAdminRole(claims:Record<string,unknown>){
 }
 // Database access metadata is loaded once from the deployment JS file.
 // This must never SELECT silver.manage.database (or LOC) on requests.
-function databaseListForControl():Record<string,any>[] {
+function databaseListForControl(_control?:any):Record<string,any>[] {
   return databaseAccessTargets();
 }
 async function liveConfiguredTarget():Promise<Record<string,unknown>> {
   const selected=databaseAccessTargets().find(item=>item.target_id===routing.primaryId);
-  if(!selected)throw new Error('Configured database target is missing from access.js');
+  if(!selected){
+    // Preserve opt-in portable SQL adapters; connections still require the
+    // server-side alias in LOC_DB_CONNECTIONS_JSON, never a public password.
+    if(routing.provider==='custom')return {
+      provider:'custom',engine:routing.engine,
+      connection_alias:routing.connectionAlias,connection_mode:'direct'
+    };
+    throw new Error('Configured database target is missing from access.js');
+  }
   return selected.provider==='supabase'&&selected.connection_alias==='supabase_current'
     ?controlTarget:selectedDatabaseTarget([{...selected,selected:true}]);
 }
