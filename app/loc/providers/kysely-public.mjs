@@ -44,6 +44,8 @@ export async function executeKyselyPublicAction(trx,body,{engine='postgres',name
   const has=name=>engine==='mysql'?mysqlNames.has(name):
     available.has((portable?namespace:'silver')+'.'+name)||
     portable&&available.has('.'+name);
+  const hasRegistry=portable?has('manage'):available.has('api.manage');
+  const registryRelation=portable?table('manage'):'api.manage';
   const scopedGalaxies=[...new Set(metadata
     .filter(row=>row.name.endsWith('_galaxy')&&
       (engine==='mysql'||!portable||!row.schema||row.schema===namespace))
@@ -60,8 +62,8 @@ export async function executeKyselyPublicAction(trx,body,{engine='postgres',name
   // pre-approved public result shape; callers cannot choose relations/SQL.
   if(!portable)await sql`reset role`.execute(trx);
   if(name==='read_scope_page_copy'){
-    if(!has('manage'))return {data:[],count:null};
-    const allowed=await trx.selectFrom(table('manage'))
+    if(!hasRegistry)return {data:[],count:null};
+    const allowed=await trx.selectFrom(registryRelation)
       .select('id').where('id','=',scope)
       .where('manage_role','=','scope').where('active','=',true).executeTakeFirst();
     const record=allowed&&has('loc')
@@ -74,8 +76,8 @@ export async function executeKyselyPublicAction(trx,body,{engine='postgres',name
   if(name==='search_scope_trace_place_names'){
     const term=String(args.p_term||'').trim().slice(0,100);
     const limit=args.p_limit===undefined?8:Math.max(1,Math.min(8,Number(args.p_limit)||8));
-    const registered=has('manage')
-      ?await trx.selectFrom(table('manage')).select('id')
+    const registered=hasRegistry
+      ?await trx.selectFrom(registryRelation).select('id')
         .where('id','=',scope).where('manage_role','=','scope')
         .where('active','=',true).executeTakeFirst()
       :{id:scope};
@@ -123,7 +125,7 @@ export async function executeKyselyPublicAction(trx,body,{engine='postgres',name
   if(!/^[a-z0-9_-]+$/.test(page))page='index';
   // An external LOC installation needs only a Galaxy and Anchor per Scope.
   // Do not require a provider-specific registry or stored procedures.
-  if(portable&&!has('manage')){
+  if(portable&&!hasRegistry){
     const registry=scopedGalaxies.map(id=>({
       scope_id:id,display_name:id,scope_kind:'scope',domain:null,directory:null,
       parent_scope_id:'loc',active:true,sort_order:0
@@ -131,7 +133,7 @@ export async function executeKyselyPublicAction(trx,body,{engine='postgres',name
     return {data:{scope_id:scope,page_name:page,config:null,blocks:[],
       registry,page_copy:[],theme_list:[],themes:[]},count:null};
   }
-  const members=await trx.selectFrom(table('manage'))
+  const members=await trx.selectFrom(registryRelation)
     .select(['id','manage_role','active','sort_order',
       'domain','directory','parent_scope_id'])
     .orderBy('sort_order','asc').orderBy('id','asc').execute();
