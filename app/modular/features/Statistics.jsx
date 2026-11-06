@@ -379,17 +379,17 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
   const publishedCatalog=useMemo(()=>publishedSourceCategoryCatalog(scopeId),[scopeId]);
   const othersConfig=useAsyncResource({
     queryKey:['scope-others-source-summary',scopeId],
-    enabled:sourceChart&&Boolean(scopeId)&&!publishedCatalog,
+    enabled:sourceChart&&rankingType==='source'&&Boolean(scopeId)&&!publishedCatalog,
     queryFn:async()=>readPersonalSourceClasses(scopeId),
     revalidateOnFocus:false,revalidateOnReconnect:false
   });
   const sourceCatalog=useMemo(()=>{
-    const ready=Boolean(publishedCatalog||othersConfig.isSuccess);
+    const ready=rankingType!=='source'||Boolean(publishedCatalog||othersConfig.isSuccess);
     const dynamic=othersConfig.data;
     return {
       isPending:(overview.isPending||!ready)&&sourceChart,
       isSuccess:overview.isSuccess&&ready,
-      error:publishedCatalog?null:othersConfig.error,
+      error:rankingType==='source'&&!publishedCatalog?othersConfig.error:null,
       data:overview.data?(publishedCatalog||{
         categories:[...(overview.data?.categories||[]),
           ...(dynamic?.groups||[]).map(group=>({
@@ -403,7 +403,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       dataUpdatedAt:Math.max(overview.dataUpdatedAt||0,publishedCatalog?0:othersConfig.dataUpdatedAt||0)
     };
   },[publishedCatalog,overview.isPending,overview.isSuccess,overview.data,overview.dataUpdatedAt,
-    othersConfig.isSuccess,othersConfig.data,othersConfig.error,othersConfig.dataUpdatedAt,sourceChart]);
+    othersConfig.isSuccess,othersConfig.data,othersConfig.error,othersConfig.dataUpdatedAt,sourceChart,rankingType]);
   const selectedRawNames=null;
   // Numeric counts come from ISR. Category bucketing is tiny synchronous
   // presentation work, not an independent remote resource: avoid a second SWR
@@ -614,17 +614,14 @@ export default function Statistics(){
   const {scopeId,scope}=useScopeRuntime();
   const searchParams=useSearchParams();
   const navigation=useMemo(()=>readFeatureNavigation(searchParams),[searchParams]);
-  const {settings:userSettings,active:userActive}=useLocFeatureSettings('statics');
-  const activeNavigation=useMemo(()=>
-    userActive&&!navigation.rankingType
-      ?{...navigation,rankingType:userSettings.display}:navigation,
-    [navigation,userActive,userSettings.display]);
+  // A direct visit always starts at the bounded article-density homepage.
+  // Saved display preferences must not launch Keyword analysis on first paint.
   return <FeaturePage featureId="statics">
     <section className="loc-card scope-feature-card">
       <StatisticsPanel
         scopeId={scopeId}
         aggregateScopes={Boolean(scope?.aggregateChildren)}
-        navigation={activeNavigation}
+        navigation={navigation}
         types={STAT_TYPES}
         canManageSources={false}
       />
