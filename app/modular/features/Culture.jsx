@@ -27,6 +27,7 @@ import {featureDataErrorMessage} from '../feature-data-state';
 const CultureTimeline=dynamic(()=>import('../modules/culture-timeline/CultureTimeline'),{loading:()=>null});
 import {CultureTimelineModel} from '../modules/culture-timeline/culture-timeline-model';
 import {useRiverDensityAnalysis} from '../modules/culture-timeline/use-river-density-analysis';
+import {statisticsTaipeiYearWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 import {structurePeriodPreference} from '../../loc/culture-period-navigation.mjs';
 import {buildEraRiver} from '../../loc/culture-time-trace-river.mjs';
 import {allocateTimeUid,timePeriodContainsDate,timePeriodSortDate} from '../../loc/time-anchor-ranges.mjs';
@@ -56,14 +57,8 @@ const LrunesDailyCulturePanel=dynamic(()=>import('../../lrunes/DailyRuneAnalytic
 const LocItemConfluence=dynamic(()=>import('./LocItemConfluence'),{loading:()=>null});
 
 function editorRiverYearWindow(){
-  // Same Taipei-calendar one-year default as CulturePublicReader.
-  const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Taipei',
-    year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
-  const part=key=>parts.find(item=>item.type===key)?.value||'';
-  const end=part('year')+'-'+part('month')+'-'+part('day');
-  const date=new Date(end+'T00:00:00Z');
-  date.setUTCFullYear(date.getUTCFullYear()-1);
-  return {start:date.toISOString().slice(0,10),end};
+  const {startDate,endDate}=statisticsTaipeiYearWindow();
+  return {start:startDate,end:endDate};
 }
 function isInteractiveTarget(target){
   return Boolean(target?.closest?.('a,button,input,select,textarea,summary,[role="button"],[contenteditable="true"]'));
