@@ -1169,7 +1169,12 @@ export default {
       if(request.method==='GET'&&url.pathname==='/v1/identity')return json(principal,200,origin);
       const roots=String(principal.provider==='clerk'?env.LOC_RECOVERY_ROOT_CLERK_IDS:env.LOC_RECOVERY_ROOT_SECONDARY_SUBJECTS)
         .split(/[\s,;]+/).filter(Boolean);
-      if(!roots.includes(principal.subject))throw fail('Recovery administrator required',403);
+      const githubRoot=principal.provider==='github'&&
+        Boolean(env.LOC_ROOT_MANAGEMENT_EMAIL)&&
+        String(principal.email||'').toLowerCase()===
+          String(env.LOC_ROOT_MANAGEMENT_EMAIL).trim().toLowerCase();
+      if(!githubRoot&&!roots.includes(principal.subject))
+        throw fail('Recovery administrator required',403);
       const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
       if(request.method==='GET'&&url.pathname==='/v1/me')return json(principal,200,origin);
       if(request.method==='GET'&&url.pathname==='/v1/state')return json(await stub.listState(),200,origin);
