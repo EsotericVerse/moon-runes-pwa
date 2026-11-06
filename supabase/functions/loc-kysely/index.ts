@@ -79,6 +79,26 @@ async function verifiedClerkSessionEmail(token:string,payload:Record<string,unkn
     throw error;
   }
 }
+async function verifyGitHubLocSession(token:string):Promise<Record<string,unknown>>{
+  // The opaque LOC bearer is not a GitHub token. The trusted Authority checks
+  // the server-side revocation record before SQL receives any identity.
+  if(!/^loc_[A-Za-z0-9_-]{43}$/.test(token))throw Error('Invalid LOC bearer');
+  const response=await fetch('https://auth.lo3rwang.cc/v1/github/identity',{
+    method:'GET',headers:{authorization:'Bearer '+token,origin:clerkOrigin,
+      accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(6000)
+  });
+  if(!response.ok)throw Error('LOC GitHub Session expired or unavailable');
+  const identity=await response.json();
+  const email=String(identity?.email||'').trim().toLowerCase();
+  const subject=String(identity?.subject||'');
+  if(identity?.provider!=='github'||!/^github:[1-9][0-9]*$/.test(subject)||
+     !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||
+     !Number.isFinite(identity.expires_at)||identity.expires_at<=Date.now())
+    throw Error('LOC Authority GitHub identity invalid');
+  return {role:'authenticated',provider:'github',sub:subject,email,
+    iss:'https://auth.lo3rwang.cc',sid:identity.session,
+    exp:Math.floor(identity.expires_at/1000)};
+}
 async function verifyClerkForSql(token:string){
   const {payload}=await jwtVerify(token,clerkKeys,{
     issuer:clerkIssuer,algorithms:["RS256"]
@@ -329,6 +349,12 @@ Deno.serve(async (request) => {
     const match = authorization.match(/^Bearer\s+(.+)$/i);
     if (!match) return json({ error: { message: "Invalid authorization header" } }, 401);
     const token = match[1];
+    if(token.startsWith('loc_')){
+      if(String(body.kind||'').startsWith('mcp-'))
+        return json({error:{message:'MCP requires a separately authorized token'}},403);
+      try{claims=await verifyGitHubLocSession(token);}
+      catch{return json({error:{message:'LOC GitHub Session invalid or expired'}},401);}
+    }else{
     let untrusted:Record<string,unknown>;
     try{untrusted=tokenPayload(token);}
     catch{return json({error:{message:"Invalid session token"}},401);}
@@ -362,6 +388,7 @@ Deno.serve(async (request) => {
       // existing LOC Authority. Database-provider OAuth never authenticates
       // a LOC management request, regardless of selected SQL Dialect.
       return json({error:{message:"LOC requires a verified Clerk session"}},401);
+    }
     }
     role = "authenticated";
   }
