@@ -113,7 +113,7 @@ test('portable owner can read keyword classes and class/group/item catalog',asyn
   assert.deepEqual(hidden.data,{});
 });
 
-test('portable LOC earliest uses all dates even when displayed daily rows are date-filtered',async()=>{
+test('portable LOC only executes bounded daily counts without all-time earliest scan',async()=>{
   const eb={fn:{countAll:()=>({as:key=>({key})}),min:()=>({as:key=>({key})})}};
   const calls=[];
   const db={
@@ -131,10 +131,10 @@ test('portable LOC earliest uses all dates even when displayed daily rows are da
   const result=await executor(db,{args:{p_scope_id:'loc',p_view:'loc',
     p_start:'2026-01-01',p_end:'2026-12-31'}},
     {engine:'mssql',namespace:'dbo',role:'anon'});
-  assert.equal(result.data.earliest,'2018-04-01');
-  assert.equal(calls.length,2);
+  assert.equal(result.data.earliest,'2026-01-01');
+  assert.equal(calls.length,1);
   assert.ok(calls[0].some(x=>x[0]==='date'&&x[1]==='>='));
-  assert.ok(!calls[1].some(x=>x[0]==='date'&&['>=','<='].includes(x[1])));
+  assert.ok(calls[0].some(x=>x[0]==='date'&&x[1]==='<='));
 });
 
 test('portable daily includeUndated retains NULL date groups using Kysely',async()=>{
