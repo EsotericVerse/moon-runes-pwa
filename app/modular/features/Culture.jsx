@@ -703,12 +703,12 @@ export default function Culture(){
     }
   };
   const currentStructurePeriod=primaryPeriods.find(item=>periodKey(item)===activeStructureKey)||null;
-  const currentStructureStart=activeStructureKey==='all'?''
+  const currentStructureStart=activeStructureKey==='all'?allTimePeriod.start_date
     :String(currentStructurePeriod?.start_date||'').slice(0,10);
   // A trace stops at its final real anchor; no virtual today endpoint.
   const lastAnchorDate=String(structurePreference.lastAnchor?.start_date||'').slice(0,10);
   const savedTraceEnd=String(currentStructurePeriod?.end_date||'').slice(0,10);
-  const currentStructureEnd=activeStructureKey==='all'?''
+  const currentStructureEnd=activeStructureKey==='all'?allTimePeriod.end_date
     :structureWindowKey===''&&lastAnchorDate>savedTraceEnd?lastAnchorDate:savedTraceEnd;
   // Keep the first river grouped by era UID. A selected trace changes
   // only the camera viewport, never the saved anchor/event/trace graph.
@@ -1417,7 +1417,7 @@ export default function Culture(){
                          setStructureWindowKey(event.target.value);
                          setSelectedPeriodKey(event.target.value);
                        }}>
-                      <option value='all'>{l.allTimeTraces}</option>
+                      <option value='all'>最近一年（預設）</option>
                       {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                         </select>
                   </label>
