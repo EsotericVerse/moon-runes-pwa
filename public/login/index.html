@@ -42,7 +42,7 @@
 </div>
 <script type="module">
 const byId=id=>document.getElementById(id);
-let clerk=null,controlUrl='',checkGeneration=0,verifiedForEditor=false;
+let clerk=null,controlUrl='',checkGeneration=0,verifiedForEditor=false,githubMode=false;
 const LOGIN_RETURN_KEY='loc-management-login-return-v1';
 function isProtectedReturn(path){
   return /\/(?:manage|admin)(?:\/|$)/.test(new URL(path,location.origin).pathname);
@@ -119,20 +119,63 @@ byId('return').onclick=()=>{
   location.assign(path);
 };
 byId('signout').onclick=async()=>{
-  await clerk?.signOut();
+  if(githubMode){
+    await fetch(controlUrl+'/v1/github/logout',{
+      method:'POST',credentials:'include',cache:'no-store'
+    });
+  }else await clerk?.signOut();
   location.reload();
 };
+async function startGitHub(){
+  const status=await fetch(controlUrl+'/v1/github/status',{
+    credentials:'include',cache:'no-store'
+  }).catch(()=>null);
+  if(!status?.ok||!(await status.json())?.configured)return false;
+  githubMode=true;
+  byId('login-root').innerHTML='<div class="actions"><button type="button" id="github-login">使用 GitHub 登入</button></div>';
+  byId('github-login').onclick=async()=>{
+    try{
+      byId('status').textContent='前往 GitHub 授權…';
+      const response=await fetch(controlUrl+'/v1/github/start',{
+        credentials:'include',cache:'no-store'
+      });
+      if(!response.ok)throw Error('GitHub OAuth 尚未就緒');
+      const {authorization_url:url}=await response.json();
+      const target=new URL(url);
+      if(target.origin!=='https://github.com'||target.pathname!=='/login/oauth/authorize')
+        throw Error('GitHub 授權網址不正確');
+      sessionStorage.setItem('loc-github-return',validReturnPath());
+      location.assign(target.href);
+    }catch(error){byId('status').textContent=String(error.message||error);}
+  };
+  const session=await fetch(controlUrl+'/v1/github/session',{
+    credentials:'include',cache:'no-store'
+  }).catch(()=>null);
+  if(session?.ok){
+    const identity=await session.json();
+    verifiedForEditor=identity.provider==='github'&&Boolean(identity.email);
+    byId('signed-in').hidden=false;
+    byId('login-root').hidden=true;
+    byId('user').textContent=identity.email||'';
+    byId('return').disabled=!verifiedForEditor;
+    byId('status').textContent=verifiedForEditor
+      ?'GitHub 身分已核驗，返回後仍會確認 LOC 管理權限。'
+      :'GitHub 帳號缺少已驗證的 Email。';
+  }else byId('status').textContent='使用 GitHub 登入 LOC，無須 Clerk。';
+  return true;
+}
 async function start(){
   const response=await fetch('/recovery/config.json',{cache:'no-store'});
   if(!response.ok)throw new Error('無法讀取 LOC 登入設定');
   const config=await response.json();
-  if(!config.publishableKey||!config.frontendApiUrl)throw new Error('LOC Clerk 尚未設定');
   if(config.controlUrl){
     const target=new URL(config.controlUrl);
     if(target.protocol!=='https:'||target.username||target.password||target.search||target.hash||
       target.pathname!=='/')throw new Error('LOC Authority 連線設定無效');
     controlUrl=target.origin;
   }
+  if(controlUrl&&await startGitHub())return;
+  if(!config.publishableKey||!config.frontendApiUrl)throw new Error('LOC Clerk 尚未設定');
   const domain=new URL(config.frontendApiUrl);
   if(domain.protocol!=='https:'||domain.pathname!=='/'||domain.search||domain.hash)
     throw new Error('登入服務網域無效');
