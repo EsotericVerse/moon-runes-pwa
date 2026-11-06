@@ -5,7 +5,8 @@ import featureZh from '../../i18n/feature-sections/itemConfluence.zh_tw.js';
 
 import {useEffect,useMemo,useState} from 'react';
 import {useAsyncResource} from '../../loc/use-async-resource';
-import {selectManagedScopes} from '../../loc/scope-data';
+import {defaultScopeData,selectScopeGroupMemberIds} from '../../loc/scope-data';
+import {statisticsTaipeiYearWindow} from '../modules/statistics/statistics-time-zoom.mjs';
 import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from '../../lrunes/daily-moon-river.mjs';
@@ -71,14 +72,19 @@ function LanePicker({label,lane,scopes,onChange}){
 export default function LocItemConfluence(){
   const l=useFeatureCopy('itemConfluence',featureZh);
   const {locale}=useUiLocale();
-  const today=useMemo(nowInTaipei,[]);
-  const [startDate,setStartDate]=useState(()=>itemConfluenceShiftMonth(nowInTaipei(),-3));
-  const [endDate,setEndDate]=useState(today);
+  const homeRange=useMemo(()=>statisticsTaipeiYearWindow(),[]);
+  const [startDate,setStartDate]=useState(homeRange.startDate);
+  const [endDate,setEndDate]=useState(homeRange.endDate);
   const [laneA,setLaneA]=useState(()=>defaultLane('','galaxy:all'));
   const [laneB,setLaneB]=useState(()=>defaultLane('','galaxy:all'));
   const [selectedDay,setSelectedDay]=useState('');
   const [page,setPage]=useState(1);
-  const scopesQuery=useAsyncResource(['managed-scopes'],selectManagedScopes);
+  // Scope IDs are already published. No Manage registry lookup on this LOC view.
+  const scopesQuery=useAsyncResource(['loc-culture-item-members'],
+    async()=>{
+      const ids=await selectScopeGroupMemberIds('loc','culture');
+      return [...ids].map(defaultScopeData).filter(Boolean);
+    });
   const scopes=scopesQuery.data||EMPTY_SCOPES;
   const range=useMemo(()=>validateItemConfluenceRange(startDate,endDate),[startDate,endDate]);
   const selectionA=useMemo(()=>validateItemLane(laneA,scopes),[laneA,scopes]);
