@@ -1,4 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
+import {beginGitHubOAuth,completeGitHubOAuth,findGitHubSession,revokeGitHubSession,
+  readOAuthCookie,githubCookies,sessionCookie,stateCookie} from './github-oauth.mjs';
 import {validateKeywordCategoryEntry,hashKeywordCategory,assertPublicKeywordClass} from './keyword-categories.mjs';
 import {AUTH_PROVIDER_TYPES,validateAuthProviderSettings,publicAuthProviderSettings}
   from '../../app/loc/auth/auth-provider-settings.mjs';
@@ -478,6 +480,21 @@ export class LocAuthorityState extends DurableObject {
     // This value is intentionally NOT writable via these configuration endpoints.
     return {active:'clerk',providers};
   }
+  async githubProfile(){
+    const saved=await this.ctx.storage.get('auth-provider:github');
+    return saved?decryptProfile(saved.encrypted,this.env.LOC_CONTROL_ENCRYPTION_KEY):null;
+  }
+  async githubConfigured(){return Boolean(await this.ctx.storage.get('auth-provider:github'));}
+  async githubBegin(){
+    return beginGitHubOAuth(this.ctx.storage,await this.githubProfile());
+  }
+  async githubComplete(body,storedState){
+    return completeGitHubOAuth(this.ctx.storage,await this.githubProfile(),{
+      code:body?.code,state:body?.state,cookieState:storedState
+    });
+  }
+  async githubSession(token){return findGitHubSession(this.ctx.storage,token);}
+  async githubRevoke(token){return revokeGitHubSession(this.ctx.storage,token);}
   async putAuthProvider(type,values){
     const previous=await this.ctx.storage.get('auth-provider:'+type);
     const former=previous
@@ -896,6 +913,53 @@ export class LocAuthorityState extends DurableObject {
   }
 }
 
+async function handleGitHubSession(request,env,url,origin){
+  const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
+  const credentials=reply=>{reply.headers.set('access-control-allow-credentials','true');return reply;};
+  const cookie=request.headers.get('cookie')||'';
+  const storedToken=readOAuthCookie(cookie,githubCookies.session);
+  if(request.method==='GET'&&url.pathname==='/v1/github/status')
+    return credentials(json({configured:await stub.githubConfigured()},200,origin));
+  if(request.method==='GET'&&url.pathname==='/v1/github/start'){
+    if(!origin)throw fail('Origin required for OAuth login',403);
+    const pending=await stub.githubBegin();
+    const reply=credentials(json({authorization_url:pending.authorization_url},200,origin));
+    reply.headers.append('set-cookie',stateCookie(pending.state));
+    return reply;
+  }
+  if(request.method==='POST'&&url.pathname==='/v1/github/callback'){
+    if(!origin)throw fail('Origin required for OAuth callback',403);
+    const body=await mcpJsonBody(request,2500);
+    const verified=await stub.githubComplete(body,
+      readOAuthCookie(cookie,githubCookies.state));
+    const reply=credentials(json({provider:'github',subject:verified.identity.subject,
+      email:verified.identity.email,expires_at:verified.identity.expires_at},200,origin));
+    reply.headers.append('set-cookie',sessionCookie(verified.token));
+    reply.headers.append('set-cookie',stateCookie('',0));
+    return reply;
+  }
+  if(request.method==='GET'&&url.pathname==='/v1/github/session'){
+    const identity=await stub.githubSession(storedToken);
+    if(!identity)throw fail('GitHub Session expired',401);
+    return credentials(json({...identity,access_token:storedToken},200,origin));
+  }
+  if(request.method==='GET'&&url.pathname==='/v1/github/identity'){
+    const bearer=/^Bearer (loc_[A-Za-z0-9_-]{43})$/.exec(
+      request.headers.get('authorization')||'');
+    if(!bearer)throw fail('LOC bearer required',401);
+    const identity=await stub.githubSession(bearer[1]);
+    if(!identity)throw fail('LOC bearer expired',401);
+    return credentials(json(identity,200,origin));
+  }
+  if(request.method==='POST'&&url.pathname==='/v1/github/logout'){
+    if(!origin)throw fail('Origin required for sign-out',403);
+    await stub.githubRevoke(storedToken);
+    const reply=credentials(json({signed_out:true},200,origin));
+    reply.headers.append('set-cookie',sessionCookie('',0));
+    return reply;
+  }
+  throw fail('Not found',404);
+}
 async function handleMcpAuthority(request,env,url,origin){
   // Authentication precedes all quotas and any downstream SQL access.
   let principal;
@@ -1082,14 +1146,23 @@ export default {
         return new Response(null,{status:204,headers:{
           'access-control-allow-origin':origin,'access-control-allow-methods':'GET,PUT,POST,OPTIONS',
           'access-control-allow-headers':'authorization,content-type',
+          'access-control-allow-credentials':'true',
           'access-control-max-age':'600','vary':'origin'
         }});
       }
       if(!origin&&request.headers.get('sec-fetch-site')==='cross-site')throw fail('Cross-origin request rejected',403);
       if(!['GET','PUT','POST'].includes(request.method))throw fail('Method not allowed',405);
       const url=new URL(request.url);
+      if(url.pathname.startsWith('/v1/github/'))
+        return handleGitHubSession(request,env,url,origin);
       if(url.pathname.startsWith('/v1/mcp/'))return handleMcpAuthority(request,env,url,origin);
-      const principal=await verifyIdentityToken(request,env);
+      const auth=request.headers.get('authorization')||'';
+      let principal;
+      if(/^Bearer loc_[A-Za-z0-9_-]{43}$/.test(auth)){
+        const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
+        principal=await stub.githubSession(auth.slice(7));
+        if(!principal)throw fail('GitHub session expired',401);
+      }else principal=await verifyIdentityToken(request,env);
       if(!url.pathname.startsWith('/v1/'))throw fail('Not found',404);
       // Identity endpoint is only a verified principal lookup. It grants no
       // data access or management capabilities; the gateway must call mayAccess.
