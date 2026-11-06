@@ -252,7 +252,7 @@ test('Culture and Statistics share only published flat classification lists',()=
   assert.match(culture,/const publishedTaxonomy=useMemo\(\(\)=>publishedSourceTaxonomy\(scopeId\),\[scopeId\]\)/);
   assert.match(culture,/enabled:!publishedTaxonomy/);
   assert.match(stats,/publishedSourceCategoryCatalog\(scopeId\)/);
-  assert.match(stats,/enabled:sourceChart&&Boolean\(scopeId\)&&!publishedCatalog/);
+  assert.match(stats,/enabled:sourceChart&&rankingType==='source'&&Boolean\(scopeId\)&&!publishedCatalog/);
   assert.match(stats,/if\(isLrunesDaily\|\|mediaDimension\|\|!sourceCatalog.isSuccess\)return null/);
   assert.match(sourceNames,/sourceTaxonomyFromArrays/);
   assert.doesNotMatch(catalog,/statistics_source_categories|statistics_scope_others_groups/);
@@ -375,4 +375,16 @@ test('public Trace report fits the map and keeps its three mode buttons in one r
   const styles=read('app/styles/features.css');
   assert.ok(styles.includes('.loc-trace-float-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))'));
   assert.ok(styles.includes('top:clamp(9rem,28%,12rem);max-height:none;min-height:0;'));
+});
+
+test('Trace homepage loads only Anchor point/path/trace and never eager Galaxy works',()=>{
+  const trace=read('app/modular/features/Trace.jsx');
+  const data=read('app/modular/features/trace/trace-data.js');
+  const result=read('app/modular/features/trace/TracePlaceResults.jsx');
+  assert.match(data,/selectedTypes=types\|\| \(filter\?/);
+  assert.match(data,/\['point','path','trace'\]/);
+  assert.match(trace,/setReportTab\(null\)/);
+  assert.match(trace,/\{reportTab\?<TracePlaceResults/);
+  assert.match(result,/enabled:enabled&&tab==='articles'&&!selectedMediaType/);
+  assert.match(result,/traceArticleIdFilters\(selectedIds,/);
 });
