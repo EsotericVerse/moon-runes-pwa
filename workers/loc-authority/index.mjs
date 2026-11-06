@@ -260,6 +260,12 @@ function validateScopeTarget(input,scopeid){
 async function verifyMcpOAuth(request,env){
   const match=/^Bearer ([A-Za-z0-9_.-]{40,8192})$/.exec(request.headers.get('authorization')||'');
   if(!match)throw fail('MCP OAuth token required',401);
+  if(match[1].startsWith('locm_')){
+    const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
+    const identity=await stub.mcpGitHubSession(match[1]);
+    if(!identity)throw fail('LOC MCP token expired',401);
+    return identity;
+  }
   const bits=match[1].split('.');
   if(bits.length!==3)throw fail('Invalid MCP token',401);
   let header,claims;
@@ -311,7 +317,7 @@ function escapeScopeValue(value){return 'eq.'+value;}
 
 async function managedMcpInsert(scopeid,row,hasCheckpointUid,oauthToken){
   if(!Object.hasOwn(MANAGED_SCOPE_TABLES,scopeid))throw fail('Scope database is not configured',409);
-  if(typeof oauthToken!=='string'||!oauthToken.startsWith('eyJ'))throw fail('MCP OAuth authorization required',401);
+  if(typeof oauthToken!=='string'||!(/^(?:eyJ|locm_)/.test(oauthToken)))throw fail('MCP OAuth authorization required',401);
   const response=await fetch(MANAGED_SUPABASE_EDGE,{
     method:'POST',headers:{apikey:MANAGED_PUBLISHABLE_KEY,
       authorization:'Bearer '+oauthToken,'content-type':'application/json'},
@@ -365,7 +371,7 @@ async function portableMcpAppend(profile,uid,content,batchId,updatedAt){
 
 async function managedMcpUpdatePr(scopeid,uid,prNumber,title,content,updatedAt,oauthToken){
   if(!Object.hasOwn(MANAGED_SCOPE_TABLES,scopeid))throw fail('Scope database is not configured',409);
-  if(typeof oauthToken!=='string'||!oauthToken.startsWith('eyJ'))throw fail('MCP OAuth authorization required',401);
+  if(typeof oauthToken!=='string'||!(/^(?:eyJ|locm_)/.test(oauthToken)))throw fail('MCP OAuth authorization required',401);
   const response=await fetch(MANAGED_SUPABASE_EDGE,{
     method:'POST',headers:{apikey:MANAGED_PUBLISHABLE_KEY,
       authorization:'Bearer '+oauthToken,'content-type':'application/json'},
@@ -840,7 +846,7 @@ export class LocAuthorityState extends DurableObject {
   // No HTTP handler exposes the credential or returns decrypted profiles to a browser.
   // Shared, durable quotas for each verified Clerk MCP subject.
   async mcpQuotaAcquire(kind,subject){
-    if(!/^clerk:user_[A-Za-z0-9]+$/.test(String(subject||'')))throw fail('Invalid MCP principal',401);
+    if(!/^(?:clerk:user_[A-Za-z0-9]+|github:github:[1-9][0-9]*)$/.test(String(subject||'')))throw fail('Invalid MCP principal',401);
     if(!['read','write','search'].includes(kind))throw fail('Invalid MCP quota kind',400);
     const now=Date.now(),period=60_000,leaseTtl=25_000;
     const maximum=16;
@@ -901,7 +907,7 @@ export class LocAuthorityState extends DurableObject {
     return outcome;
   }
   async mcpQuotaRelease(lease,subject){
-    if(!/^clerk:user_[A-Za-z0-9]+$/.test(String(subject||'')))throw fail('Invalid MCP principal',401);
+    if(!/^(?:clerk:user_[A-Za-z0-9]+|github:github:[1-9][0-9]*)$/.test(String(subject||'')))throw fail('Invalid MCP principal',401);
     if(typeof lease!=='string'||!/^[a-f0-9-]{36}$/i.test(lease))
       throw fail('Invalid MCP lease',400);
     await this.ctx.storage.transaction(async tx=>{
@@ -1013,10 +1019,10 @@ async function handleMcpAuthority(request,env,url,origin){
   const quota=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName(
     'mcp-quota-global-v1'));
   if(url.pathname==='/v1/mcp/quota'&&request.method==='POST'){
-    if(principal.provider!=='clerk')throw fail('MCP OAuth required',401);
+    if(!['clerk','github'].includes(principal.provider))throw fail('MCP OAuth required',401);
     const args=await mcpJsonBody(request,400);
-    if(args?.action==='acquire')return json(await quota.mcpQuotaAcquire(args.kind,'clerk:'+principal.subject),200,origin);
-    if(args?.action==='release')return json(await quota.mcpQuotaRelease(args.lease,'clerk:'+principal.subject),200,origin);
+    if(args?.action==='acquire')return json(await quota.mcpQuotaAcquire(args.kind,principal.provider+':'+principal.subject),200,origin);
+    if(args?.action==='release')return json(await quota.mcpQuotaRelease(args.lease,principal.provider+':'+principal.subject),200,origin);
     throw fail('Invalid MCP quota operation',400);
   }
   // No DB work and no quota spend on retired search endpoints.
@@ -1024,13 +1030,16 @@ async function handleMcpAuthority(request,env,url,origin){
     throw fail('MCP search is disabled',403);
   const kind=/^\/v1\/mcp\/galaxy-link\/search\//.test(url.pathname)?'search':
     request.method==='GET'?'read':'write';
-  const ticket=await quota.mcpQuotaAcquire(kind,'clerk:'+principal.subject);
+  const ticket=await quota.mcpQuotaAcquire(kind,principal.provider+':'+principal.subject);
   try{return await handleMcpAuthorityInner(request,env,url,origin,principal);}
-  finally{await quota.mcpQuotaRelease(ticket.lease,'clerk:'+principal.subject);}
+  finally{await quota.mcpQuotaRelease(ticket.lease,principal.provider+':'+principal.subject);}
 }
 async function handleMcpAuthorityInner(request,env,url,origin,principal){
   const roots=String(env.LOC_RECOVERY_ROOT_CLERK_IDS||'').split(/[\s,;]+/).filter(Boolean);
-  const isRoot=roots.includes(principal.subject);
+  const isRoot=roots.includes(principal.subject)||(
+    principal.provider==='github'&&Boolean(env.LOC_ROOT_MANAGEMENT_EMAIL)&&
+    String(principal.email||'').toLowerCase()===
+      String(env.LOC_ROOT_MANAGEMENT_EMAIL).trim().toLowerCase());
   const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
   const scoped=scope=>env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('mcp-scope:'+scope));
   const allowed=async(scope,action)=>isRoot||await stub.mayAccess({...principal,scope,action});
@@ -1156,7 +1165,7 @@ async function handleMcpAuthorityInner(request,env,url,origin,principal){
     const scopeid=validScope(input?.scope);
     if(scopeid!==groupid&&!(await stub.mcpGroupMembers(groupid)).includes(scopeid))
       throw fail('Requested Scope is not a Group member',403);
-    return json(await stub.putGrant({provider:'clerk',subject:input?.subject,
+    return json(await stub.putGrant({provider:input?.provider||'clerk',subject:input?.subject,
       scope:scopeid,actions:input?.actions,expires_at:input?.expires_at}),200,origin);
   }
   if(parts[0]==='group'&&parts.length===4&&parts[2]==='scope'&&request.method==='PUT'){
@@ -1171,8 +1180,12 @@ async function handleMcpAuthorityInner(request,env,url,origin,principal){
     const input=await mcpJsonBody(request,1000),scopeid=validScope(input?.scope);
     if(scopeid!==groupid&&!(await stub.mcpGroupMembers(groupid)).includes(scopeid))
       throw fail('Scope is not a Group member',403);
-    if(!/^user_[A-Za-z0-9]+$/.test(String(input?.subject||'')))throw fail('Invalid Clerk subject',400);
-    return json(await stub.revokeGrant('clerk:'+input.subject+':'+scopeid),200,origin);
+    const provider=input?.provider||'clerk';
+    if(!['clerk','github'].includes(provider)||!(
+      provider==='clerk'?/^user_[A-Za-z0-9]+$/.test(String(input?.subject||'')):
+      /^github:[1-9][0-9]*$/.test(String(input?.subject||''))))
+      throw fail('Invalid OAuth subject',400);
+    return json(await stub.revokeGrant(provider+':'+input.subject+':'+scopeid),200,origin);
   }
   throw fail('MCP operation not found',404);
 }
