@@ -3,6 +3,7 @@
 
 
 import {CultureTimelineModel} from '../modular/modules/culture-timeline/culture-timeline-model';
+import {statisticsTaipeiYearWindow} from '../modular/modules/statistics/statistics-time-zoom.mjs';
 import {workDisplayText} from '../modular/work-display-model';
 import {selectScopeDailyCounts} from './galaxy-query';
 import {DB_QUERY_BATCH_SIZE,selectAllRows,selectCount,selectRows} from './db-query.mjs';
@@ -293,11 +294,7 @@ export async function selectScopeCultureData(scopeId){
     const members=await selectScopeGroupMemberIds('loc','culture');
     const scopes=[...members].filter(scope=>scope!=='loc')
       .map(defaultScopeData).filter(Boolean);
-    const now=new Date();
-    const endDate=now.toISOString().slice(0,10);
-    const start=new Date(endDate+'T00:00:00Z');
-    start.setUTCFullYear(start.getUTCFullYear()-1);
-    const startDate=start.toISOString().slice(0,10);
+    const {startDate,endDate}=statisticsTaipeiYearWindow();
     const scopeTimeRanges=scopes.map((scope,index)=>({
       id:'loc-year:'+scope.id,entry_id:'loc-year:'+scope.id,
       entry_type:'scope_time_range',scope_id:scope.id,
