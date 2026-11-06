@@ -263,7 +263,7 @@ export default function Culture(){
   const [selectedKeywordClassUid,setSelectedKeywordClassUid]=useState('');
   const [keywordDrillSource,setKeywordDrillSource]=useState('');
   const [keywordDrillGroup,setKeywordDrillGroup]=useState('');
-  const [keywordPeriodKey,setKeywordPeriodKey]=useState('current');
+  const [keywordPeriodKey,setKeywordPeriodKey]=useState('year');
   const [keywordCustomStart,setKeywordCustomStart]=useState('');
   const [keywordCustomEnd,setKeywordCustomEnd]=useState('');
   const [selectedVirtualAnchorDates,setSelectedVirtualAnchorDates]=useState([]);
@@ -300,7 +300,7 @@ export default function Culture(){
     setStyleFilter('none');
     setLocDensityOpen(false);
     setKeywordOptionsScope('');
-    setKeywordPeriodKey('latest');
+    setKeywordPeriodKey('year');
     setKeywordCustomStart('');
     setKeywordCustomEnd('');
     setOpenCultureRoots([]);
@@ -345,25 +345,21 @@ export default function Culture(){
   // Articles may exist even when no formal Period has been created. Use an
   // ordinary bounded date window; never treat an empty Time table as invalid.
   const allTimePeriod=useMemo(()=>{
-    if(primaryPeriods.length)return periodRange(primaryPeriods,classificationScope,UI_COPY.culture.allTime);
-    const endDate=new Date().toISOString().slice(0,10);
-    const yearStart=endDate.slice(0,4)+'-01-01';
+    const {start,end}=editorRiverYearWindow();
     return {
-      period:'all',title:'未設定時代（本年度）',display_label:'未設定時代（本年度）',
-      start_date:yearStart,end_date:endDate,scope_id:classificationScope
+      period:'year',title:'最近一年',display_label:'最近一年',
+      start_date:start,end_date:end,scope_id:classificationScope
     };
-  },[primaryPeriods,classificationScope,UI_COPY.culture.allTime]);
+  },[classificationScope]);
   useEffect(()=>{
     if(isAggregateScope||!query.data)return;
-    const preferred=structurePreference.preferredKey;
     const scopeChanged=periodSelectionScopeRef.current!==scopeId;
     periodSelectionScopeRef.current=scopeId;
-    setSelectedPeriodKey(current=>scopeChanged?preferred:
-      (current==='all'||primaryPeriods.some(period=>periodKey(period)===current))?current:preferred);
+    setSelectedPeriodKey(current=>scopeChanged?'':
+      primaryPeriods.some(period=>periodKey(period)===current)?current:'');
   },[scopeId,isAggregateScope,query.data,structurePreference,primaryPeriods]);
-  const selectedWorkPeriod=selectedPeriodKey==='all'
-    ?allTimePeriod
-    :(primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)||closestPeriod||allTimePeriod);
+  const selectedWorkPeriod=primaryPeriods.find(item=>periodKey(item)===selectedPeriodKey)
+    ||allTimePeriod;
   // Use the nearest saved trace until the selected period is settled.
   const selectedWindowStart=String(selectedWorkPeriod?.start_date||'');
   const selectedWindowEnd=String(selectedWorkPeriod?.end_date||new Date().toISOString().slice(0,10));
@@ -371,10 +367,9 @@ export default function Culture(){
   // classification river, keyword-density river, suggestions, and work list.
   // The upper Time structure river keeps its own period navigation.
   // Events are part of the selected Period window, never a selector mode.
-  const keywordPeriod=keywordPeriodKey==='all'?allTimePeriod
-    :keywordPeriodKey==='latest'?(closestPeriod||selectedWorkPeriod||allTimePeriod)
+  const keywordPeriod=keywordPeriodKey==='year'||keywordPeriodKey==='all'?allTimePeriod
     :keywordPeriodKey==='current'?(selectedWorkPeriod||allTimePeriod)
-    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||closestPeriod||selectedWorkPeriod;
+    :primaryPeriods.find(period=>periodKey(period)===keywordPeriodKey)||allTimePeriod;
   const keywordWindowStart=keywordPeriodKey==='custom'
     ?keywordCustomStart:String(keywordPeriod?.start_date||'').slice(0,10);
   const keywordWindowEnd=keywordPeriodKey==='custom'
@@ -386,7 +381,7 @@ export default function Culture(){
   const classificationWindowEnd=keywordWindowEnd;
   // SQL reads only the bounding envelope. The selected period's exact
   // intervals must still exclude every day of an unlinked gap.
-  const classificationPeriodRanges=keywordPeriodKey==='custom'||keywordPeriodKey==='all'
+  const classificationPeriodRanges=keywordPeriodKey==='custom'||keywordPeriodKey==='year'||keywordPeriodKey==='all'
     ?null:(Array.isArray(keywordPeriod?.ranges)?keywordPeriod.ranges:null);
   const periodRangeSignature=JSON.stringify((classificationPeriodRanges||[]).map(range=>
     [range.start_date,range.end_date,range.open_end,range.invalid]));
@@ -1465,8 +1460,7 @@ export default function Culture(){
                             setKeywordPeriodKey(next);
 
                           }}>
-                          <option value='latest'>{primaryPeriods.length?l.recentTimeTrace:'未設定時代（本年度）'}</option>
-                           <option value='all'>{primaryPeriods.length?l.allTimeTraces:'本年度（未設定時代）'}</option>
+                          <option value='year'>最近一年（預設）</option>
                            {primaryPeriods.map(item=><option key={periodKey(item)} value={periodKey(item)}>{localizedLabelOf(item,0)}</option>)}
                            <option value='custom'>{l.customPeriod}</option>
                         </select>
