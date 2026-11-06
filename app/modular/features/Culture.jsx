@@ -317,17 +317,15 @@ export default function Culture(){
   // LOC's first Time River never queries per-day article/media density.
   // On-demand second-river data stays in the regular SWR request cache.
   const locDensityQuery=useAsyncResource({
-    queryKey:['loc-culture-density',scopeId,query.data?.intersectionStart,query.data?.intersectionEnd,
-      JSON.stringify(query.data?.intersectionWindows||[])],
+    queryKey:['loc-culture-density',scopeId,query.data?.intersectionStart,query.data?.intersectionEnd],
     enabled:!isTimeEditingView&&isAggregateScope&&scopeId==='loc'&&!isLocItemView&&locDensityOpen
-      &&Boolean(query.data?.intersectionWindows?.length),
+      &&Boolean(query.data?.scopes?.length),
     queryFn:async()=>{
       const {selectLocCultureDensity}=await import('../../loc/culture-query');
       return selectLocCultureDensity({
         scopes:query.data?.scopes||[],
-        intersectionWindows:query.data?.intersectionWindows||[],
-        intersectionStart:query.data?.intersectionStart||'',
-        intersectionEnd:query.data?.intersectionEnd||''
+        startDate:query.data?.intersectionStart||'',
+        endDate:query.data?.intersectionEnd||''
       });
     },
   });
@@ -1353,7 +1351,7 @@ export default function Culture(){
 
               <section className='scope-card scope-culture-classification-river scope-loc-time-river'>
                 <p className='loc-eyebrow'>{UI_COPY.culture.distribution}</p>
-                <h3>各 Scope 時間區間</h3>
+                <h3>各 Scope｜最近一年</h3>
                 {locScopeIntervalItems.length?<CultureTimeline
                   items={locScopeIntervalItems}
                   labelOf={emptyRiverLabel}
@@ -1364,19 +1362,18 @@ export default function Culture(){
                   fixedMin={locDistributionStart}
                   fixedMax={locDistributionEnd}
                 />:null}
-                {!locIntersectionScopeIds.length&&query.data?.scopes?.length
-                  ?<p className='scope-status' role='status'>目前各 Scope 的時代／時期沒有共同時間區間（單一定錨點亦計入）。</p>:null}
+
                 <div className='scope-result-links'>
                   {[...new Set(locScopeIntervalItems.map(item=>item.scope_id))].map(id=><ScopeLink key={id} href={featureNavigationHref(id,'culture')}>{id}{l.personalTimelineSuffix}</ScopeLink>)}
                 </div>
                 {locIntersectionScopeIds.length?<details className='scope-stat-details scope-culture-density-details'
                   onToggle={event=>setLocDensityOpen(event.currentTarget.open)}>
-                  <summary>{UI_COPY.culture.intersectionRiver} · {UI_COPY.culture.combinedRiver}</summary>
+                  <summary>最近一年｜成員密度與來源</summary>
                   {locDensityOpen?<>
                     {locDensityQuery.isPending?<p className='scope-status' role='status'>{UI_COPY.common.loading}</p>:null}
                     {locDensityQuery.error?<p className='scope-status scope-error'>{featureDataErrorMessage(locDensityQuery.error,UI_COPY)}</p>:null}
                 {locScopeRiverItems.length?<section className='scope-culture-interval-density'>
-                  <h4>{UI_COPY.culture.intersectionRiver}</h4>
+                  <h4>最近一年｜各 Scope 文章密度</h4>
                   <CultureTimeline
                     items={locScopeRiverItems}
                     labelOf={emptyRiverLabel}
