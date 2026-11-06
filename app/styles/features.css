@@ -1444,6 +1444,15 @@
 .loc-trace-time-axis-heading span,.loc-trace-time-axis-ends{
   color:var(--loc-muted);font-size:.8rem;
 }
+.loc-trace-time-axis-heading>label,
+.loc-trace-time-axis-controls>label{
+  display:flex;align-items:center;gap:.4rem;font-size:.86rem;min-width:0;
+}
+.loc-trace-time-axis-heading>label select,
+.loc-trace-time-axis-controls>label select{min-width:8rem;max-width:100%}
+.loc-trace-time-axis-controls>label input[type="date"]{min-width:0;max-width:12rem}
+.loc-trace-time-axis-heading{flex-wrap:wrap}
+.loc-trace-time-axis-controls{flex-wrap:wrap}
 .loc-trace-time-axis-controls input[type="range"]{
   flex:1 1 auto;min-width:3rem;accent-color:var(--loc-accent);
 }
