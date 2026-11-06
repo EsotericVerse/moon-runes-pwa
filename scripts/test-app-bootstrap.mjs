@@ -747,3 +747,26 @@ test('Verified Clerk OAuth expiry bounds lazy LOC authorization cache across req
   await locPermissions(expired);
   assert.equal(selects,3,'expired OAuth credentials cannot reuse the cache');
 });
+
+test('Statistics and Culture homepage use a rolling year without eager Era/Keyword lookup',()=>{
+  const stats=readFileSync(new URL('../app/modular/features/Statistics.jsx',import.meta.url),'utf8');
+  const culture=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
+  const hero=readFileSync(new URL('../app/modular/ui.jsx',import.meta.url),'utf8');
+  const data=readFileSync(new URL('../app/loc/culture-query.js',import.meta.url),'utf8');
+  const kysely=readFileSync(new URL('../app/loc/providers/kysely-analytics.mjs',import.meta.url),'utf8');
+  assert.match(hero,/\(\)=>heroBlocks\(scopeId,featureId\)/);
+  assert.match(stats,/const \[selectedPeriodKey,setSelectedPeriodKey\]=useState\(''\)/);
+  assert.match(stats,/enabled:periodPickerOpened&&scopeId!=='local'/);
+  assert.match(stats,/const periodNavigationReady=true/);
+  assert.match(stats,/navigation=\{navigation\}/);
+  assert.match(stats,/enabled:sourceChart&&rankingType==='source'&&Boolean\(scopeId\)&&!publishedCatalog/);
+  assert.match(culture,/setKeywordPeriodKey\('year'\)/);
+  assert.match(culture,/const selectedWorkPeriod=primaryPeriods\.find\(/);
+  assert.doesNotMatch(culture,/setStyleFilter\(userActive&&userSettings\.display/);
+  const loc=data.slice(data.indexOf("if(id==='loc'){",data.indexOf('export async function selectScopeCultureData(')),
+    data.indexOf('  const scope=defaultScopeData(id);'));
+  assert.match(loc,/statisticsTaipeiYearWindow\(\)/);
+  assert.doesNotMatch(loc,/selectManagedScopes|intersectTimeDateWindows|selectCultureTimeRows|selectScopeDailyCounts/);
+  assert.doesNotMatch(kysely,/const early=await earliest\(trx,group\.id\)/);
+  assert.match(kysely,/return \{earliest:start\|\|null,rows,categories,aliases\}/);
+});
