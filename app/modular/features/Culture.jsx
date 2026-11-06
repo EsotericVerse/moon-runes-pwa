@@ -81,15 +81,6 @@ function sortPeriods(rows=[]){
     String(a.start_date||a.end_date||'').localeCompare(String(b.start_date||b.end_date||''))
   );
 }
-function periodRange(rows=[],scope='',allTime=UI_COPY.culture.allTime){
-  const starts=rows.map(row=>row.start_date||row.end_date).filter(Boolean).sort();
-  const ends=rows.map(row=>row.end_date||row.start_date).filter(Boolean).sort();
-  const openEnded=rows.some(row=>Boolean(row?.open_end)||!row?.end_date);
-  return {
-    period:'all',title:allTime,display_label:allTime,
-    start_date:starts[0]||'',end_date:openEnded?null:(ends.at(-1)||null),scope_id:scope
-  };
-}
 function periodKey(item){
   return String(item?.period||item?.era_id||item?.id||'').trim();
 }
@@ -332,7 +323,6 @@ export default function Culture(){
   const structurePreference=useMemo(()=>structurePeriodPreference(primaryPeriods,
     (query.data?.timelineItems||[]).filter(item=>item.scope_id===scopeId)),
   [primaryPeriods,query.data?.timelineItems,scopeId]);
-  const closestPeriod=primaryPeriods.find(item=>periodKey(item)===structurePreference.preferredKey)||null;
   // Articles may exist even when no formal Period has been created. Use an
   // ordinary bounded date window; never treat an empty Time table as invalid.
   const allTimePeriod=useMemo(()=>{
