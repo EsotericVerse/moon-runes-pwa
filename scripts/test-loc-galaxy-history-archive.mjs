@@ -7,7 +7,7 @@ test('explicit history archive keeps user and assistant source text, avoids dupl
   const original=globalThis.chrome;
   const local={'locGalaxy.scopeid':'lo3rwang'};
   const conversation_id='chatgpt:123e4567-e89b-12d3-a456-426614174000';
-  const snapshot={conversation_id,records:[
+  const snapshot={conversation_id,source_path:'/c/'+conversation_id.slice(8),records:[
     {role:'user',kind:'original',message_id:'123e4567-e89b-12d3-a456-426614174111',text:'原始問題'},
     {role:'assistant',kind:'advice',message_id:'123e4567-e89b-12d3-a456-426614174222',text:'原始回應'}
   ],partial:false};
@@ -18,7 +18,8 @@ test('explicit history archive keeps user and assistant source text, avoids dupl
       assert.equal(func,extractOpenConversation);
       return [{result:snapshot}];
     }},
-    tabs:{query:async()=>[{id:9,url:'https://chatgpt.com/c/'+conversation_id.slice(8)}]},
+    tabs:{query:async()=>[{id:9,url:'https://chatgpt.com/c/'+conversation_id.slice(8)}],
+      get:async()=>({id:9,url:'https://chatgpt.com/c/'+conversation_id.slice(8)})},
     storage:{local:{
       get:async keys=>Object.fromEntries((Array.isArray(keys)?keys:[keys]).map(key=>[key,local[key]])),
       set:async data=>Object.assign(local,data),
@@ -64,6 +65,7 @@ test('modern ChatGPT conversation-turn containers are imported without data-mess
   try{
     const result=await extractOpenConversation();
     assert.equal(result.captured_count,2);
+    assert.equal(result.source_path,'/c/123e4567-e89b-12d3-a456-426614174000');
     assert.deepEqual(result.records.map(x=>x.role),['user','assistant']);
     assert.deepEqual(result.records.map(x=>x.text),['幫我封存','已準備封存']);
     assert.deepEqual(result.records.map(x=>x.message_id),['turn-00000000','turn-00000001']);
@@ -80,4 +82,28 @@ test('a rendered chat without recognized turns reports an explicit diagnostic in
   try{
     await assert.rejects(()=>extractOpenConversation(),/不要將掃描 0 則當成匯入完成/);
   }finally{globalThis.document=beforeDoc;globalThis.location=beforeLocation;}
+});
+
+// A conversation opened while capture runs must never be queued under the prior tab.
+test('archive refuses a ChatGPT tab that navigated while extracting',async()=>{
+  const previous=globalThis.chrome;
+  const local={'locGalaxy.scopeid':'lo3rwang'};
+  const originalId='123e4567-e89b-12d3-a456-426614174000';
+  const nextId='123e4567-e89b-12d3-a456-426614174999';
+  globalThis.chrome={
+    permissions:{contains:async()=>true},
+    tabs:{query:async()=>[{id:9,url:'https://chatgpt.com/c/'+originalId}],
+      get:async()=>({id:9,url:'https://chatgpt.com/c/'+nextId})},
+    scripting:{executeScript:async()=>[{result:{
+      conversation_id:'chatgpt:'+originalId,source_path:'/c/'+originalId,
+      records:[{role:'user',message_id:'turn-00000000',text:'not queued'}]
+    }}]},
+    storage:{local:{get:async keys=>Object.fromEntries((Array.isArray(keys)?keys:[keys]).map(k=>[k,local[k]])),
+      set:async data=>Object.assign(local,data)}}
+  };
+  try{
+    const capture=captureController({authorized:async()=>({ready:true,scopeid:'lo3rwang'}),record:async()=>({saved:true})});
+    await assert.rejects(()=>capture.archiveActive(),/網址已改變/);
+    assert.equal(local['locGalaxy.capturePending'],undefined);
+  }finally{globalThis.chrome=previous;}
 });
