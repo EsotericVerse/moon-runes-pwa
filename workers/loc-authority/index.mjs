@@ -1,4 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
+import {registerMcpClient,validateMcpAuthorization,issueMcpCode,
+  exchangeMcpCode,mcpSession} from './mcp-oauth.mjs';
 import {beginGitHubOAuth,completeGitHubOAuth,findGitHubSession,revokeGitHubSession,
   readOAuthCookie,githubCookies,sessionCookie,stateCookie} from './github-oauth.mjs';
 import {validateKeywordCategoryEntry,hashKeywordCategory,assertPublicKeywordClass} from './keyword-categories.mjs';
@@ -480,6 +482,11 @@ export class LocAuthorityState extends DurableObject {
     // This value is intentionally NOT writable via these configuration endpoints.
     return {active:'clerk',providers};
   }
+  async mcpRegisterClient(input){return registerMcpClient(this.ctx.storage,input);}
+  async mcpValidateAuthorization(input){return validateMcpAuthorization(this.ctx.storage,input);}
+  async mcpIssueCode(input,identity){return issueMcpCode(this.ctx.storage,input,identity);}
+  async mcpExchangeCode(input){return exchangeMcpCode(this.ctx.storage,input);}
+  async mcpGitHubSession(token){return mcpSession(this.ctx.storage,token);}
   async githubProfile(){
     const saved=await this.ctx.storage.get('auth-provider:github');
     return saved?decryptProfile(saved.encrypted,this.env.LOC_CONTROL_ENCRYPTION_KEY):null;
@@ -913,6 +920,41 @@ export class LocAuthorityState extends DurableObject {
   }
 }
 
+async function handleLocOAuth(request,env,url,origin){
+  const base='https://auth.lo3rwang.cc';
+  const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
+  if(request.method==='GET'&&url.pathname==='/.well-known/oauth-authorization-server'){
+    return json({issuer:base,authorization_endpoint:base+'/oauth/authorize',
+      token_endpoint:base+'/oauth/token',registration_endpoint:base+'/oauth/register',
+      response_types_supported:['code'],grant_types_supported:['authorization_code'],
+      code_challenge_methods_supported:['S256'],
+      token_endpoint_auth_methods_supported:['none'],
+      scopes_supported:['profile','email']},200,origin);
+  }
+  if(request.method==='POST'&&url.pathname==='/oauth/register'){
+    const body=await mcpJsonBody(request,4000);
+    return json(await stub.mcpRegisterClient(body),201,origin);
+  }
+  if(request.method==='GET'&&url.pathname==='/oauth/authorize'){
+    const params=Object.fromEntries(url.searchParams);
+    await stub.mcpValidateAuthorization(params);
+    const bearer=readOAuthCookie(request.headers.get('cookie'),githubCookies.session);
+    const identity=await stub.githubSession(bearer);
+    if(!identity){
+      const login=new URL('/login/index.html',env.LOC_CONTROL_ORIGIN);
+      login.searchParams.set('oauth_return',url.href);
+      return Response.redirect(login.href,302);
+    }
+    return Response.redirect(await stub.mcpIssueCode(params,identity),302);
+  }
+  if(request.method==='POST'&&url.pathname==='/oauth/token'){
+    const raw=await request.text();
+    if(raw.length>4000)throw fail('OAuth token request too large',413);
+    const values=Object.fromEntries(new URLSearchParams(raw));
+    return json(await stub.mcpExchangeCode(values),200,origin);
+  }
+  throw fail('OAuth endpoint not found',404);
+}
 async function handleGitHubSession(request,env,url,origin){
   const stub=env.LOC_AUTHORITY_STATE.get(env.LOC_AUTHORITY_STATE.idFromName('loc-authority-control-v1'));
   const credentials=reply=>{reply.headers.set('access-control-allow-credentials','true');return reply;};
@@ -1153,6 +1195,9 @@ export default {
       if(!origin&&request.headers.get('sec-fetch-site')==='cross-site')throw fail('Cross-origin request rejected',403);
       if(!['GET','PUT','POST'].includes(request.method))throw fail('Method not allowed',405);
       const url=new URL(request.url);
+      if(url.pathname.startsWith('/oauth/')||
+         url.pathname==='/.well-known/oauth-authorization-server')
+        return handleLocOAuth(request,env,url,origin);
       if(url.pathname.startsWith('/v1/github/'))
         return handleGitHubSession(request,env,url,origin);
       if(url.pathname.startsWith('/v1/mcp/'))return handleMcpAuthority(request,env,url,origin);
