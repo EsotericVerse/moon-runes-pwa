@@ -2,6 +2,7 @@
 // Supabase SQL remains the primary data source until Neon schema is ready.
 // All private writes go through Kysely with verified Clerk JWT and DB RLS.
 import {createClerkAccountAdapter} from '../auth/clerk-browser.mjs';
+import {createGitHubAccountAdapter} from '../auth/github-browser.mjs';
 import {createKyselyEdgeClient} from './kysely-edge.mjs';
 import {createClient} from '@supabase/supabase-js';
 
@@ -15,9 +16,30 @@ export function createClerkGatewayAdapter({
   publishableKey=process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY||DEFAULT_PUBLISHABLE_KEY,
   fetchImpl=globalThis.fetch
 }={}){
-  const {auth,getAccessToken}=createClerkAccountAdapter({
-    authorityOrigin:authorityUrl,fetchImpl
-  });
+  // GitHub becomes the first-party identity once its existing Authority
+  // credentials are configured. Until then, retain Clerk for recovery.
+  // Constructing a Clerk adapter does not load the SDK or spend Clerk calls.
+  const github=createGitHubAccountAdapter({authorityOrigin:authorityUrl,fetchImpl});
+  const clerk=createClerkAccountAdapter({authorityOrigin:authorityUrl,fetchImpl});
+  const provider=async()=>await github.configured()?github:clerk;
+  const auth={
+    async getSession(){return (await provider()).auth.getSession();},
+    async getUser(token){return (await provider()).auth.getUser(token);},
+    async getVerifiedSession(){return (await provider()).auth.getVerifiedSession();},
+    async signInWithOAuth(args){return (await provider()).auth.signInWithOAuth(args);},
+    async signOut(){return (await provider()).auth.signOut();},
+    onAuthStateChange(listener){
+      let disposed=false,subscription=null;
+      void provider().then(selected=>{
+        if(disposed)return;
+        subscription=selected.auth.onAuthStateChange(listener)?.data?.subscription;
+      }).catch(()=>listener('INITIAL_SESSION',null));
+      return {data:{subscription:{unsubscribe(){
+        disposed=true;subscription?.unsubscribe?.();
+      }}}};
+    }
+  };
+  const getAccessToken=async()=>(await provider()).getAccessToken();
   // Public-only Supabase SDK: never persists a Supabase Auth session and
   // never processes an OAuth callback. Clerk owns all interactive login.
   const publicSdk=createClient(url,publishableKey,{
@@ -41,7 +63,7 @@ export function createClerkGatewayAdapter({
     configuredPublicClient:publicSql,
     backupPublicClient:null,
     realtimeClient:publicSdk,
-    primarySourceLabel:'Supabase SQL · Clerk 身分',
+    primarySourceLabel:'Supabase SQL · LOC 身分',
     backupSourceLabel:''
   };
 }
