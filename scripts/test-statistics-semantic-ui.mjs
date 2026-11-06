@@ -1,7 +1,7 @@
 import {readFileSync} from 'node:fs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {semanticStatisticChartTypes,availableStatisticChartTypes,preferredStatisticChartType} from '../app/modular/modules/statistics/statistics-time-zoom.mjs';
+import {semanticStatisticChartTypes,availableStatisticChartTypes,preferredStatisticChartType,statisticsTaipeiYearWindow} from '../app/modular/modules/statistics/statistics-time-zoom.mjs';
 
 const ids=rows=>rows.map(([id])=>id);
 const two=[{name:'north',value:12},{name:'south',value:7}];
@@ -80,4 +80,13 @@ test('media and place statistic tabs use existing Keyword Category/Class analysi
   assert.doesNotMatch(page,/<PlaceStatisticsPanel/);
   assert.doesNotMatch(page,/import\('\.\/trace\/PlaceStatisticsPanel'\)/);
   assert.doesNotMatch(page,/<MediaFacetStatistics/);
+});
+
+test('Culture/Statistics homepage shares rolling Taipei year, including leap day',()=>{
+  assert.deepEqual(statisticsTaipeiYearWindow(new Date('2026-11-06T14:00:00Z')),
+    {startDate:'2025-11-06',endDate:'2026-11-06'});
+  assert.deepEqual(statisticsTaipeiYearWindow(new Date('2028-02-29T12:00:00Z')),
+    {startDate:'2027-02-28',endDate:'2028-02-29'});
+  assert.deepEqual(statisticsTaipeiYearWindow(new Date('2026-01-01T16:00:00Z')),
+    {startDate:'2025-01-02',endDate:'2026-01-02'});
 });
