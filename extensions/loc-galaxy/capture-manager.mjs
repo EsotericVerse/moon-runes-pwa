@@ -92,9 +92,14 @@ export function captureController({record,authorized}){
       throw Error('請先切換至欲封存的 ChatGPT 對話分頁');
     const outcome=await chrome.scripting.executeScript({target:{tabId:tab.id},func:extractOpenConversation});
     const snapshot=outcome?.[0]?.result;
-    if(!snapshot||!/^chatgpt:[A-Za-z0-9-]{8,}$/.test(snapshot.conversation_id)||
-       !tab.url.includes(snapshot.conversation_id.slice(8))||!Array.isArray(snapshot.records))
-      throw Error('對話擷取結果無法核對來源');
+    if(!snapshot||!Array.isArray(snapshot.records))
+      throw Error('對話擷取腳本未回傳有效結果，請重新載入 ChatGPT 對話');
+    const liveTab=await chrome.tabs.get(tab.id);
+    const match=/^\\/(?:g\\/[^/]+\\/)?c\\/([A-Za-z0-9-]{8,})(?:\\/|$)/.exec(new URL(liveTab.url||'').pathname);
+    if(liveTab.url?.startsWith('https://chatgpt.com/')!==true||
+       !match||snapshot.conversation_id!=='chatgpt:'+match[1]||
+       snapshot.source_path!==new URL(liveTab.url).pathname)
+      throw Error('擷取期間 ChatGPT 對話網址已改變，請切回原對話再匯入');
     if(!snapshot.records.length)return {captured:0,queued:0,pending:(await status()).pending,partial:true};
     return serial(async()=>{
       const saved=await chrome.storage.local.get([PENDING,ARCHIVED,SCOPE]);
