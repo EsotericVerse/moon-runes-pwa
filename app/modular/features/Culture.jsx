@@ -308,10 +308,8 @@ export default function Culture(){
     setFocusedAnchorDate('');
     setStructureWindowKey('');
   },[scopeId]);
-  // The saved homepage display is an initial choice, not a background analysis.
-  useEffect(()=>{
-    setStyleFilter(userActive&&userSettings.display==='keywords'?'rune66':'none');
-  },[scopeId,userActive,userSettings.display]);
+  // First paint remains a one-year article-density view. Keyword Class
+  // analysis runs only when explicitly selected, not from saved preferences.
 
   const isAggregateScope=Boolean(scope?.aggregateChildren);
   // LOC's first Time River never queries per-day article/media density.
