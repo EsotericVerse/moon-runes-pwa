@@ -124,6 +124,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   let timelineMarkers=[];
   let timelineRows=[];
   let activeTimePointKeys=new Set();
+  let densityHalos=[];
   let pickedMarker=null;
   let pickedPosition=null;
   let savedAnchors=anchors;
@@ -138,6 +139,7 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     refreshSavedRoute();
     refreshTimelineStems();
     refreshTimeCursor();
+    refreshDensityHalos();
     // Updating GeoJSON never resets the viewport. Only explicit navigation may.
   }
   // Day stems are gated by one explicit checkbox in the map's own corner
@@ -181,6 +183,25 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
   function setTimeCursor(keys=[]){
     activeTimePointKeys=new Set(Array.isArray(keys)?keys:[]);
     refreshTimeCursor();
+  }
+  function refreshDensityHalos(){
+    if(!loaded)return;
+    const counts=new Map(densityHalos.map(row=>[
+      String(row.source_scope||'')+':'+String(row.uid||''),Number(row.count)||0
+    ]));
+    const features=savedAnchors.filter(isValidSavedAnchor).flatMap(anchor=>{
+      const count=counts.get(String(anchor.source_scope||'')+':'+String(anchor.uid||''))||0;
+      if(count<=0)return [];
+      return [{type:'Feature',properties:{
+        uid:String(anchor.uid||''),source_scope:String(anchor.source_scope||''),
+        title:String(anchor.title||''),count
+      },geometry:{type:'Point',coordinates:spaceCoordinates(anchor)}}];
+    });
+    map.getSource('loc-trace-density-halos')?.setData({type:'FeatureCollection',features});
+  }
+  function setDensityHalos(rows=[]){
+    densityHalos=Array.isArray(rows)?rows:[];
+    refreshDensityHalos();
   }
   function savedRoutePoints(route=selectedSavedRoute){
     if(!Array.isArray(route?.anchor_list))return [];
@@ -381,6 +402,16 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
       });
     }
     map.addSource('loc-trace-saved-anchors',{type:'geojson',data:existingAnchorPoints(savedAnchors)});
+    // A hollow count halo surrounds each Point; only the selected period's
+    // COUNT controls its logarithmic visual size. No route topology is used.
+    map.addSource('loc-trace-density-halos',{type:'geojson',data:emptyRoute()});
+    map.addLayer({id:'loc-trace-density-halo-rings',type:'circle',
+      source:'loc-trace-density-halos',
+      paint:{'circle-radius':['min',46,['+',12,['*',7,
+        ['ln',['+',1,['get','count']]]]]],
+        'circle-opacity':0,'circle-stroke-color':'#72d9fd',
+        'circle-stroke-opacity':0.86,'circle-stroke-width':3}});
+    refreshDensityHalos();
     map.addLayer({id:'loc-trace-saved-point-layer',type:'circle',source:'loc-trace-saved-anchors',
       paint:{'circle-radius':6,'circle-color':'#6ce4ce','circle-opacity':0.95,
         'circle-stroke-width':1.5,'circle-stroke-color':'#153739'}});
@@ -528,6 +559,6 @@ export function createTraceMap(container,{onStatus=()=>{},onSelect=()=>{},onLoca
     pickedMarker=null;
     map.remove();
   }
-  return {focus,focusCoordinates,centerIfFar,goOrigin,setAnchors,setPlaceTimelines,setStemsVisible,setTimeCursor,setSavedRoute,setSavedGraph,overview,showRoadRoute,
+  return {focus,focusCoordinates,centerIfFar,goOrigin,setAnchors,setPlaceTimelines,setStemsVisible,setTimeCursor,setDensityHalos,setSavedRoute,setSavedGraph,overview,showRoadRoute,
     resize:()=>{if(!removed)map.resize();},destroy};
 }
