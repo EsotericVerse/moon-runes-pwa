@@ -297,10 +297,11 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     setSelectedKeywordClassUid('');
     setSourceGroup('');
   },[scopeId,navigation.statTab,requested]);
-  // Period is the primary Statistics navigation. Default to the latest
-  // saved Period, not an unnecessary preliminary one-year statistics fetch.
-  const [selectedPeriodKey,setSelectedPeriodKey]=useState('latest');
-  useEffect(()=>{setSelectedPeriodKey('latest');},[scopeId]);
+  // Homepage always starts in a bounded one-year window. Historical Periods
+  // are opt-in, never a prerequisite for the first statistics request.
+  const [selectedPeriodKey,setSelectedPeriodKey]=useState('');
+  const [periodPickerOpened,setPeriodPickerOpened]=useState(false);
+  useEffect(()=>{setSelectedPeriodKey('');setPeriodPickerOpened(false);},[scopeId]);
   const queryEndDate=useMemo(()=>taipeiDateKey(),[]);
   // The active route already resolves the requested Scope; no registry-wide SELECT.
   const targetScopes=useMemo(()=>[defaultScopeData(scopeId)].filter(Boolean),[scopeId]);
@@ -312,7 +313,7 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     [zoomLevel,queryEndDate,knownEarliest]);
   const periodQuery=useAsyncResource({
     queryKey:['culture-time-periods',scopeId],
-    enabled:scopeId!=='local'&&scopeId!=='loc'&&Boolean(targetScopes[0]),
+    enabled:periodPickerOpened&&scopeId!=='local'&&scopeId!=='loc'&&Boolean(targetScopes[0]),
     queryFn:async()=>{
       // Period anchors remain on the independently working direct reader.
       // ISR never becomes a required path when an endpoint is not available.
@@ -326,18 +327,19 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
     .filter(row=>String(row.scope_id||'')===scopeId&&row.start_date)
     .sort((a,b)=>String(a.start_date).localeCompare(String(b.start_date))
       ||Number(a.order||0)-Number(b.order||0)),[periodQuery.data,scopeId]);
-  const selectedPeriod=selectedPeriodKey==='latest'
-    ?periods.at(-1)||null
-    :periods.find(row=>String(row.period||row.era_id||row.uid)===selectedPeriodKey)||null;
+  const selectedPeriod=selectedPeriodKey
+    ?periods.find(row=>String(row.period||row.era_id||row.uid)===selectedPeriodKey)||null:null;
   // LOC aggregates member Scopes, but has no mandatory aggregate Period row.
   // An empty or non-period Scope must not request a nonexistent Period index.
   const requestedStart=dateKey(navigation.from),requestedEnd=dateKey(navigation.to);
   const hasRequestedWindow=Boolean(requestedStart&&requestedEnd&&requestedStart<=requestedEnd);
-  const periodNavigationReady=hasRequestedWindow||scopeId==='local'||scopeId==='loc'||periodQuery.data!==undefined||Boolean(periodQuery.error);
+  const periodNavigationReady=true; // Do not hold the one-year homepage behind Period metadata.
   const queryRange=useMemo(()=>{
     if(hasRequestedWindow){
-      const days=Math.round((Date.parse(requestedEnd+'T00:00:00Z')-Date.parse(requestedStart+'T00:00:00Z'))/86_400_000);
-      return {...customQueryRange,startDate:requestedStart,endDate:requestedEnd,
+      const firstAllowed=statisticsZoomWindow(0,requestedEnd).startDate;
+      const boundedStart=requestedStart<firstAllowed?firstAllowed:requestedStart;
+      const days=Math.round((Date.parse(requestedEnd+'T00:00:00Z')-Date.parse(boundedStart+'T00:00:00Z'))/86_400_000);
+      return {...customQueryRange,startDate:boundedStart,endDate:requestedEnd,
         bucket:defaultTimeUnit==='auto'?(days>180?'month':days>31?'week':'day'):defaultTimeUnit,
         fullHistory:false,canZoomOut:false,canZoomIn:false};
     }
@@ -500,10 +502,10 @@ function ScopeStatisticsResults({scopeId,navigation,types}){
       <label>
         <span>時期</span>
         <select className="scope-select" aria-label="時期" value={selectedPeriodKey}
+          onFocus={()=>setPeriodPickerOpened(true)} onPointerDown={()=>setPeriodPickerOpened(true)}
           onChange={event=>setSelectedPeriodKey(event.target.value)}>
-          <option value="latest">{periods.length?'最新時期':'未設定時期（預設時間）'}</option>
-          <option value="">自選時間（原有縮放）</option>
-          {periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
+          <option value="">最近一年（預設）</option>
+          {periodPickerOpened&&periodQuery.isPending?<option disabled value="__loading">正在載入時期…</option>:null}
           {periods.map(period=><option key={period.uid||period.period} value={String(period.period||period.era_id||period.uid)}>
             {period.title||period.name||period.period}
           </option>)}
