@@ -36,13 +36,15 @@ test('tie chooses the more recent real endpoint',()=>{
  ],[],'2026-10-02').preferredKey,'T002');
 });
 
-test('second Culture river selects the closest trace, not the last by start date',()=>{
+test('Culture homepage defaults to one year regardless of nearest saved Era',()=>{
  const student=trace('0090',[range('2026-04-13','2026-06-10')]);
  const revival=trace('0095',[range('2026-01-30','2026-10-06')]);
  const selected=structurePeriodPreference([revival,student],[],'2026-10-28').preferredKey;
  assert.equal(selected,'0095');
  const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
  assert.match(source,/const closestPeriod=primaryPeriods\.find\(item=>periodKey\(item\)===structurePreference\.preferredKey\)/);
- assert.match(source,/keywordPeriodKey==='latest'\?\(closestPeriod\|\|selectedWorkPeriod/);
+ assert.match(source,/keywordPeriodKey==='year'\|\|keywordPeriodKey==='all'\?allTimePeriod/);
+ assert.match(source,/setKeywordPeriodKey\('year'\)/);
+ assert.match(source,/start_date:start,end_date:end/);
  assert.doesNotMatch(source,/primaryPeriods\.at\(-1\)/);
 });
