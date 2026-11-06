@@ -5,6 +5,9 @@ import {useUiLocale} from '../../../i18n/ui-locale';
 import {createTraceMap} from './trace-map-engine';
 import {spaceGraphGeojson} from './space-graph-geojson.mjs';
 import {spaceCoordinates} from './space-graph.mjs';
+import {useAsyncResource} from '../../../loc/use-async-resource';
+import {dbPublicClient} from '../../../loc/db-client.mjs';
+import {pointDensityGroups,pointHaloCounts,traceDensityDates} from './trace-point-density.mjs';
 import {traceTimeEvents,traceTimeBounds,traceTimeAt,traceTimeActiveKeys} from './trace-time-axis.mjs';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // Coordinates stay in the browser-only example module. These labels identify
@@ -125,6 +128,37 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
   const [expandedMap,setExpandedMap]=useState(false);
   const [status,setStatus]=useState('loading');
   const [stemsVisible,setStemsVisible]=useState(false);
+  const [mapDisplay,setMapDisplay]=useState('visits');
+  const [densityPeriod,setDensityPeriod]=useState('12m');
+  const [densityStart,setDensityStart]=useState('');
+  const [densityEnd,setDensityEnd]=useState('');
+  const densityGroups=useMemo(()=>pointDensityGroups(spatialData?.anchors||[]),[spatialData?.anchors]);
+  const densityDates=useMemo(()=>traceDensityDates(densityPeriod,densityStart,densityEnd),
+    [densityPeriod,densityStart,densityEnd]);
+  const densityKey=useMemo(()=>densityGroups.map(group=>
+    group.scope+':'+group.ids.join(',')).join('|'),[densityGroups]);
+  const density=useAsyncResource({
+    queryKey:['trace-point-halos-v1',densityKey,densityDates.start,densityDates.end],
+    enabled:mapDisplay==='density'&&densityGroups.length>0&&densityDates.valid&&!selectingLocation,
+    queryFn:async()=>{
+      const rows=[];
+      for(const group of densityGroups){
+        for(let offset=0;offset<group.ids.length;offset+=80){
+          const {data,error}=await dbPublicClient.schema('silver').analytics({
+            p_scope_id:group.scope,p_view:'trace_daily',p_start:densityDates.start,
+            p_end:densityDates.end,p_options:{placeIds:group.ids.slice(offset,offset+80)}
+          });
+          if(error)throw error;
+          if(!Array.isArray(data))throw Error('Point 文章密度回傳格式錯誤');
+          rows.push(...data.map(row=>({...row,source_scope:group.scope})));
+        }
+      }
+      return rows;
+    },
+    revalidateOnFocus:false,revalidateOnReconnect:false
+  });
+  const haloCounts=useMemo(()=>pointHaloCounts(spatialData?.anchors||[],density.data||[]),
+    [spatialData?.anchors,density.data]);
   const [timeProgress,setTimeProgress]=useState(0);
   const [timePlaying,setTimePlaying]=useState(false);
   const timeEvents=useMemo(()=>traceTimeEvents(spatialData?.anchors||[]),[spatialData?.anchors]);
@@ -195,8 +229,12 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     return()=>window.clearInterval(timer);
   },[timePlaying,timeBounds]);
   useEffect(()=>{
-    mapRef.current?.setTimeCursor(timeActiveKeys);
-  },[ready,timeActiveKeys]);
+    mapRef.current?.setTimeCursor(mapDisplay==='visits'?timeActiveKeys:[]);
+  },[ready,timeActiveKeys,mapDisplay]);
+  useEffect(()=>{
+    mapRef.current?.setDensityHalos(mapDisplay==='density'&&!density.isPending&&!density.error
+      ?haloCounts:[]);
+  },[ready,mapDisplay,haloCounts,density.isPending,density.error]);
 
   useEffect(()=>{
     mapRef.current?.setAnchors(spatialData?.anchors||[]);
@@ -369,11 +407,39 @@ export default function TraceMap({onLocationPick=null,onAnchorSelect=null,onRout
     {!selectingLocation&&spatialData&&<div className="loc-trace-time-axis" role="group"
       aria-label="等比例時間線">
       <div className="loc-trace-time-axis-heading">
-        <strong>等比例時間線</strong>
-        {timeBounds?<span>{timeVisits} / {timeBounds.count} 次造訪</span>:
-          <span>目前顯示的定錨點沒有造訪時間</span>}
+        <label>地圖顯示
+          <select className="scope-select" value={mapDisplay}
+            onChange={event=>{setTimePlaying(false);setMapDisplay(event.target.value);}}>
+            <option value="visits">造訪時間</option>
+            <option value="density">文章密度光環</option>
+          </select>
+        </label>
+        <strong>{mapDisplay==='visits'?'等比例時間線':'Point 文章密度'}</strong>
+        {mapDisplay==='visits'?(timeBounds?<span>{timeVisits} / {timeBounds.count} 次造訪</span>:
+          <span>目前顯示的定錨點沒有造訪時間</span>):
+          <span>{density.isPending?'統計中請稍後':density.error?'文章密度讀取失敗':
+            haloCounts.reduce((sum,row)=>sum+row.count,0)+' 篇文章'}</span>}
       </div>
-      {timeBounds?<>
+      {mapDisplay==='density'?<div className="loc-trace-time-axis-controls">
+        <label>統計期間
+          <select className="scope-select" value={densityPeriod}
+            onChange={event=>setDensityPeriod(event.target.value)}>
+            <option value="12m">最近一年</option>
+            <option value="3m">最近三個月</option>
+            <option value="all">全部時間</option>
+            <option value="custom">指定期間</option>
+          </select>
+        </label>
+        {densityPeriod==='custom'?<>
+          <label>開始 <input type="date" value={densityStart}
+            onChange={event=>setDensityStart(event.target.value)}/></label>
+          <label>結束 <input type="date" value={densityEnd}
+            onChange={event=>setDensityEnd(event.target.value)}/></label>
+        </>:<span>{densityDates.start||'最早'} ～ {densityDates.end||'目前'}</span>}
+        {density.error?<span role="alert" className="scope-error">{String(density.error.message||density.error)}</span>:null}
+        {!densityDates.valid?<span role="alert" className="scope-error">請設定有效的起訖日期</span>:null}
+      </div>:null}
+      {mapDisplay==='visits'&&timeBounds?<>
         <div className="loc-trace-time-axis-controls">
           <button type="button" className="loc-button" aria-pressed={timePlaying}
             onClick={()=>{if(timeProgress>=1000)setTimeProgress(0);setTimePlaying(value=>!value);}}
