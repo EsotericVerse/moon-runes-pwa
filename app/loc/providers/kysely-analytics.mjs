@@ -70,9 +70,8 @@ async function sourceTotals(trx,scope,start,end){
   return response.rows;
 }
 async function scopeOverview(trx,scope,start,end){
-  const [rows,first,loc]=await Promise.all([
+  const [rows,loc]=await Promise.all([
     dailyStats(trx,scope,start,end),
-    earliest(trx,scope),
     trx.selectFrom('silver.loc').select('DefaultArticleClass')
       .where('id','=','loc').executeTakeFirst()
   ]);
@@ -81,7 +80,8 @@ async function scopeOverview(trx,scope,start,end){
     display_name:String(name).trim(),enabled:true}));
   const aliases=list.map(name=>({source_key:String(name).trim().toLowerCase(),
     category_code:String(name).trim().toLowerCase()}));
-  return {earliest:first,rows,categories,aliases};
+  // Overview is a bounded window, not a global oldest-date query.
+  return {earliest:start||null,rows,categories,aliases};
 }
 async function searchSummary(trx,options){
   const scopes=options.scopeIds;
@@ -387,7 +387,7 @@ export async function executeKyselyAnalytics(trx,body,{role='anon'}={}){
         'm.galaxy_table as galaxy_table','m.anchor_table as anchor_table'])
       .where('m.manage_role','=','scope').where('m.active','=',true)
       .orderBy('m.sort_order','asc').orderBy('m.id','asc').execute();
-    const scopes=[],rows=[];let first=null;
+    const scopes=[],rows=[];
     for(const group of groups){
       if(!SCOPE.test(group.id))continue;
       const suffix=safeName(group.anchor_table,'anchor');
@@ -400,10 +400,9 @@ export async function executeKyselyAnalytics(trx,body,{role='anon'}={}){
       const day=await dailyStats(trx,group.id,start,end);
       rows.push(...day.filter(r=>r.kind==='total').map(r=>({scope_id:group.id,
         day:r.day,item_count:r.item_count})));
-      const early=await earliest(trx,group.id);
-      if(early&&(!first||String(early)<String(first)))first=early;
+ 
     }
-    return {data:{earliest:first,scopes,rows},count:null};
+    return {data:{earliest:start||null,scopes,rows},count:null};
   }
   const reg=await registry(trx,scope);
   const galaxy=safeName(reg.galaxy_table,'galaxy'),anchorSuffix=safeName(reg.anchor_table,'anchor');
@@ -496,21 +495,14 @@ export async function executePortableKyselyAnalytics(db,body,{engine,namespace='
     const ids=[...present].filter(name=>name.endsWith('_galaxy'))
       .map(name=>name.slice(0,-'_galaxy'.length))
       .filter(id=>SCOPE.test(id)&&present.has(id+'_anchor')).sort();
-    const scopes=[],rows=[];let earliest=null;
+    const scopes=[],rows=[];
     for(const id of ids){
       const relation=portableRelation(id+'_galaxy',engine,namespace);
       let q=portableStatBase(db,relation,start,end,'statics');
       q=q.select('date').select(eb=>eb.fn.countAll().as('n'))
         .groupBy('date').orderBy('date','asc');
       const counts=await q.execute();
-      // The requested window limits displayed counts, not the Scope's
-      // absolute earliest qualifying date (same contract as PostgreSQL).
-      const oldest=await db.selectFrom(relation)
-        .select(eb=>eb.fn.min('date').as('day'))
-        .where('statics','=',true).where('content','!=','')
-        .executeTakeFirst();
-      const firstDay=portableDay(oldest?.day);
-      if(firstDay&&(!earliest||firstDay<earliest))earliest=firstDay;
+      // Do not issue a second all-history MIN(date) per member.
       scopes.push({scope_id:id,display_name:id});
       for(const row of counts){
         const day=portableDay(row.date);
@@ -518,7 +510,7 @@ export async function executePortableKyselyAnalytics(db,body,{engine,namespace='
 
       }
     }
-    return {data:{earliest,scopes,rows},count:null};
+    return {data:{earliest:start||null,scopes,rows},count:null};
   }
   if(mode==='shared_classes'||mode==='keyword_catalog'){
     // The external SQL installation has Galaxy and Anchor, not the
@@ -597,8 +589,8 @@ export async function executePortableKyselyAnalytics(db,body,{engine,namespace='
     else if(mode==='overview'){
       // Overview only summarizes visible Galaxy source/date rows.
       // Retired multimedia counts must not touch Anchor or media_link.
-      data={earliest:await first(),rows:summary,categories:[],aliases:[]};
-    }else data={earliest:await first(),scopes:[{
+      data={earliest:start||null,rows:summary,categories:[],aliases:[]};
+    }else data={earliest:start||null,scopes:[{
       scope_id:scope,display_name:scope
     }],rows:summary.filter(x=>x.kind==='total').map(x=>({
       scope_id:scope,day:x.day,item_count:x.item_count
