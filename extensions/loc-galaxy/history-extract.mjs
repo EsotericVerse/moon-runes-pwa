@@ -1,7 +1,8 @@
 // Runs only after an explicit user action on one ChatGPT conversation tab.
 // Read rendered DOM only; no ChatGPT private APIs, cookies or network requests.
 export async function extractOpenConversation(){
-  const id=/^\/(?:g\/[^/]+\/)?c\/([a-zA-Z0-9-]{8,})/.exec(location.pathname)?.[1];
+  const initialPath=location.pathname;
+  const id=/^\/(?:g\/[^/]+\/)?c\/([a-zA-Z0-9-]{8,})(?:\/|$)/.exec(initialPath)?.[1];
   if(location.origin!=='https://chatgpt.com'||!id)
     throw Error('請先開啟 chatgpt.com 的單一對話頁面');
   const found=new Map();
@@ -67,10 +68,12 @@ export async function extractOpenConversation(){
   }
   const turnCount=document.querySelectorAll('[data-testid^="conversation-turn-"]').length;
   const idCount=document.querySelectorAll('[data-message-id]').length;
+  if(location.origin!=='https://chatgpt.com'||location.pathname!==initialPath)
+    throw Error('擷取期間 ChatGPT 已切換對話，沒有匯入任何內容');
   if(!found.size)
     throw Error('ChatGPT 頁面沒有可辨識的對話文字（turn='+turnCount+
       '、message='+idCount+'）；請確認對話已顯示，勿將掃描 0 則當成匯入完成');
-  return {conversation_id:'chatgpt:'+id,
+  return {conversation_id:'chatgpt:'+id,source_path:initialPath,
     records:[...found.values()],captured_count:found.size,
     traversal_finished:converged,partial:!converged||found.size>=2500};
 }
