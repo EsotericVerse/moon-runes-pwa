@@ -351,7 +351,7 @@ test('Culture and Statistics Period data read directly when remote ISR is disabl
   assert.ok(!stats.includes("readNumericIsr(scopeId,'periods')"));
   assert.ok(stats.includes('selectScopeCultureData(scopeId)'));
   assert.ok(stats.includes('sourceChart&&periodNavigationReady'));
-  assert.ok(stats.includes('mediaDimension&&periodNavigationReady'));
+  assert.ok(stats.includes('const periodNavigationReady=true'));
   assert.ok(editor.includes('revalidateServerMetadata()'));
 });
 
@@ -362,8 +362,8 @@ test('Culture upper era selector stays independent; lower river selects only act
   assert.match(source,/const activeStructureKey=structureWindowKey==='all'/);
   assert.match(source,/setStructureWindowKey\(event\.target\.value\)/);
   assert.match(source,/setStructureWindowKey\(periodKey\(matched\)\)/);
-  assert.match(source,/const selectedWorkPeriod=selectedPeriodKey==='all'/,
-    'initial first-river fit must not change the lower data query interval');
+  assert.match(source,/const selectedWorkPeriod=primaryPeriods\.find\(/,
+    'Culture homepage must start from a year, not the latest Era');
   const timeline=readFileSync(new URL('../app/modular/modules/culture-timeline/CultureTimeline.jsx',import.meta.url),'utf8');
   assert.match(timeline,/instance\.fit\(\{animation:false\}\)/,
     'unselected first-river window must fit loaded timeline rows');
