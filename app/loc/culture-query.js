@@ -11,7 +11,7 @@ import {dbPublicClient} from './db-client.mjs';
 import {mapBounded} from './bounded-parallel.mjs';
 import {publicContentFilters} from './content-policy';
 import {defaultScopeData,selectScopeGroupMemberIds} from './scope-data';
-import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate,intersectTimeDateWindows,storedTimeRange} from './time-anchor-ranges.mjs';
+import {resolveTimeSegments,resolveTimeTrace,timePeriodSortDate,timeDateWindows,timePeriodContainsDate,storedTimeRange} from './time-anchor-ranges.mjs';
 
 
 
