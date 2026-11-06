@@ -1,6 +1,7 @@
 import {canManageLoc} from './loc-authorization.mjs';
 import {portableRelation} from './sql-engine-ports.mjs';
 import {sql} from 'npm:kysely@0.29.8';
+import {PUBLISHED_SITE_BOOTSTRAP} from '../../modular/published-site-bootstrap.js';
 
 const SCOPE=/^[a-z][a-z0-9]{0,14}$/;
 const UID=/^[A-Za-z0-9]{8}$/;
@@ -381,26 +382,20 @@ export async function executeKyselyAnalytics(trx,body,{role='anon'}={}){
   }
   if(mode==='loc'){
     if(scope!=='loc')reject('Invalid LOC statistics Scope');
-    const groups=await trx.selectFrom('silver.manage as m')
-      .innerJoin('silver.loc as l','l.id','m.id')
-      .select(['m.id as id','l.display_name as display_name',
-        'm.galaxy_table as galaxy_table','m.anchor_table as anchor_table'])
-      .where('m.manage_role','=','scope').where('m.active','=',true)
-      .orderBy('m.sort_order','asc').orderBy('m.id','asc').execute();
+    // Membership and public display labels are already published as the
+    // application bootstrap. Do not re-read Manage, join LOC, or introspect
+    // every member table simply to discover Scope IDs on each page visit.
+    const members=(PUBLISHED_SITE_BOOTSTRAP.registry||[])
+      .filter(row=>row.parent_scope_id==='loc'&&row.scope_kind==='scope'&&row.active!==false
+        &&SCOPE.test(String(row.scope_id||'')));
     const scopes=[],rows=[];
-    for(const group of groups){
-      if(!SCOPE.test(group.id))continue;
-      const suffix=safeName(group.anchor_table,'anchor');
-      const galaxy=safeName(group.galaxy_table,'galaxy');
-      if(galaxy!=='galaxy')continue;
-      const relations=await sql`select to_regclass(${'silver.'+group.id+'_'+galaxy}) is not null as galaxy_exists,
-        to_regclass(${'silver.'+group.id+'_'+suffix}) is not null as anchor_exists`.execute(trx);
-      if(!relations.rows[0]?.galaxy_exists||!relations.rows[0]?.anchor_exists)continue;
-      scopes.push({scope_id:group.id,display_name:group.display_name});
-      const day=await dailyStats(trx,group.id,start,end);
-      rows.push(...day.filter(r=>r.kind==='total').map(r=>({scope_id:group.id,
-        day:r.day,item_count:r.item_count})));
- 
+    for(const member of members){
+      const id=String(member.scope_id);
+      scopes.push({scope_id:id,display_name:String(member.display_name||id)});
+      const daily=await dailyStats(trx,id,start,end);
+      rows.push(...daily.filter(row=>row.kind==='total').map(row=>({
+        scope_id:id,day:row.day,item_count:row.item_count
+      })));
     }
     return {data:{earliest:start||null,scopes,rows},count:null};
   }
