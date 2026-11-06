@@ -42,7 +42,7 @@ test('Culture homepage defaults to one year regardless of nearest saved Era',()=
  const selected=structurePeriodPreference([revival,student],[],'2026-10-28').preferredKey;
  assert.equal(selected,'0095');
  const source=readFileSync(new URL('../app/modular/features/Culture.jsx',import.meta.url),'utf8');
- assert.match(source,/const closestPeriod=primaryPeriods\.find\(item=>periodKey\(item\)===structurePreference\.preferredKey\)/);
+ assert.doesNotMatch(source,/const closestPeriod=/);
  assert.match(source,/keywordPeriodKey==='year'\|\|keywordPeriodKey==='all'\?allTimePeriod/);
  assert.match(source,/setKeywordPeriodKey\('year'\)/);
  assert.match(source,/start_date:start,end_date:end/);
