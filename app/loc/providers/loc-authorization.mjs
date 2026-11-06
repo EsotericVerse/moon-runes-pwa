@@ -43,7 +43,7 @@ function rememberSnapshot(key,state,pending){
   });
 }
 const EMAIL=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const USER=/^user_[A-Za-z0-9]+$/;
+const USER=/^(?:user_[A-Za-z0-9]+|github:[1-9][0-9]*)$/;
 const SCOPE=/^[a-z][a-z0-9]{0,14}$/;
 function deny(message='LOC management permission denied'){
   throw Object.assign(new Error(message),{httpStatus:403});
@@ -51,9 +51,12 @@ function deny(message='LOC management permission denied'){
 export function bindLocAuthorization(db,{role='anon',claims={},snapshot=null}={}){
   if(!db||typeof db.selectFrom!=='function')throw new Error('Invalid Kysely transaction');
   if(role==='authenticated'&&(
-    claims?.provider!=='clerk'||!USER.test(String(claims?.sub||''))||
+    !['clerk','github'].includes(claims?.provider)||
+    !USER.test(String(claims?.sub||''))||
+    claims.provider==='github'&&!/^github:[1-9][0-9]*$/.test(String(claims.sub))||
+    claims.provider==='clerk'&&!/^user_[A-Za-z0-9]+$/.test(String(claims.sub))||
     !EMAIL.test(String(claims?.email||'').trim().toLowerCase())))
-    deny('Verified Clerk identity required');
+    deny('Verified LOC identity required');
   // External Scope DBs hold only their own tables. The trusted Gateway
   // may reuse a verified permission snapshot from the LOC control DB.
   sessions.set(db,{role,claims,email:String(claims?.email||'').trim().toLowerCase(),
