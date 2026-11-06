@@ -11,7 +11,7 @@ import {selectLocItemDailySeries} from '../../loc/item-confluence-query';
 import {realMoonPhase} from '../../loc/model/moon-phase';
 import {buildReferencedMoonRiver} from '../../lrunes/daily-moon-river.mjs';
 import {
-  ITEM_CONFLUENCE_PAGE_SIZE,ITEM_LANE_OPTIONS,itemConfluenceShiftMonth,
+  ITEM_CONFLUENCE_PAGE_SIZE,ITEM_LANE_OPTIONS,
   validateItemConfluenceRange,validateItemLane,itemLaneDescription,
   buildItemConfluenceDaily,buildItemConfluenceRiver,itemConfluenceSummary,itemRuneDisplay
 } from '../../loc/item-confluence-model.mjs';
@@ -19,14 +19,6 @@ import CultureTimeline from '../modules/culture-timeline/CultureTimeline';
 
 const EMPTY_SCOPES=Object.freeze([]);
 const EMPTY_FOCUS=Object.freeze({});
-function nowInTaipei(){
-  try{
-    const fields=Object.fromEntries(new Intl.DateTimeFormat('en-CA',{
-      timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
-    }).formatToParts(new Date()).filter(item=>item.type!=='literal').map(item=>[item.type,item.value]));
-    return fields.year+'-'+fields.month+'-'+fields.day;
-  }catch{return new Date().toISOString().slice(0,10);}
-}
 function labelOf(row){return String(row?.display_label||'');}
 function laneDayText(row,index,lane,l){
   if(lane?.source==='daily:rune'){
