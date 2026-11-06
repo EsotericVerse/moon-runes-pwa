@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-Hant" data-theme-id="theme-7" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>LOC · GitHub 身分核驗</title>
+<link rel="stylesheet" href="/login/appearance.css">
+</head>
+<body>
+<div class="login-shell">
+  <header class="topbar"><a class="brand" href="/">LOC · 月典</a></header>
+  <main class="auth-scene">
+    <section class="intro"><span class="eyebrow">LANGUAGE · TIME · TRACE</span>
+      <h1>回到你的<br><em>文字世界。</em></h1>
+      <p class="lead">GitHub 驗證完成後，使用 LOC 自有 Session。</p>
+    </section>
+    <section class="auth-surface"><h2>驗證 GitHub 身分</h2>
+      <p id="status" role="status" aria-live="polite">正在完成安全核驗…</p>
+      <div class="actions"><a href="/login/index.html" id="retry">重新登入</a></div>
+    </section>
+  </main>
+</div>
+<script type="module">
+const status=document.getElementById('status');
+async function finish(){
+  const params=new URLSearchParams(location.search);
+  const code=params.get('code'),state=params.get('state');
+  if(!code||!state||params.get('error'))throw Error('GitHub 已取消登入或缺少核驗資訊');
+  const config=await fetch('/recovery/config.json',{cache:'no-store'}).then(r=>{
+    if(!r.ok)throw Error('LOC Authority 設定無法讀取');return r.json();
+  });
+  const base=new URL(config.controlUrl||'');
+  if(base.protocol!=='https:'||!['','/'].includes(base.pathname)||
+     base.username||base.password||base.search||base.hash)
+    throw Error('LOC Authority 網址無效');
+  const reply=await fetch(base.origin+'/v1/github/callback',{
+    method:'POST',credentials:'include',cache:'no-store',
+    headers:{'content-type':'application/json'},
+    body:JSON.stringify({code,state})
+  });
+  if(!reply.ok)throw Error('GitHub 授權核驗失敗（HTTP '+reply.status+'）');
+  const data=await reply.json();
+  if(data.provider!=='github'||!data.email)throw Error('LOC 無法確認 GitHub 身分');
+  let returnPath='/local/settings/';
+  try{
+    const value=sessionStorage.getItem('loc-github-return');
+    sessionStorage.removeItem('loc-github-return');
+    if(value?.startsWith('/')&&!value.startsWith('//')&&!value.includes('\\')){
+      const target=new URL(value,location.origin);
+      if(target.origin===location.origin)returnPath=target.pathname+target.search+target.hash;
+    }
+  }catch{}
+  status.textContent='GitHub 身分已核驗，返回 LOC…';
+  location.replace('/login/index.html?return_to='+encodeURIComponent(returnPath));
+}
+finish().catch(error=>{status.textContent=String(error.message||error)});
+</script>
+</body>
+</html>
