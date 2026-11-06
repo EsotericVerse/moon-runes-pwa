@@ -49,6 +49,17 @@ export function statisticsZoomWindow(level=0,endDate='',earliestDate=''){
     canZoomIn:Boolean(earliest&&days>0)
   };
 }
+// Shared Culture/Statistics homepage window, based on Taipei calendar dates.
+// It is never a saved Era/Period or a union/intersection of member windows.
+export function statisticsTaipeiYearWindow(now=new Date()){
+  const parts=new Intl.DateTimeFormat('en-US',{
+    timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'
+  }).formatToParts(now);
+  const value=kind=>parts.find(item=>item.type===kind)?.value||'';
+  const endDate=value('year')+'-'+value('month')+'-'+value('day');
+  return {startDate:statisticsZoomWindow(0,endDate).startDate,endDate};
+}
+
 export function statisticsWeekKey(date){
   const at=new Date(String(date).slice(0,10)+'T00:00:00Z');
   if(!Number.isFinite(at.getTime()))return '';
